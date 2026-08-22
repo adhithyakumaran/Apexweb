@@ -55,12 +55,8 @@ export function Footer() {
   const item = prefersReducedMotion ? undefined : fadeUp;
 
   return (
-    <footer className="dark relative w-full overflow-hidden bg-secondary text-secondary-foreground">
-      <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-secondary via-[#070b14] to-black" />
-      <div className="pointer-events-none absolute -left-32 top-0 size-96 rounded-full bg-primary/10 blur-[120px]" />
-      <div className="pointer-events-none absolute -right-32 bottom-0 size-80 rounded-full bg-brand-orange/10 blur-[100px]" />
-
-      <div className="relative mx-auto max-w-350 px-6 py-20 lg:px-10">
+    <footer className="w-full bg-footer text-footer-foreground">
+      <div className="mx-auto max-w-350 px-6 py-20 lg:px-10">
         <motion.div
           className="grid grid-cols-1 gap-12 lg:grid-cols-[1.5fr_1fr_1fr_1fr]"
           initial={prefersReducedMotion ? false : "hidden"}
@@ -70,7 +66,7 @@ export function Footer() {
         >
           <motion.div variants={item} transition={defaultTransition}>
             <Logo variant="light" className="group" />
-            <p className="mt-5 max-w-sm text-sm leading-relaxed text-slate-400">
+            <p className="mt-5 max-w-sm text-sm leading-relaxed text-footer-muted">
               {siteConfig.description}
             </p>
 
@@ -83,7 +79,7 @@ export function Footer() {
                     href={link.href}
                     target={link.external ? "_blank" : undefined}
                     rel={link.external ? "noopener noreferrer" : undefined}
-                    className="group/link flex items-center gap-2.5 text-sm text-slate-400 transition-colors duration-300 hover:text-white"
+                    className="group/link flex items-center gap-2.5 text-sm text-footer-muted transition-colors duration-300 hover:text-footer-foreground"
                   >
                     <span className="flex size-8 items-center justify-center rounded-full border border-white/10 bg-white/5 transition-colors duration-300 group-hover/link:border-brand-orange/40 group-hover/link:bg-brand-orange/10">
                       <Icon className="size-3.5" />
@@ -104,7 +100,7 @@ export function Footer() {
                 <li key={agent.slug}>
                   <Link
                     href={`/agents/${agent.slug}`}
-                    className="text-sm text-slate-400 transition-all duration-300 hover:translate-x-1 hover:text-white"
+                    className="text-sm text-footer-muted transition-all duration-300 hover:translate-x-1 hover:text-footer-foreground"
                   >
                     {agent.codename}
                   </Link>
@@ -122,7 +118,7 @@ export function Footer() {
                 <li key={item.href}>
                   <Link
                     href={item.href}
-                    className="text-sm text-slate-400 transition-all duration-300 hover:translate-x-1 hover:text-white"
+                    className="text-sm text-footer-muted transition-all duration-300 hover:translate-x-1 hover:text-footer-foreground"
                   >
                     {item.label}
                   </Link>
@@ -140,7 +136,7 @@ export function Footer() {
                 <li key={item.href}>
                   <Link
                     href={item.href}
-                    className="text-sm text-slate-400 transition-all duration-300 hover:translate-x-1 hover:text-white"
+                    className="text-sm text-footer-muted transition-all duration-300 hover:translate-x-1 hover:text-footer-foreground"
                   >
                     {item.label}
                   </Link>
@@ -157,11 +153,11 @@ export function Footer() {
           viewport={defaultViewport}
           transition={{ duration: 0.6, ease: smoothEase, delay: 0.15 }}
         >
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-footer-muted">
             © {year} {siteConfig.name}. All rights reserved.
           </p>
 
-          <p className="flex items-center gap-1.5 text-xs text-slate-400">
+          <p className="flex items-center gap-1.5 text-xs text-footer-muted">
             Made with
             <Heart
               className="size-3.5 fill-brand-orange text-brand-orange animate-heartbeat"

@@ -29,6 +29,12 @@
   --brand-orange: #f97316;
   --brand-orange-light: #fff7ed;
   --brand-orange-foreground: #9a3412;
+  --brand-orange-muted: #ffedd5;
+
+  /* Footer */
+  --footer: #000000;
+  --footer-foreground: #f1f5f9;
+  --footer-muted: #94a3b8;
 
   /* Feedback */
   --success: #16a34a;
@@ -66,6 +72,11 @@
   --brand-orange: #fb923c;
   --brand-orange-light: #1c1410;
   --brand-orange-foreground: #fdba74;
+  --brand-orange-muted: #2a1a12;
+
+  --footer: #000000;
+  --footer-foreground: #f1f5f9;
+  --footer-muted: #64748b;
 
   --success: #22c55e;
   --warning: #f59e0b;
@@ -100,6 +111,11 @@
   --color-brand-orange: var(--brand-orange);
   --color-brand-orange-light: var(--brand-orange-light);
   --color-brand-orange-foreground: var(--brand-orange-foreground);
+  --color-brand-orange-muted: var(--brand-orange-muted);
+
+  --color-footer: var(--footer);
+  --color-footer-foreground: var(--footer-foreground);
+  --color-footer-muted: var(--footer-muted);
 
   --color-success: var(--success);
   --color-warning: var(--warning);

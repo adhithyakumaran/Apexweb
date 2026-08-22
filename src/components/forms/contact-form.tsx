@@ -45,7 +45,7 @@ export function ContactForm() {
           <input
             id="name"
             {...register("name")}
-            className="mt-2 w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground outline-none focus:border-primary"
+            className="mt-2 w-full rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground outline-none transition-colors duration-200 focus:border-primary focus:ring-2 focus:ring-primary/20"
             placeholder="Your name"
           />
           {errors.name && <p className="mt-1 text-xs text-destructive">{errors.name.message}</p>}
@@ -59,7 +59,7 @@ export function ContactForm() {
             id="email"
             type="email"
             {...register("email")}
-            className="mt-2 w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground outline-none focus:border-primary"
+            className="mt-2 w-full rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground outline-none transition-colors duration-200 focus:border-primary focus:ring-2 focus:ring-primary/20"
             placeholder="you@company.com"
           />
           {errors.email && <p className="mt-1 text-xs text-destructive">{errors.email.message}</p>}
@@ -73,7 +73,7 @@ export function ContactForm() {
         <input
           id="company"
           {...register("company")}
-          className="mt-2 w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground outline-none focus:border-primary"
+          className="mt-2 w-full rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground outline-none transition-colors duration-200 focus:border-primary focus:ring-2 focus:ring-primary/20"
           placeholder="Your company"
         />
       </div>
@@ -86,7 +86,7 @@ export function ContactForm() {
           id="message"
           rows={5}
           {...register("message")}
-          className="mt-2 w-full resize-none rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground outline-none focus:border-primary"
+          className="mt-2 w-full resize-none rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground outline-none transition-colors duration-200 focus:border-primary focus:ring-2 focus:ring-primary/20"
           placeholder="Tell us what you're looking for..."
         />
         {errors.message && (
