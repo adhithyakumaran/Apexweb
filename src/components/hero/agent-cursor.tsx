@@ -46,14 +46,14 @@ export function AgentCursor() {
 
   return (
     <>
-      <div
+           <div
         ref={ringRef}
-        className="pointer-events-none fixed left-0 top-0 z-[60] size-10 rounded-full border border-white/70 shadow-[0_0_20px_rgba(255,255,255,0.15)] transition-[width,height] duration-200"
+        className="pointer-events-none fixed left-0 top-0 z-[60] size-10 rounded-full border border-foreground/70 shadow-[0_0_20px_rgba(0,0,0,0.1)] transition-[width,height] duration-200"
         aria-hidden="true"
       />
       <div
         ref={dotRef}
-        className="pointer-events-none fixed left-0 top-0 z-[60] size-1.5 rounded-full bg-white"
+        className="pointer-events-none fixed left-0 top-0 z-[60] size-1.5 rounded-full bg-foreground"
         aria-hidden="true"
       />
     </>
