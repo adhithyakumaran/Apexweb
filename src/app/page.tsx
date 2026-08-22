@@ -1,7 +1,10 @@
 import { Hero } from "@/components/hero/hero";
 import { TrustedPartners } from "@/components/sections/trusted-partners";
 import { Agents } from "@/components/sections/agents";
+import { Moat } from "@/components/sections/moat";
+import { Testimonials } from "@/components/sections/testimonials";
 import { ScrollReveal } from "@/components/animations/scroll-reveal";
+import { Contact } from "@/components/sections/contact";
 
 export default function Home() {
   return (
@@ -13,6 +16,15 @@ export default function Home() {
       <ScrollReveal>
         <Agents />
       </ScrollReveal>
+      <ScrollReveal>
+        <Moat />
+      </ScrollReveal>
+      <ScrollReveal>
+        <Testimonials />
+      </ScrollReveal>
+      <ScrollReveal>
+  <Contact />
+</ScrollReveal>
     </main>
   );
 }

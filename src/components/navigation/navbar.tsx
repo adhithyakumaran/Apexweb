@@ -8,7 +8,7 @@ import { Logo } from "@/components/navigation/logo";
 import { mainNav, tryItCta, whatsappCta } from "@/config/navigation";
 import { getWhatsAppLink } from "@/lib/utils/whatsapp";
 
-const dropdownItems = new Set(["Pricing", "What We Do"]);
+const dropdownItems = new Set(["Pricing", "Services"]);
 
 export function Navbar() {
   const whatsappHref = getWhatsAppLink();

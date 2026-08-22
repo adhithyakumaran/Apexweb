@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import { ThemeProvider } from "@/components/theme/theme-provider";
+import { Footer } from "@/components/layout/footer";
 
 import { Navbar } from "@/components/navigation/navbar";
 import "./globals.css";
@@ -36,6 +37,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         >
           <Navbar />
           {children}
+           <Footer />
         </ThemeProvider>
       </body>
     </html>

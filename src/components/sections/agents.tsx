@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Shield, Bug, Gauge, BarChart3, Compass } from "lucide-react";
+import { ArrowRight, Shield, Bug, Gauge, BarChart3, Compass } from "lucide-react";
 import { agents } from "@/config/agents";
 
 const icons = {
@@ -30,13 +30,15 @@ export function Agents() {
               <Link
                 key={agent.slug}
                 href={`/agents/${agent.slug}`}
-                className={`group flex h-80 flex-col justify-between border-2 border-foreground p-6 transition-transform duration-300 hover:-translate-y-1 ${agent.bg}`}
+                className={`group flex h-80 flex-col justify-between rounded-2xl border-2 border-foreground p-6 transition-transform duration-300 hover:-translate-y-1 ${agent.bg}`}
               >
                 <div className="flex items-start justify-between">
                   <p className={`text-xs font-semibold uppercase tracking-[0.15em] ${agent.accent} opacity-70`}>
                     {agent.role}
                   </p>
-                  <Icon className={`size-6 ${agent.accent} opacity-80 transition-transform duration-300 group-hover:scale-110`} />
+                  <Icon
+                    className={`size-6 ${agent.accent} opacity-80 transition-transform duration-300 group-hover:scale-110`}
+                  />
                 </div>
 
                 <div>
@@ -50,6 +52,25 @@ export function Agents() {
               </Link>
             );
           })}
+
+          {/* Explore all agents — CTA tile */}
+          <Link
+            href="/agents"
+            className="group relative flex h-80 flex-col justify-between overflow-hidden rounded-2xl border-2 border-foreground bg-primary p-6 text-primary-foreground transition-transform duration-300 hover:-translate-y-1"
+          >
+            <p className="text-xs font-semibold uppercase tracking-[0.15em] opacity-80">
+              Full Platform
+            </p>
+
+            <div className="flex items-end justify-between">
+              <h3 className="text-3xl font-normal tracking-tight">
+                Explore All Agents
+              </h3>
+              <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary-foreground/15 transition-transform duration-300 group-hover:translate-x-1">
+                <ArrowRight className="size-5" />
+              </span>
+            </div>
+          </Link>
         </div>
       </div>
     </section>

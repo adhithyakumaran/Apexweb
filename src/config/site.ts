@@ -8,8 +8,14 @@ export const siteConfig = {
   links: {
     // TODO: replace with real social/company links from client
   },
+  contact: {
+    // PLACEHOLDER — client has not yet provided a real company email/phone.
+    // Do not publish these as-is; swap before launch (handover Section 15).
+    email: "hello@example.com",
+    phone: "+91 00000 00000",
+  },
   whatsapp: {
-    number: "919965985951", // no + or spaces, required format for wa.me links
+    number: "919965985951",
     message:
       "Hi! I'm interested in learning more about Apex Node's QA automation platform.",
   },
