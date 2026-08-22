@@ -1,19 +1,24 @@
 import Link from "next/link";
+import { Plus_Jakarta_Sans } from "next/font/google";
+import { ChevronsRight } from "lucide-react";
 import { siteConfig } from "@/config/site";
+
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["700", "800"],
+});
 
 export function Logo() {
   return (
     <Link
       href="/"
-      className="flex items-center gap-2.5 transition-opacity hover:opacity-80"
+      className="inline-flex items-center gap-1.5 transition-opacity hover:opacity-80"
       aria-label={siteConfig.name}
     >
-      <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">
-        AN
+      <span className={`${jakarta.className} text-3xl font-extrabold tracking-tight leading-none`}>
+        ant
       </span>
-      <span className="hidden text-base font-semibold tracking-tight text-foreground sm:inline">
-        {siteConfig.shortName}
-      </span>
+      <ChevronsRight className="size-6 text-orange-500 stroke-[3] translate-y-[2px] shrink-0" />
     </Link>
   );
 }

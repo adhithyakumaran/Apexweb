@@ -11,11 +11,12 @@ export const mainNav: NavItem[] = [
   { label: "Contact", href: "/contact" },
 ];
 
-export const tryItCta: NavItem = {
-  label: "Try it",
-  href: "/book-demo",
-};
-
 export const whatsappCta = {
   label: "Let's Talk",
 };
+
+export const tryItCta: NavItem = {
+  label: "Try it Free",
+  href: "/book-demo",
+};
+

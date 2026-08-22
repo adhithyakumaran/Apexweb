@@ -8,14 +8,14 @@ import { Logo } from "@/components/navigation/logo";
 import { mainNav, tryItCta, whatsappCta } from "@/config/navigation";
 import { getWhatsAppLink } from "@/lib/utils/whatsapp";
 
-const dropdownItems = new Set(["Pricing", "Services"]);
+const dropdownItems = new Set(["Pricing", "What We Do"]);
 
 export function Navbar() {
   const whatsappHref = getWhatsAppLink();
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-md transition-colors duration-300">
-      <div className="mx-auto flex h-20 max-w-[1400px] items-center px-10 lg:px-20">
+    <header className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-md transition-colors duration-300">
+      <div className="mx-auto flex h-16 max-w-350 items-center px-4 lg:px-8">
         <div className="flex items-center gap-10">
           <Logo />
 
@@ -24,7 +24,7 @@ export function Navbar() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="group flex items-center gap-1 text-base font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground"
+                className="group flex items-center gap-1 text-base font-medium text-foreground/80 transition-colors duration-200 hover:text-foreground"
               >
                 {item.label}
                 {dropdownItems.has(item.label) && (
