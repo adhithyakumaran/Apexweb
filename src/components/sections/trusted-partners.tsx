@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { motion, useReducedMotion } from "motion/react";
+import { smoothEase } from "@/components/animations/motion-presets";
 
 const partners = [
   "Geetham Enterprises",
@@ -14,19 +16,17 @@ const marqueeItems = [...partners, ...partners];
 
 export function TrustedPartners() {
   const trackRef = useRef<HTMLDivElement>(null);
+  const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
     const track = trackRef.current;
     if (!track) return;
 
-    const prefersReducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
-    ).matches;
     if (prefersReducedMotion) return;
 
     let x = 0;
     let raf = 0;
-    const speed = 0.5; // px per frame
+    const speed = 0.5;
 
     function loop() {
       const halfWidth = track!.scrollWidth / 2;
@@ -40,18 +40,30 @@ export function TrustedPartners() {
 
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, []);
+  }, [prefersReducedMotion]);
 
   return (
-        <section className="w-full overflow-hidden pb-32 pt-24">
+    <section className="w-full overflow-hidden pb-32 pt-24">
       <div className="mx-auto max-w-350 px-4 text-center sm:px-6 lg:px-10">
-                        <p className="mx-auto max-w-2xl text-2xl font-normal leading-snug tracking-tight text-foreground sm:text-3xl sm:leading-snug lg:text-4xl lg:leading-normal">
+        <motion.p
+          className="mx-auto max-w-2xl text-2xl font-normal leading-snug tracking-tight text-foreground sm:text-3xl sm:leading-snug lg:text-4xl lg:leading-normal"
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 28 }}
+          whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.5 }}
+          transition={{ duration: 0.7, ease: smoothEase }}
+        >
           Built for modern, client-obsessed, <br className="hidden sm:block" />
           revenue-responsible delivery teams
-        </p>
+        </motion.p>
       </div>
 
-                  <div className="relative mt-20 w-full overflow-hidden pb-4">
+      <motion.div
+        className="relative mt-20 w-full overflow-hidden pb-4"
+        initial={prefersReducedMotion ? false : { opacity: 0 }}
+        whileInView={prefersReducedMotion ? undefined : { opacity: 1 }}
+        viewport={{ once: true, amount: 0.3 }}
+        transition={{ duration: 0.8, delay: 0.15, ease: smoothEase }}
+      >
         <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-linear-to-r from-background to-transparent" />
         <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-linear-to-l from-background to-transparent" />
 
@@ -65,7 +77,7 @@ export function TrustedPartners() {
             </span>
           ))}
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }

@@ -25,6 +25,11 @@
   --accent: #dbeafe;
   --accent-foreground: #1e3a8a;
 
+  /* Brand accent */
+  --brand-orange: #f97316;
+  --brand-orange-light: #fff7ed;
+  --brand-orange-foreground: #9a3412;
+
   /* Feedback */
   --success: #16a34a;
   --warning: #d97706;
@@ -58,6 +63,10 @@
   --accent: #1e3a8a;
   --accent-foreground: #dbeafe;
 
+  --brand-orange: #fb923c;
+  --brand-orange-light: #1c1410;
+  --brand-orange-foreground: #fdba74;
+
   --success: #22c55e;
   --warning: #f59e0b;
   --error: #ef4444;
@@ -87,6 +96,10 @@
   --color-border: var(--border);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+
+  --color-brand-orange: var(--brand-orange);
+  --color-brand-orange-light: var(--brand-orange-light);
+  --color-brand-orange-foreground: var(--brand-orange-foreground);
 
   --color-success: var(--success);
   --color-warning: var(--warning);
@@ -124,5 +137,32 @@ body {
   }
   html {
     @apply font-sans;
+    scroll-behavior: smooth;
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+}
+
+@keyframes heartbeat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.18);
+  }
+  50% {
+    transform: scale(1);
+  }
+  75% {
+    transform: scale(1.12);
+  }
+}
+
+@utility animate-heartbeat {
+  animation: heartbeat 1.4s ease-in-out infinite;
 }

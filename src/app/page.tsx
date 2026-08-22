@@ -8,23 +8,19 @@ import { Contact } from "@/components/sections/contact";
 
 export default function Home() {
   return (
-    <main>
+    <main className="overflow-x-hidden">
       <Hero />
-      <ScrollReveal>
+      <ScrollReveal delay={0.05}>
         <TrustedPartners />
       </ScrollReveal>
-      <ScrollReveal>
+      <ScrollReveal delay={0.08}>
         <Agents />
       </ScrollReveal>
-      <ScrollReveal>
-        <Moat />
-      </ScrollReveal>
-      <ScrollReveal>
+      <Moat />
+      <ScrollReveal delay={0.06}>
         <Testimonials />
       </ScrollReveal>
-      <ScrollReveal>
-  <Contact />
-</ScrollReveal>
+      <Contact />
     </main>
   );
 }

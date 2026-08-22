@@ -1,21 +1,99 @@
 "use client";
 
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import type { ReactNode } from "react";
+import {
+  defaultTransition,
+  defaultViewport,
+  fadeUp,
+  smoothEase,
+} from "@/components/animations/motion-presets";
+
+type ScrollRevealProps = {
+  children: ReactNode;
+  delay?: number;
+  className?: string;
+  y?: number;
+};
 
 export function ScrollReveal({
   children,
   delay = 0,
-}: {
-  children: ReactNode;
-  delay?: number;
-}) {
+  className,
+  y = 28,
+}: ScrollRevealProps) {
+  const prefersReducedMotion = useReducedMotion();
+
+  if (prefersReducedMotion) {
+    return <div className={className}>{children}</div>;
+  }
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 32 }}
+      className={className}
+      initial={{ opacity: 0, y }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.2 }}
-      transition={{ duration: 0.6, ease: "easeOut", delay }}
+      viewport={defaultViewport}
+      transition={{ ...defaultTransition, delay, ease: smoothEase }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+type StaggerRevealProps = {
+  children: ReactNode;
+  className?: string;
+  stagger?: number;
+};
+
+export function StaggerReveal({
+  children,
+  className,
+  stagger = 0.1,
+}: StaggerRevealProps) {
+  const prefersReducedMotion = useReducedMotion();
+
+  if (prefersReducedMotion) {
+    return <div className={className}>{children}</div>;
+  }
+
+  return (
+    <motion.div
+      className={className}
+      initial="hidden"
+      whileInView="visible"
+      viewport={defaultViewport}
+      variants={{
+        hidden: {},
+        visible: {
+          transition: { staggerChildren: stagger, delayChildren: 0.08 },
+        },
+      }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+export function StaggerItem({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  const prefersReducedMotion = useReducedMotion();
+
+  if (prefersReducedMotion) {
+    return <div className={className}>{children}</div>;
+  }
+
+  return (
+    <motion.div
+      className={className}
+      variants={fadeUp}
+      transition={defaultTransition}
     >
       {children}
     </motion.div>

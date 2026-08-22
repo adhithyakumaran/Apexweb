@@ -1,70 +1,102 @@
+"use client";
+
 import Link from "next/link";
-import { Mail, Phone, MessageCircle } from "lucide-react";
+import { motion, useReducedMotion } from "motion/react";
+import { Heart, Mail, Phone, MessageCircle } from "lucide-react";
+import { Logo } from "@/components/navigation/logo";
 import { siteConfig } from "@/config/site";
 import { mainNav } from "@/config/navigation";
 import { agents } from "@/config/agents";
 import { getWhatsAppLink } from "@/lib/utils/whatsapp";
+import {
+  defaultTransition,
+  defaultViewport,
+  fadeUp,
+  smoothEase,
+} from "@/components/animations/motion-presets";
 
-// TODO: legal pages not built yet — links are placeholders until /privacy
-// and /terms exist (not in the current roadmap's Phase 6 list, add them)
 const legalLinks = [
   { label: "Privacy Policy", href: "/privacy" },
   { label: "Terms of Service", href: "/terms" },
 ];
 
+const contactLinks = [
+  {
+    label: siteConfig.contact.email,
+    href: `mailto:${siteConfig.contact.email}`,
+    icon: Mail,
+  },
+  {
+    label: siteConfig.contact.phone,
+    href: `tel:${siteConfig.contact.phone.replace(/\s+/g, "")}`,
+    icon: Phone,
+  },
+  {
+    label: "Chat on WhatsApp",
+    href: getWhatsAppLink(),
+    icon: MessageCircle,
+    external: true,
+  },
+];
+
 export function Footer() {
   const year = new Date().getFullYear();
+  const prefersReducedMotion = useReducedMotion();
+
+  const container = prefersReducedMotion
+    ? undefined
+    : {
+        hidden: {},
+        visible: {
+          transition: { staggerChildren: 0.08, delayChildren: 0.05 },
+        },
+      };
+
+  const item = prefersReducedMotion ? undefined : fadeUp;
 
   return (
-    <footer className="dark relative w-full overflow-hidden bg-black">
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black via-[#050810] to-black" />
+    <footer className="dark relative w-full overflow-hidden bg-secondary text-secondary-foreground">
+      <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-secondary via-[#070b14] to-black" />
+      <div className="pointer-events-none absolute -left-32 top-0 size-96 rounded-full bg-primary/10 blur-[120px]" />
+      <div className="pointer-events-none absolute -right-32 bottom-0 size-80 rounded-full bg-brand-orange/10 blur-[100px]" />
 
       <div className="relative mx-auto max-w-350 px-6 py-20 lg:px-10">
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
-          <div>
-            <Link href="/" className="flex items-center gap-2.5">
-              <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">
-                AN
-              </span>
-              <span className="text-base font-semibold tracking-tight text-white">
-                {siteConfig.shortName}
-              </span>
-            </Link>
-            <p className="mt-4 max-w-xs text-sm leading-relaxed text-slate-400">
+        <motion.div
+          className="grid grid-cols-1 gap-12 lg:grid-cols-[1.5fr_1fr_1fr_1fr]"
+          initial={prefersReducedMotion ? false : "hidden"}
+          whileInView={prefersReducedMotion ? undefined : "visible"}
+          viewport={defaultViewport}
+          variants={container}
+        >
+          <motion.div variants={item} transition={defaultTransition}>
+            <Logo variant="light" className="group" />
+            <p className="mt-5 max-w-sm text-sm leading-relaxed text-slate-400">
               {siteConfig.description}
             </p>
 
             <div className="mt-6 flex flex-col gap-3">
-              <a
-                href={`mailto:${siteConfig.contact.email}`}
-                className="flex items-center gap-2 text-sm text-slate-400 transition-colors hover:text-white"
-              >
-                <Mail className="size-4" />
-                {siteConfig.contact.email}
-              </a>
-
-              <a
-                href={`tel:${siteConfig.contact.phone.replace(/\s+/g, "")}`}
-                className="flex items-center gap-2 text-sm text-slate-400 transition-colors hover:text-white"
-              >
-                <Phone className="size-4" />
-                {siteConfig.contact.phone}
-              </a>
-
-              <a
-                href={getWhatsAppLink()}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-slate-400 transition-colors hover:text-white"
-              >
-                <MessageCircle className="size-4" />
-                Chat on WhatsApp
-              </a>
+              {contactLinks.map((link) => {
+                const Icon = link.icon;
+                return (
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    target={link.external ? "_blank" : undefined}
+                    rel={link.external ? "noopener noreferrer" : undefined}
+                    className="group/link flex items-center gap-2.5 text-sm text-slate-400 transition-colors duration-300 hover:text-white"
+                  >
+                    <span className="flex size-8 items-center justify-center rounded-full border border-white/10 bg-white/5 transition-colors duration-300 group-hover/link:border-brand-orange/40 group-hover/link:bg-brand-orange/10">
+                      <Icon className="size-3.5" />
+                    </span>
+                    {link.label}
+                  </a>
+                );
+              })}
             </div>
-          </div>
+          </motion.div>
 
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
+          <motion.div variants={item} transition={defaultTransition}>
+            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-brand-orange">
               Platform
             </p>
             <ul className="mt-5 flex flex-col gap-3">
@@ -72,17 +104,17 @@ export function Footer() {
                 <li key={agent.slug}>
                   <Link
                     href={`/agents/${agent.slug}`}
-                    className="text-sm text-slate-400 transition-colors hover:text-white"
+                    className="text-sm text-slate-400 transition-all duration-300 hover:translate-x-1 hover:text-white"
                   >
                     {agent.codename}
                   </Link>
                 </li>
               ))}
             </ul>
-          </div>
+          </motion.div>
 
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
+          <motion.div variants={item} transition={defaultTransition}>
+            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-brand-orange">
               Company
             </p>
             <ul className="mt-5 flex flex-col gap-3">
@@ -90,17 +122,17 @@ export function Footer() {
                 <li key={item.href}>
                   <Link
                     href={item.href}
-                    className="text-sm text-slate-400 transition-colors hover:text-white"
+                    className="text-sm text-slate-400 transition-all duration-300 hover:translate-x-1 hover:text-white"
                   >
                     {item.label}
                   </Link>
                 </li>
               ))}
             </ul>
-          </div>
+          </motion.div>
 
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
+          <motion.div variants={item} transition={defaultTransition}>
+            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-brand-orange">
               Legal
             </p>
             <ul className="mt-5 flex flex-col gap-3">
@@ -108,23 +140,36 @@ export function Footer() {
                 <li key={item.href}>
                   <Link
                     href={item.href}
-                    className="text-sm text-slate-400 transition-colors hover:text-white"
+                    className="text-sm text-slate-400 transition-all duration-300 hover:translate-x-1 hover:text-white"
                   >
                     {item.label}
                   </Link>
                 </li>
               ))}
             </ul>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
-        <div className="mt-16 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-8 sm:flex-row">
+        <motion.div
+          className="mt-16 flex flex-col items-center justify-between gap-5 border-t border-white/10 pt-8 sm:flex-row"
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 16 }}
+          whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+          viewport={defaultViewport}
+          transition={{ duration: 0.6, ease: smoothEase, delay: 0.15 }}
+        >
           <p className="text-xs text-slate-500">
             © {year} {siteConfig.name}. All rights reserved.
           </p>
-          {/* TODO: social links — client has not provided any yet (handover Section 15) */}
-          <p className="text-xs text-slate-500">Built for enterprise QA teams.</p>
-        </div>
+
+          <p className="flex items-center gap-1.5 text-xs text-slate-400">
+            Made with
+            <Heart
+              className="size-3.5 fill-brand-orange text-brand-orange animate-heartbeat"
+              aria-hidden
+            />
+            in India
+          </p>
+        </motion.div>
       </div>
     </footer>
   );
