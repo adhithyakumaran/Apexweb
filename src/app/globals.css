@@ -100,8 +100,8 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  --font-sans: var(--font-inter);
-  --font-heading: var(--font-inter);
+ --font-sans: var(--font-jakarta);
+--font-heading: var(--font-jakarta);
 
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
