@@ -1,4 +1,5 @@
 import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   return (
@@ -13,9 +14,10 @@ export default function Home() {
         Design tokens, Inter font, and light/dark theming are wired up.
         Homepage build starts in Phase 5.
       </p>
-      <button className="rounded-full bg-primary px-6 py-3 text-primary-foreground font-medium">
-        Primary Button Preview
-      </button>
+      <div className="flex gap-4">
+  <Button size="lg">Book a Demo</Button>
+  <Button variant="outline" size="lg">Free Trial</Button>
+</div>
     </main>
   );
 }
