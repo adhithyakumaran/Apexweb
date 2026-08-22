@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -27,6 +29,16 @@
   --success: #16a34a;
   --warning: #d97706;
   --error: #dc2626;
+
+  /* shadcn component tokens (card, popover, forms) */
+  --card: #ffffff;
+  --card-foreground: #0a0e17;
+  --popover: #ffffff;
+  --popover-foreground: #0a0e17;
+  --destructive: #dc2626;
+  --input: #e2e8f0;
+  --ring: #2563eb;
+  --radius: 0.625rem;
 }
 
 .dark {
@@ -49,6 +61,14 @@
   --success: #22c55e;
   --warning: #f59e0b;
   --error: #ef4444;
+
+  --card: #0f172a;
+  --card-foreground: #f1f5f9;
+  --popover: #0f172a;
+  --popover-foreground: #f1f5f9;
+  --destructive: #ef4444;
+  --input: #1e293b;
+  --ring: #3b82f6;
 }
 
 @theme inline {
@@ -72,12 +92,37 @@
   --color-warning: var(--warning);
   --color-error: var(--error);
 
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-destructive: var(--destructive);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
   --font-sans: var(--font-inter);
+  --font-heading: var(--font-inter);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
   transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
 }

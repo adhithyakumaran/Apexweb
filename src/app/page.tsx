@@ -13,6 +13,9 @@ export default function Home() {
         Design tokens, Inter font, and light/dark theming are wired up.
         Homepage build starts in Phase 5.
       </p>
+      <button className="rounded-full bg-primary px-6 py-3 text-primary-foreground font-medium">
+        Primary Button Preview
+      </button>
     </main>
   );
 }

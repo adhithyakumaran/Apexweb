@@ -1,4 +1,3 @@
-// Site-wide configuration
 export const siteConfig = {
   name: "Apex QA",
   description:
