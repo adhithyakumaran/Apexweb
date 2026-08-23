@@ -125,18 +125,18 @@ export function ChatWidget() {
               </button>
             </div>
 
-            <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
+            <div ref={scrollRef} className="flex min-h-0 flex-1 flex-col space-y-3 overflow-x-hidden overflow-y-auto px-4 py-4">
               {messages.map((msg, i) => (
                 <div
                   key={`${msg.role}-${i}`}
                   className={cn(
-                    "max-w-[90%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed",
+                    "min-w-0 max-w-[90%] shrink-0 rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed",
                     msg.role === "user"
                       ? "ml-auto bg-white text-black"
                       : "bg-neutral-900 text-neutral-100"
                   )}
                 >
-                  <p className="whitespace-pre-wrap">{msg.content}</p>
+                  <p className="whitespace-pre-wrap break-words [overflow-wrap:anywhere]">{msg.content}</p>
                   {msg.needsHuman && (
                     <div className="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-100">
                       <p className="font-medium">A human specialist can help</p>
@@ -155,7 +155,7 @@ export function ChatWidget() {
                 </div>
               ))}
               {loading && (
-                <div className="max-w-[80%] rounded-2xl bg-neutral-900 px-3.5 py-2.5 text-sm text-neutral-400">
+                <div className="min-w-0 max-w-[80%] shrink-0 rounded-2xl bg-neutral-900 px-3.5 py-2.5 text-sm text-neutral-400">
                   Thinking…
                 </div>
               )}
