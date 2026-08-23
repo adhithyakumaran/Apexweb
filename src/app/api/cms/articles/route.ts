@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireCmsAuth } from "@/lib/cms/api-auth";
+import { revalidateArticlePaths } from "@/lib/cms/revalidate";
 import {
   createCmsArticle,
   listCmsArticles,
@@ -26,6 +27,7 @@ export async function POST(request: Request) {
 
   try {
     const article = await createCmsArticle(body);
+    revalidateArticlePaths(body.slug);
     return NextResponse.json({ article }, { status: 201 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to create article";

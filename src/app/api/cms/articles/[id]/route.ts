@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireCmsAuth } from "@/lib/cms/api-auth";
+import { revalidateArticlePaths } from "@/lib/cms/revalidate";
 import {
   deleteCmsArticle,
   getCmsArticleById,
@@ -44,6 +45,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     if (!article) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
+    revalidateArticlePaths(article.slug);
     return NextResponse.json({ article });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to update article";
@@ -61,10 +63,16 @@ export async function DELETE(_request: Request, context: RouteContext) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 });
   }
 
+  const existing = await getCmsArticleById(articleId);
+  if (!existing) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
   const deleted = await deleteCmsArticle(articleId);
   if (!deleted) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
+  revalidateArticlePaths(existing.slug);
   return NextResponse.json({ ok: true });
 }

@@ -4,6 +4,7 @@ import { eq, desc } from "drizzle-orm";
 import type { Article, ArticleContent } from "@/config/articles";
 import { articles as seedArticles } from "@/config/articles";
 import { getDb, isDatabaseConfigured } from "@/lib/db";
+import { canUseLocalFileStore } from "@/lib/cms/storage";
 import { cmsArticles, type CmsArticleRow, type NewCmsArticleRow } from "@/lib/db/schema";
 import type { CmsTemplateId } from "@/lib/cms/templates";
 
@@ -54,17 +55,26 @@ function rowToArticle(row: CmsArticleRow | FileStoreArticle): Article {
 }
 
 async function readFileStore(): Promise<FileStoreArticle[]> {
+  if (!canUseLocalFileStore()) return [];
+
   try {
     const raw = await fs.readFile(storePath, "utf8");
     return JSON.parse(raw) as FileStoreArticle[];
   } catch {
-    await fs.mkdir(path.dirname(storePath), { recursive: true });
-    await fs.writeFile(storePath, "[]");
+    try {
+      await fs.mkdir(path.dirname(storePath), { recursive: true });
+      await fs.writeFile(storePath, "[]");
+    } catch {
+      return [];
+    }
     return [];
   }
 }
 
 async function writeFileStore(items: FileStoreArticle[]) {
+  if (!canUseLocalFileStore()) {
+    throw new Error("File storage is not available on Vercel. Set DATABASE_URI to use Neon.");
+  }
   await fs.mkdir(path.dirname(storePath), { recursive: true });
   await fs.writeFile(storePath, JSON.stringify(items, null, 2));
 }
@@ -146,6 +156,10 @@ export async function listCmsArticles(includeDrafts = false) {
     return queryCmsArticlesFromDb(includeDrafts);
   }
 
+  if (!canUseLocalFileStore()) {
+    return [];
+  }
+
   const items = await seedFileStoreIfEmpty();
   return includeDrafts ? items : items.filter((item) => item.status === "published");
 }
@@ -178,8 +192,11 @@ export async function getCmsArticleById(id: number) {
     }
   }
 
+  if (!canUseLocalFileStore()) {
+    return null;
+  }
+
   const items = await seedFileStoreIfEmpty();
-  return items.find((item) => item.id === id) ?? null;
 }
 
 export async function createCmsArticle(input: ArticleInput) {
@@ -195,6 +212,10 @@ export async function createCmsArticle(input: ArticleInput) {
     };
     const [row] = await db.insert(cmsArticles).values(payload).returning();
     return row;
+  }
+
+  if (!canUseLocalFileStore()) {
+    throw new Error("Database is required in production. Set DATABASE_URI in Vercel environment variables.");
   }
 
   const items = await seedFileStoreIfEmpty();
@@ -219,6 +240,10 @@ export async function updateCmsArticle(id: number, input: Partial<ArticleInput>)
     return row ?? null;
   }
 
+  if (!canUseLocalFileStore()) {
+    throw new Error("Database is required in production. Set DATABASE_URI in Vercel environment variables.");
+  }
+
   const items = await seedFileStoreIfEmpty();
   const index = items.findIndex((item) => item.id === id);
   if (index === -1) return null;
@@ -233,6 +258,10 @@ export async function deleteCmsArticle(id: number) {
     if (!db) throw new Error("Database unavailable");
     await db.delete(cmsArticles).where(eq(cmsArticles.id, id));
     return true;
+  }
+
+  if (!canUseLocalFileStore()) {
+    throw new Error("Database is required in production. Set DATABASE_URI in Vercel environment variables.");
   }
 
   const items = await seedFileStoreIfEmpty();

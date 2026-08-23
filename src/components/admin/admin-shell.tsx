@@ -36,16 +36,16 @@ export function AdminShell({ children, title, description, actions }: AdminShell
   }
 
   return (
-    <div className="min-h-screen bg-[#f4f6f9] text-foreground dark:bg-[#0b0f14]">
+    <div className="min-h-screen bg-neutral-50 text-foreground">
       <div className="mx-auto flex min-h-screen max-w-[1440px]">
-        <aside className="hidden w-64 shrink-0 flex-col border-r border-border/70 bg-card lg:flex">
-          <div className="border-b border-border/70 px-5 py-6">
+        <aside className="hidden w-64 shrink-0 flex-col border-r border-neutral-200 bg-white lg:flex">
+          <div className="border-b border-neutral-200 px-5 py-6">
             <Link href="/admin" className="block">
               <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-brand-orange">
                 Apex Node
               </p>
-              <p className="mt-1 text-lg font-semibold">Content Studio</p>
-              <p className="mt-1 text-xs text-muted-foreground">Private CMS · Not indexed</p>
+              <p className="mt-1 text-lg font-semibold text-black">Content Studio</p>
+              <p className="mt-1 text-xs text-neutral-500">Private CMS</p>
             </Link>
           </div>
 
@@ -94,7 +94,7 @@ export function AdminShell({ children, title, description, actions }: AdminShell
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="sticky top-0 z-20 border-b border-border/70 bg-card/90 px-4 py-4 backdrop-blur-md sm:px-6 lg:px-8">
+          <header className="sticky top-0 z-20 border-b border-neutral-200 bg-white/90 px-4 py-4 backdrop-blur-md sm:px-6 lg:px-8">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 {title && <h1 className="text-xl font-semibold tracking-tight">{title}</h1>}

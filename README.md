@@ -49,7 +49,15 @@ The CMS is **not public** — `/admin` is protected by middleware, excluded from
   - Case study (metrics)
   - Insight brief (takeaways)
 
-Uploaded files are stored in `public/uploads/cms/`.
+Uploaded files are stored in **Vercel Blob** on production (or `public/uploads/cms/` locally).
+
+### Vercel Blob (required for image uploads on Vercel)
+
+1. In your Vercel project → **Storage** → **Create Database** → choose **Blob**
+2. Connect it to your project — Vercel auto-adds `BLOB_READ_WRITE_TOKEN`
+3. Redeploy
+
+Without Blob, article text still saves to Neon, but image/file uploads will fail on Vercel.
 
 ## Scripts
 
