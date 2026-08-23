@@ -12,10 +12,7 @@ export default async function AdminAnalyticsPage() {
   const data = await getVisitorAnalytics();
 
   return (
-    <AdminShell
-      title="Website analytics"
-      description="Visitor behavior, traffic sources, engagement, and real-user performance from PostHog."
-    >
+    <AdminShell title="Analytics">
       <VisitorAnalyticsDashboard data={data} />
     </AdminShell>
   );

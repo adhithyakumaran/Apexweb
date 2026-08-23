@@ -11,7 +11,7 @@ export function AdminPanel({
   className?: string;
 }) {
   return (
-    <section className={cn("overflow-hidden rounded-xl border border-white/[0.06] bg-[#2C2D33]", className)}>
+    <section className={cn("overflow-hidden rounded-md border border-[#333] bg-black", className)}>
       {children}
     </section>
   );
@@ -31,13 +31,13 @@ export function AdminPanelHeader({
   return (
     <div
       className={cn(
-        "flex flex-wrap items-start justify-between gap-3 border-b border-white/[0.06] px-5 py-4 sm:px-6",
+        "flex flex-wrap items-center justify-between gap-3 border-b border-[#333] px-4 py-3",
         className
       )}
     >
       <div>
-        <h2 className="text-sm font-semibold tracking-tight text-white">{title}</h2>
-        {description && <p className="mt-1 text-sm text-[#9CA3AF]">{description}</p>}
+        <h2 className="text-[13px] font-medium text-[#ededed]">{title}</h2>
+        {description && <p className="mt-0.5 text-[13px] text-[#666]">{description}</p>}
       </div>
       {action}
     </div>
@@ -51,57 +51,29 @@ export function AdminPanelBody({
   children: React.ReactNode;
   className?: string;
 }) {
-  return <div className={cn("p-5 sm:p-6", className)}>{children}</div>;
+  return <div className={cn("p-4", className)}>{children}</div>;
 }
 
 export function AdminStatCard({
   label,
   value,
   hint,
-  icon: Icon,
-  delta,
   className,
 }: {
   label: string;
   value: number | string;
   hint?: string;
-  icon: LucideIcon;
+  icon?: LucideIcon;
   delta?: { value: string; positive?: boolean };
   className?: string;
 }) {
   return (
-    <div
-      className={cn(
-        "rounded-xl border border-white/[0.06] bg-[#2C2D33] p-5",
-        className
-      )}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#9CA3AF]">
-            {label}
-          </p>
-          <p className="mt-2 text-3xl font-semibold tabular-nums tracking-tight text-white">
-            {value}
-          </p>
-          {hint && <p className="mt-1 text-xs text-[#9CA3AF]">{hint}</p>}
-          {delta && (
-            <span
-              className={cn(
-                "mt-2 inline-flex rounded-full px-2 py-0.5 text-[0.65rem] font-semibold",
-                delta.positive
-                  ? "bg-emerald-500/15 text-emerald-400"
-                  : "bg-red-500/15 text-red-400"
-              )}
-            >
-              {delta.value}
-            </span>
-          )}
-        </div>
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-white/[0.08] bg-[#1e1f24] text-[#9CA3AF]">
-          <Icon className="size-4" />
-        </span>
-      </div>
+    <div className={cn("rounded-md border border-[#333] bg-black px-4 py-3", className)}>
+      <p className="text-[11px] font-medium uppercase tracking-wide text-[#666]">{label}</p>
+      <p className="mt-1 text-2xl font-medium tabular-nums tracking-tight text-[#ededed]">
+        {value}
+      </p>
+      {hint && <p className="mt-0.5 text-[12px] text-[#666]">{hint}</p>}
     </div>
   );
 }
@@ -116,7 +88,7 @@ export function AdminStatusStrip({
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center gap-2 rounded-xl border border-white/[0.06] bg-[#2C2D33] px-4 py-3",
+        "flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-[#333] pb-4 text-[13px]",
         className
       )}
     >
@@ -125,32 +97,43 @@ export function AdminStatusStrip({
   );
 }
 
+type StatusTone = "success" | "warning" | "danger" | "neutral" | "info";
+
+const statusDotColors: Record<StatusTone, string> = {
+  success: "bg-[#50e3c2]",
+  warning: "bg-[#f5a623]",
+  danger: "bg-[#e00]",
+  info: "bg-[#0070f3]",
+  neutral: "bg-[#666]",
+};
+
+/** Vercel-style status: dot + plain text. No pill backgrounds. */
+export function AdminStatusDot({
+  tone = "neutral",
+  children,
+  className,
+}: {
+  tone?: StatusTone;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <span className={cn("inline-flex items-center gap-2 text-[13px] text-[#ededed]", className)}>
+      <span className={cn("size-2 shrink-0 rounded-full", statusDotColors[tone])} />
+      <span className="capitalize">{children}</span>
+    </span>
+  );
+}
+
+/** @deprecated Use AdminStatusDot for status display. Kept for compatibility. */
 export function AdminStatusPill({
   tone = "neutral",
   children,
 }: {
-  tone?: "success" | "warning" | "danger" | "neutral" | "info";
+  tone?: StatusTone;
   children: React.ReactNode;
 }) {
-  const tones = {
-    success: "border-emerald-500/25 bg-emerald-500/10 text-emerald-400",
-    warning: "border-amber-500/25 bg-amber-500/10 text-amber-400",
-    danger: "border-red-500/25 bg-red-500/10 text-red-400",
-    info: "border-[#3B82F6]/25 bg-[#3B82F6]/10 text-blue-400",
-    neutral: "border-white/[0.08] bg-[#1e1f24] text-[#9CA3AF]",
-  };
-
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.12em]",
-        tones[tone]
-      )}
-    >
-      <span className="size-1.5 rounded-full bg-current opacity-70" />
-      {children}
-    </span>
-  );
+  return <AdminStatusDot tone={tone}>{children}</AdminStatusDot>;
 }
 
 export function AdminEmptyState({
@@ -163,13 +146,11 @@ export function AdminEmptyState({
   action?: React.ReactNode;
 }) {
   return (
-    <AdminPanel>
-      <AdminPanelBody className="px-6 py-16 text-center">
-        <p className="text-sm font-semibold text-white">{title}</p>
-        <p className="mx-auto mt-2 max-w-sm text-sm text-[#9CA3AF]">{description}</p>
-        {action && <div className="mt-5">{action}</div>}
-      </AdminPanelBody>
-    </AdminPanel>
+    <div className="rounded-md border border-[#333] bg-black px-6 py-16 text-center">
+      <p className="text-[13px] font-medium text-[#ededed]">{title}</p>
+      <p className="mx-auto mt-2 max-w-sm text-[13px] text-[#666]">{description}</p>
+      {action && <div className="mt-5">{action}</div>}
+    </div>
   );
 }
 
@@ -203,6 +184,36 @@ export function AdminPrimaryButton({
   );
 }
 
+export function AdminSecondaryButton({
+  href,
+  onClick,
+  children,
+  className,
+  type = "button",
+}: {
+  href?: string;
+  onClick?: () => void;
+  children: React.ReactNode;
+  className?: string;
+  type?: "button" | "submit";
+}) {
+  const classes = cn(adminClasses.secondaryBtn, className);
+
+  if (href) {
+    return (
+      <Link href={href} className={classes}>
+        {children}
+      </Link>
+    );
+  }
+
+  return (
+    <button type={type} onClick={onClick} className={classes}>
+      {children}
+    </button>
+  );
+}
+
 export function AdminSectionHeading({
   title,
   description,
@@ -212,8 +223,8 @@ export function AdminSectionHeading({
 }) {
   return (
     <div>
-      <h2 className="text-base font-semibold text-white">{title}</h2>
-      {description && <p className="mt-1 text-sm text-[#9CA3AF]">{description}</p>}
+      <h2 className="text-[15px] font-medium text-[#ededed]">{title}</h2>
+      {description && <p className="mt-0.5 text-[13px] text-[#666]">{description}</p>}
     </div>
   );
 }
@@ -231,7 +242,7 @@ export function AdminLink({
     <Link
       href={href}
       className={cn(
-        "text-sm font-medium text-[#9CA3AF] transition-colors hover:text-[#3B82F6]",
+        "text-[13px] text-[#a1a1a1] underline-offset-4 transition-colors hover:text-white hover:underline",
         className
       )}
     >
@@ -248,12 +259,49 @@ export function AdminAlert({
   tone?: "warning" | "danger" | "info";
 }) {
   const tones = {
-    warning: "border-amber-500/25 bg-amber-500/10 text-amber-200",
-    danger: "border-red-500/25 bg-red-500/10 text-red-200",
-    info: "border-[#3B82F6]/25 bg-[#3B82F6]/10 text-blue-200",
+    warning: "border-[#f5a623]/30 text-[#f5a623]",
+    danger: "border-[#e00]/30 text-[#ff6666]",
+    info: "border-[#0070f3]/30 text-[#3291ff]",
   };
 
   return (
-    <div className={cn("rounded-xl border px-4 py-3 text-sm", tones[tone])}>{children}</div>
+    <div className={cn("rounded-md border bg-black px-4 py-3 text-[13px]", tones[tone])}>
+      {children}
+    </div>
+  );
+}
+
+export function AdminFilterBar({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex flex-wrap items-center gap-2 border-b border-[#333] pb-4">{children}</div>
+  );
+}
+
+export function AdminFilterSelect({
+  label,
+  value,
+  onChange,
+  options,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  options: { value: string; label: string }[];
+}) {
+  return (
+    <label className="inline-flex items-center gap-2">
+      <span className="sr-only">{label}</span>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="h-8 cursor-pointer appearance-none rounded border border-[#333] bg-black px-2.5 pr-7 text-[13px] text-[#ededed] outline-none transition-colors hover:border-[#666] focus:border-[#666]"
+      >
+        {options.map((opt) => (
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
+          </option>
+        ))}
+      </select>
+    </label>
   );
 }

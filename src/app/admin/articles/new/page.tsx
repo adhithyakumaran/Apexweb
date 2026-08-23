@@ -12,10 +12,7 @@ export const dynamic = "force-dynamic";
 
 export default function NewArticlePage() {
   return (
-    <AdminShell
-      title="New article"
-      description="Pick a template, fill in content, and publish when ready."
-    >
+    <AdminShell title="New article">
       <ArticleEditor mode="create" initial={createEmptyArticleForm()} />
     </AdminShell>
   );

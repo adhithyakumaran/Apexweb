@@ -23,7 +23,7 @@ export default async function EditArticlePage({ params }: EditArticlePageProps) 
   if (!article) notFound();
 
   return (
-    <AdminShell title="Edit article" description={`Editing “${article.title}”`}>
+    <AdminShell title={`Edit · ${article.title}`}>
       <ArticleEditor mode="edit" initial={articleRowToForm(article)} />
     </AdminShell>
   );

@@ -3,14 +3,12 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ExternalLink, Pencil, Send, Trash2 } from "lucide-react";
+import { ExternalLink, GitBranch, Pencil, Trash2 } from "lucide-react";
 import {
   AdminEmptyState,
-  AdminPanel,
-  AdminPanelBody,
-  AdminPanelHeader,
   AdminPrimaryButton,
-  AdminStatusPill,
+  AdminSecondaryButton,
+  AdminStatusDot,
 } from "@/components/admin/admin-ui";
 import { getCmsTemplate, type CmsTemplateId } from "@/lib/cms/templates";
 import { cn } from "@/lib/utils";
@@ -29,6 +27,20 @@ type ArticlesTableProps = {
   articles: ArticleRow[];
   compact?: boolean;
 };
+
+function relativeTime(dateStr: string) {
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  if (diffMins < 1) return "just now";
+  if (diffMins < 60) return `${diffMins}m ago`;
+  const diffHours = Math.floor(diffMins / 60);
+  if (diffHours < 24) return `${diffHours}h ago`;
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays < 30) return `${diffDays}d ago`;
+  return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
 
 export function ArticlesTable({ articles, compact = false }: ArticlesTableProps) {
   const router = useRouter();
@@ -102,8 +114,8 @@ export function ArticlesTable({ articles, compact = false }: ArticlesTableProps)
   if (rows.length === 0) {
     return (
       <AdminEmptyState
-        title="No articles yet"
-        description="Create your first article with one of five professional templates."
+        title="No articles"
+        description="Create your first article to get started."
         action={<AdminPrimaryButton href="/admin/articles/new">Create article</AdminPrimaryButton>}
       />
     );
@@ -112,108 +124,113 @@ export function ArticlesTable({ articles, compact = false }: ArticlesTableProps)
   return (
     <div className="space-y-3">
       {error && (
-        <p className="rounded-lg border border-red-500/25 bg-red-500/10 px-3 py-2 text-sm text-red-300">
+        <p className="rounded-md border border-[#e00]/30 px-3 py-2 text-[13px] text-[#ff6666]">
           {error}
         </p>
       )}
 
-      <AdminPanel>
-        {!compact && (
-          <AdminPanelHeader
-            title="All articles"
-            description="Drafts stay private until you publish them to the live site."
-          />
-        )}
-        <AdminPanelBody className={cn("p-0", compact && "p-0")}>
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[760px] text-left text-sm">
-              <thead className="border-b border-white/[0.06] bg-[#25262c] text-[0.68rem] uppercase tracking-[0.14em] text-[#9CA3AF]">
-                <tr>
-                  <th className="px-5 py-3 font-semibold">Article</th>
-                  <th className="px-4 py-3 font-semibold">Template</th>
-                  <th className="px-4 py-3 font-semibold">Status</th>
-                  <th className="px-4 py-3 font-semibold">Updated</th>
-                  <th className="px-5 py-3 text-right font-semibold">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/[0.06]">
-                {rows.map((article) => {
-                  const template = getCmsTemplate(article.cmsTemplate as CmsTemplateId);
-                  const isBusy = busyId === article.id;
+      {!compact && (
+        <div className="flex flex-wrap items-center gap-2 border-b border-[#333] pb-4">
+          <span className="text-[13px] text-[#666]">{rows.length} articles</span>
+        </div>
+      )}
 
-                  return (
-                    <tr
-                      key={article.id}
-                      className="transition-colors hover:bg-white/[0.03]"
+      <div className="overflow-hidden rounded-md border border-[#333]">
+        {rows.map((article, index) => {
+          const template = getCmsTemplate(article.cmsTemplate as CmsTemplateId);
+          const isBusy = busyId === article.id;
+          const updated = article.updatedAt ?? article.publishedAt;
+
+          return (
+            <div
+              key={article.id}
+              className={cn(
+                "group flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 transition-colors hover:bg-[#0a0a0a]",
+                index !== rows.length - 1 && "border-b border-[#333]"
+              )}
+            >
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <Link
+                    href={`/admin/articles/${article.id}/edit`}
+                    className="text-[13px] font-medium text-[#ededed] hover:underline"
+                  >
+                    {article.title}
+                  </Link>
+                  {article.status === "published" && (
+                    <span className="rounded border border-[#0070f3]/40 bg-[#0070f3]/10 px-1.5 py-0.5 text-[11px] font-medium text-[#3291ff]">
+                      Production
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4 text-[13px]">
+                <AdminStatusDot
+                  tone={article.status === "published" ? "success" : "warning"}
+                >
+                  {article.status === "published" ? "Ready" : "Draft"}
+                </AdminStatusDot>
+
+                <span className="hidden items-center gap-1.5 text-[#666] sm:inline-flex">
+                  <GitBranch className="size-3.5" />
+                  <span className="font-mono text-[12px]">{template?.label ?? article.cmsTemplate}</span>
+                </span>
+
+                <span className="hidden font-mono text-[12px] text-[#666] md:inline">
+                  /articles/{article.slug}
+                </span>
+
+                <span className="tabular-nums text-[#666]">{relativeTime(updated)}</span>
+
+                <div className="flex items-center gap-0.5 opacity-60 transition-opacity group-hover:opacity-100">
+                  {article.status === "draft" && (
+                    <AdminSecondaryButton
+                      onClick={() => handlePublish(article)}
+                      className={cn("h-7 px-2 text-[12px]", isBusy && "opacity-50")}
                     >
-                      <td className="px-5 py-3.5">
-                        <p className="font-medium text-white">{article.title}</p>
-                        <p className="mt-0.5 font-mono text-xs text-[#6b7280]">
-                          /articles/{article.slug}
-                        </p>
-                      </td>
-                      <td className="px-4 py-3.5 text-[#9CA3AF]">
-                        {template?.label ?? article.cmsTemplate}
-                      </td>
-                      <td className="px-4 py-3.5">
-                        <AdminStatusPill
-                          tone={article.status === "published" ? "success" : "warning"}
-                        >
-                          {article.status}
-                        </AdminStatusPill>
-                      </td>
-                      <td className="px-4 py-3.5 tabular-nums text-[#9CA3AF]">
-                        {new Date(article.updatedAt ?? article.publishedAt).toLocaleDateString(
-                          undefined,
-                          { month: "short", day: "numeric", year: "numeric" }
-                        )}
-                      </td>
-                      <td className="px-5 py-3.5">
-                        <div className="flex items-center justify-end gap-0.5">
-                          {article.status === "draft" && (
-                            <button
-                              type="button"
-                              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#3B82F6]/40 bg-[#3B82F6]/10 px-3 text-xs font-medium text-blue-300 transition-colors hover:bg-[#3B82F6]/20 disabled:opacity-50"
-                              disabled={isBusy}
-                              onClick={() => handlePublish(article)}
-                            >
-                              <Send className="size-3.5" />
-                              Publish
-                            </button>
-                          )}
-                          {article.status === "published" && (
-                            <Link
-                              href={`/articles/${article.slug}`}
-                              target="_blank"
-                              className="inline-flex size-9 items-center justify-center rounded-lg text-[#9CA3AF] transition-colors hover:bg-white/[0.05] hover:text-white"
-                            >
-                              <ExternalLink className="size-4" />
-                            </Link>
-                          )}
-                          <Link
-                            href={`/admin/articles/${article.id}/edit`}
-                            className="inline-flex size-9 items-center justify-center rounded-lg text-[#9CA3AF] transition-colors hover:bg-white/[0.05] hover:text-white"
-                          >
-                            <Pencil className="size-4" />
-                          </Link>
-                          <button
-                            type="button"
-                            className="inline-flex size-9 items-center justify-center rounded-lg text-[#9CA3AF] transition-colors hover:bg-red-500/10 hover:text-red-400 disabled:opacity-50"
-                            disabled={isBusy}
-                            onClick={() => handleDelete(article)}
-                          >
-                            <Trash2 className="size-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </AdminPanelBody>
-      </AdminPanel>
+                      Publish
+                    </AdminSecondaryButton>
+                  )}
+                  {article.status === "published" && (
+                    <Link
+                      href={`/articles/${article.slug}`}
+                      target="_blank"
+                      className="inline-flex size-7 items-center justify-center rounded text-[#a1a1a1] hover:bg-[#111] hover:text-white"
+                      title="View live"
+                    >
+                      <ExternalLink className="size-3.5" />
+                    </Link>
+                  )}
+                  <Link
+                    href={`/admin/articles/${article.id}/edit`}
+                    className="inline-flex size-7 items-center justify-center rounded text-[#a1a1a1] hover:bg-[#111] hover:text-white"
+                    title="Edit"
+                  >
+                    <Pencil className="size-3.5" />
+                  </Link>
+                  <button
+                    type="button"
+                    className="inline-flex size-7 items-center justify-center rounded text-[#a1a1a1] hover:bg-[#111] hover:text-[#ff6666] disabled:opacity-50"
+                    disabled={isBusy}
+                    onClick={() => handleDelete(article)}
+                    title="Delete"
+                  >
+                    <Trash2 className="size-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    className="inline-flex size-7 items-center justify-center rounded text-[#a1a1a1] hover:bg-[#111] hover:text-white"
+                    title="More"
+                  >
+                    <MoreHorizontal className="size-3.5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

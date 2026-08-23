@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   BarChart3,
-  ChevronRight,
+  Bot,
   ExternalLink,
   FileText,
   LayoutDashboard,
@@ -20,14 +20,12 @@ import { Logo } from "@/components/navigation/logo";
 import { adminClasses } from "@/components/admin/admin-theme";
 import { cn } from "@/lib/utils";
 
-const moduleNav = [
+const mainNav = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard, exact: true },
   { href: "/admin/articles", label: "Articles", icon: FileText },
-];
-
-const reportingNav = [
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
-  { href: "/admin/logs", label: "Activity logs", icon: ScrollText },
+  { href: "/admin/logs", label: "Logs", icon: ScrollText },
+  { href: "/admin/chatbot", label: "Chat Bot", icon: Bot },
 ];
 
 type AdminShellProps = {
@@ -37,48 +35,39 @@ type AdminShellProps = {
   actions?: React.ReactNode;
 };
 
-function NavGroup({
-  label,
+function SidebarNav({
   items,
   pathname,
   onNavigate,
 }: {
-  label: string;
-  items: typeof moduleNav;
+  items: typeof mainNav;
   pathname: string;
   onNavigate?: () => void;
 }) {
   return (
-    <div className="mb-6">
-      <p className="mb-2 px-3 text-[0.62rem] font-semibold uppercase tracking-[0.18em] text-[#6b7280]">
-        {label}
-      </p>
-      <nav className="space-y-0.5">
-        {items.map((item) => {
-          const Icon = item.icon;
-          const active = item.exact
-            ? pathname === item.href
-            : pathname === item.href || pathname.startsWith(`${item.href}/`);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={onNavigate}
-              className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
-                active ? adminClasses.navActive : adminClasses.navIdle
-              )}
-            >
-              <ChevronRight
-                className={cn("size-3.5 opacity-40", active && "opacity-80")}
-              />
-              <Icon className="size-4 shrink-0" />
-              {item.label}
-            </Link>
-          );
-        })}
-      </nav>
-    </div>
+    <nav className="space-y-0.5 px-2">
+      {items.map((item) => {
+        const Icon = item.icon;
+        const active = item.exact
+          ? pathname === item.href
+          : pathname === item.href || pathname.startsWith(`${item.href}/`);
+
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            onClick={onNavigate}
+            className={cn(
+              "flex items-center gap-2.5 rounded px-2 py-1.5 text-[13px] font-normal transition-colors",
+              active ? adminClasses.navActive : adminClasses.navIdle
+            )}
+          >
+            <Icon className="size-4 shrink-0 opacity-70" strokeWidth={1.5} />
+            {item.label}
+          </Link>
+        );
+      })}
+    </nav>
   );
 }
 
@@ -88,22 +77,9 @@ export function AdminShell({ children, title, description, actions }: AdminShell
   const [mobileOpen, setMobileOpen] = useState(false);
   const [search, setSearch] = useState("");
 
-  const today = useMemo(
-    () =>
-      new Date().toLocaleDateString(undefined, {
-        weekday: "long",
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-      }),
-    []
-  );
-
-  const filteredModule = moduleNav.filter((item) =>
-    item.label.toLowerCase().includes(search.toLowerCase())
-  );
-  const filteredReporting = reportingNav.filter((item) =>
-    item.label.toLowerCase().includes(search.toLowerCase())
+  const filteredNav = useMemo(
+    () => mainNav.filter((item) => item.label.toLowerCase().includes(search.toLowerCase())),
+    [search]
   );
 
   async function handleLogout() {
@@ -114,79 +90,67 @@ export function AdminShell({ children, title, description, actions }: AdminShell
 
   const sidebar = (
     <>
-      <div className="relative overflow-hidden border-b border-white/[0.06] px-5 pb-5 pt-6">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(59,130,246,0.12),transparent_55%)]" />
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),transparent)]" />
-        <div className="relative">
-          <Logo href="/admin" variant="light" size="sm" className="group" />
-          <p className="mt-2 text-[0.62rem] font-semibold uppercase tracking-[0.2em] text-[#6b7280]">
-            Content Studio
-          </p>
-        </div>
+      <div className="border-b border-[#333] px-4 py-4">
+        <Logo href="/admin" variant="light" size="sm" className="group" />
       </div>
 
-      <div className="px-4 pt-4">
+      <div className="px-3 py-3">
         <div className="relative">
-          <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-[#6b7280]" />
+          <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-[#666]" />
           <input
             type="search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search"
-            className="h-10 w-full rounded-lg border border-white/[0.06] bg-[#1a1b1f] pr-3 pl-9 text-sm text-white outline-none placeholder:text-[#6b7280] focus:border-[#3B82F6]/40 focus:ring-2 focus:ring-[#3B82F6]/15"
+            placeholder="Find…"
+            className="h-8 w-full rounded border border-[#333] bg-black pr-8 pl-8 text-[13px] text-[#ededed] outline-none placeholder:text-[#666] focus:border-[#666]"
           />
+          <kbd className="pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 rounded border border-[#333] px-1 text-[10px] text-[#666]">
+            F
+          </kbd>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-4">
-        {filteredModule.length > 0 && (
-          <NavGroup
-            label="Modules"
-            items={filteredModule}
-            pathname={pathname}
-            onNavigate={() => setMobileOpen(false)}
-          />
-        )}
-        {filteredReporting.length > 0 && (
-          <NavGroup
-            label="Reporting"
-            items={filteredReporting}
-            pathname={pathname}
-            onNavigate={() => setMobileOpen(false)}
-          />
-        )}
+      <div className="flex-1 overflow-y-auto py-1">
+        <SidebarNav
+          items={filteredNav}
+          pathname={pathname}
+          onNavigate={() => setMobileOpen(false)}
+        />
+      </div>
 
+      <div className="space-y-0.5 border-t border-[#333] p-2">
         <Link
           href="/admin/articles/new"
           onClick={() => setMobileOpen(false)}
-          className={cn(adminClasses.primaryBtn, "w-full")}
-        >
-          <Plus className="size-4" />
-          New article
-        </Link>
-      </div>
-
-      <div className="space-y-0.5 border-t border-white/[0.06] p-4">
-        <Link
-          href="/"
-          target="_blank"
           className={cn(
-            "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors",
+            "flex items-center gap-2.5 rounded px-2 py-1.5 text-[13px] transition-colors",
             adminClasses.navIdle
           )}
         >
-          <ExternalLink className="size-4" />
+          <Plus className="size-4 shrink-0 opacity-70" strokeWidth={1.5} />
+          New article
+        </Link>
+        <Link
+          href="/"
+          target="_blank"
+          onClick={() => setMobileOpen(false)}
+          className={cn(
+            "flex items-center gap-2.5 rounded px-2 py-1.5 text-[13px] transition-colors",
+            adminClasses.navIdle
+          )}
+        >
+          <ExternalLink className="size-4 shrink-0 opacity-70" strokeWidth={1.5} />
           View live site
         </Link>
         <button
           type="button"
           onClick={handleLogout}
           className={cn(
-            "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors",
+            "flex w-full items-center gap-2.5 rounded px-2 py-1.5 text-left text-[13px] transition-colors",
             adminClasses.navIdle
           )}
         >
-          <LogOut className="size-4" />
+          <LogOut className="size-4 shrink-0 opacity-70" strokeWidth={1.5} />
           Sign out
         </button>
       </div>
@@ -194,14 +158,14 @@ export function AdminShell({ children, title, description, actions }: AdminShell
   );
 
   return (
-    <div className={cn(adminClasses.page, "admin-cms-dark")} style={{ colorScheme: "dark" }}>
-      <div className="sticky top-0 z-30 flex items-center justify-between border-b border-white/[0.06] bg-[#121316] px-4 py-3 lg:hidden">
+    <div className={cn(adminClasses.page, "admin-cms font-[family-name:var(--font-admin)]")} style={{ colorScheme: "dark" }}>
+      <div className="sticky top-0 z-30 flex items-center justify-between border-b border-[#333] bg-black px-4 py-2.5 lg:hidden">
         <Logo href="/admin" variant="light" size="sm" />
         <button
           type="button"
           aria-label="Toggle menu"
           onClick={() => setMobileOpen((v) => !v)}
-          className="rounded-lg p-2 text-[#9CA3AF] hover:bg-white/[0.05]"
+          className="rounded p-1.5 text-[#a1a1a1] hover:bg-[#111] hover:text-white"
         >
           {mobileOpen ? <X className="size-5" /> : <Menu className="size-5" />}
         </button>
@@ -209,7 +173,7 @@ export function AdminShell({ children, title, description, actions }: AdminShell
 
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/60 lg:hidden"
+          className="fixed inset-0 z-40 bg-black/80 lg:hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}
@@ -217,7 +181,7 @@ export function AdminShell({ children, title, description, actions }: AdminShell
       <div className="flex min-h-screen">
         <aside
           className={cn(
-            "fixed inset-y-0 left-0 z-50 flex w-[17.5rem] flex-col border-r border-white/[0.06] bg-[#121316] transition-transform lg:static lg:translate-x-0",
+            "fixed inset-y-0 left-0 z-50 flex w-60 flex-col border-r border-[#333] bg-black transition-transform lg:static lg:translate-x-0",
             mobileOpen ? "translate-x-0" : "-translate-x-full"
           )}
         >
@@ -225,28 +189,21 @@ export function AdminShell({ children, title, description, actions }: AdminShell
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="sticky top-0 z-20 border-b border-white/[0.06] bg-[#1A1B1E]/95 backdrop-blur-md">
-            <div className="flex flex-wrap items-start justify-between gap-4 px-4 py-5 sm:px-8">
-              <div>
-                <p className="text-xs text-[#9CA3AF]">{today}</p>
+          <header className="border-b border-[#333] bg-black">
+            <div className="flex flex-wrap items-center justify-between gap-4 px-6 py-5">
+              <div className="min-w-0">
                 {title && (
-                  <h1 className="mt-1 text-xl font-semibold tracking-tight text-white sm:text-2xl">
-                    {title}
-                  </h1>
+                  <h1 className="text-xl font-medium tracking-tight text-[#ededed]">{title}</h1>
                 )}
                 {description && (
-                  <p className="mt-1 max-w-2xl text-sm leading-relaxed text-[#9CA3AF]">
-                    {description}
-                  </p>
+                  <p className="mt-1 max-w-2xl text-[13px] text-[#666]">{description}</p>
                 )}
               </div>
-              <div className="flex items-center gap-2 [&_a]:rounded-lg [&_a]:bg-[#3B82F6] [&_a]:text-white [&_a]:hover:bg-[#2563EB] [&_button]:rounded-lg">
-                {actions}
-              </div>
+              {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
             </div>
           </header>
 
-          <main className="flex-1 px-4 py-6 sm:px-8 sm:py-8 [&_input:not([type=checkbox])]:border-white/[0.08] [&_input:not([type=checkbox])]:bg-[#1e1f24] [&_input:not([type=checkbox])]:text-white [&_input:not([type=checkbox])]:placeholder:text-[#6b7280] [&_label]:text-[#9CA3AF] [&_select]:border-white/[0.08] [&_select]:bg-[#1e1f24] [&_select]:text-white [&_textarea]:border-white/[0.08] [&_textarea]:bg-[#1e1f24] [&_textarea]:text-white">
+          <main className="flex-1 px-6 py-6 [&_input:not([type=checkbox])]:h-8 [&_input:not([type=checkbox])]:rounded [&_input:not([type=checkbox])]:border-[#333] [&_input:not([type=checkbox])]:bg-black [&_input:not([type=checkbox])]:text-[13px] [&_input:not([type=checkbox])]:text-[#ededed] [&_input:not([type=checkbox])]:placeholder:text-[#666] [&_label]:text-[13px] [&_label]:text-[#a1a1a1] [&_select]:rounded [&_select]:border-[#333] [&_select]:bg-black [&_select]:text-[13px] [&_select]:text-[#ededed] [&_textarea]:rounded [&_textarea]:border-[#333] [&_textarea]:bg-black [&_textarea]:text-[13px] [&_textarea]:text-[#ededed]">
             {children}
           </main>
         </div>

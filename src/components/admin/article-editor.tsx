@@ -9,8 +9,9 @@ import {
   AdminPanel,
   AdminPanelBody,
   AdminPanelHeader,
-  AdminStatusPill,
+  AdminStatusDot,
 } from "@/components/admin/admin-ui";
+import { adminClasses } from "@/components/admin/admin-theme";
 import {
   buildArticlePayload,
   slugify,
@@ -23,8 +24,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
-const selectClassName =
-  "flex h-10 w-full rounded-lg border border-white/[0.08] bg-[#1e1f24] px-3 text-sm text-white outline-none transition-colors focus:border-[#3B82F6]/50 focus:ring-2 focus:ring-[#3B82F6]/20";
+const selectClassName = adminClasses.input;
 
 type ArticleEditorProps = {
   initial: ArticleFormState;
@@ -133,14 +133,14 @@ export function ArticleEditor({ initial, mode }: ArticleEditorProps) {
                 type="button"
                 onClick={() => update("cmsTemplate", item.id)}
                 className={cn(
-                  "rounded-xl border p-4 text-left transition-all",
+                  "rounded border p-3 text-left transition-colors",
                   form.cmsTemplate === item.id
-                    ? "border-[#3B82F6] bg-[#3B82F6]/10 shadow-[inset_0_0_0_1px_rgba(59,130,246,0.35)]"
-                    : "border-white/[0.08] bg-[#25262c] hover:border-white/[0.12] hover:bg-[#2a2b32]"
+                    ? "border-[#ededed] bg-[#111]"
+                    : "border-[#333] bg-black hover:border-[#666]"
                 )}
               >
-                <p className="text-sm font-semibold text-white">{item.label}</p>
-                <p className="mt-1 text-xs leading-relaxed text-[#9CA3AF]">{item.description}</p>
+                <p className="text-[13px] font-medium text-[#ededed]">{item.label}</p>
+                <p className="mt-1 text-[12px] leading-relaxed text-[#666]">{item.description}</p>
               </button>
             ))}
           </div>
@@ -230,9 +230,8 @@ export function ArticleEditor({ initial, mode }: ArticleEditorProps) {
           </div>
 
           {form.status === "draft" && (
-            <p className="rounded-lg border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-sm text-amber-200">
-              This article is a draft and will not appear on the public Articles page until you set
-              status to Published.
+            <p className="rounded border border-[#f5a623]/30 px-3 py-2 text-[13px] text-[#f5a623]">
+              Draft — not visible on the public site until published.
             </p>
           )}
 
@@ -292,7 +291,7 @@ export function ArticleEditor({ initial, mode }: ArticleEditorProps) {
               type="checkbox"
               checked={form.featured}
               onChange={(e) => update("featured", e.target.checked)}
-              className="size-4 rounded border-white/[0.2] bg-[#1e1f24] accent-[#3B82F6]"
+              className="size-4 rounded border-[#333] bg-black accent-[#ededed]"
             />
             Feature on articles hub
           </label>
@@ -309,7 +308,7 @@ export function ArticleEditor({ initial, mode }: ArticleEditorProps) {
           <AdminPanelBody>
             <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
               {form.heroImageUrl ? (
-                <div className="shrink-0 overflow-hidden rounded-lg border border-white/[0.08] bg-[#1e1f24] shadow-sm">
+                <div className="shrink-0 overflow-hidden rounded border border-[#333] bg-black">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={form.heroImageUrl}
@@ -318,7 +317,7 @@ export function ArticleEditor({ initial, mode }: ArticleEditorProps) {
                   />
                 </div>
               ) : (
-                <div className="flex size-[8.75rem] shrink-0 items-center justify-center rounded-lg border border-dashed border-white/[0.12] bg-[#1e1f24] text-xs text-[#6b7280]">
+                <div className="flex size-[8.75rem] shrink-0 items-center justify-center rounded border border-dashed border-[#333] bg-black text-[12px] text-[#666]">
                   No image
                 </div>
               )}
@@ -343,7 +342,7 @@ export function ArticleEditor({ initial, mode }: ArticleEditorProps) {
                       if (file) void uploadFile(file, "hero");
                     }}
                   />
-                  <span className="inline-flex h-9 items-center gap-2 rounded-lg border border-white/[0.08] bg-[#25262c] px-3.5 text-sm font-medium text-[#d1d5db] transition-colors hover:border-white/[0.12] hover:bg-[#2a2b32]">
+                  <span className={adminClasses.secondaryBtn}>
                     {uploading === "hero" ? (
                       <Loader2 className="size-4 animate-spin" />
                     ) : (
@@ -390,7 +389,7 @@ export function ArticleEditor({ initial, mode }: ArticleEditorProps) {
                   if (file) void uploadFile(file, "attachment");
                 }}
               />
-              <span className="inline-flex h-9 items-center gap-2 rounded-lg border border-white/[0.08] bg-[#25262c] px-3.5 text-sm font-medium text-[#d1d5db] transition-colors hover:border-white/[0.12] hover:bg-[#2a2b32]">
+              <span className={adminClasses.secondaryBtn}>
                 {uploading === "attachment" ? (
                   <Loader2 className="size-4 animate-spin" />
                 ) : (
@@ -492,18 +491,18 @@ export function ArticleEditor({ initial, mode }: ArticleEditorProps) {
       </AdminPanel>
 
       {error && (
-        <p className="rounded-lg border border-red-500/25 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+        <p className="rounded border border-[#e00]/30 px-4 py-3 text-[13px] text-[#ff6666]">
           {error}
         </p>
       )}
 
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-white/[0.06] bg-[#1A1B1E]/95 backdrop-blur-md lg:left-[17.5rem]">
-        <div className="mx-auto flex max-w-[1520px] flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-8">
-          <div className="flex items-center gap-2">
-            <AdminStatusPill tone={form.status === "published" ? "success" : "warning"}>
-              {form.status}
-            </AdminStatusPill>
-            <span className="text-sm text-[#9CA3AF]">{template?.label}</span>
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-[#333] bg-black lg:left-60">
+        <div className="mx-auto flex max-w-[1520px] flex-wrap items-center justify-between gap-3 px-6 py-3">
+          <div className="flex items-center gap-3">
+            <AdminStatusDot tone={form.status === "published" ? "success" : "warning"}>
+              {form.status === "published" ? "Ready" : "Draft"}
+            </AdminStatusDot>
+            <span className="text-[13px] text-[#666]">{template?.label}</span>
           </div>
           <div className="flex flex-wrap gap-2">
             {mode === "edit" && (
@@ -512,9 +511,9 @@ export function ArticleEditor({ initial, mode }: ArticleEditorProps) {
                 variant="destructive"
                 onClick={handleDelete}
                 disabled={saving}
-                className="rounded-lg bg-red-500/15 text-red-300 hover:bg-red-500/25"
+                className="h-8 rounded border border-[#e00]/30 bg-transparent px-3 text-[13px] text-[#ff6666] hover:bg-[#111]"
               >
-                <Trash2 className="size-4" />
+                <Trash2 className="size-3.5" />
                 Delete
               </Button>
             )}
@@ -522,7 +521,7 @@ export function ArticleEditor({ initial, mode }: ArticleEditorProps) {
               type="button"
               variant="outline"
               onClick={() => router.push("/admin/articles")}
-              className="rounded-lg border-white/[0.08] bg-transparent text-[#d1d5db] hover:bg-white/[0.04] hover:text-white"
+              className="h-8 rounded border-[#333] bg-black px-3 text-[13px] text-[#ededed] hover:bg-[#111]"
             >
               Cancel
             </Button>
@@ -530,10 +529,10 @@ export function ArticleEditor({ initial, mode }: ArticleEditorProps) {
               type="button"
               onClick={handleSave}
               disabled={saving}
-              className="gap-2 rounded-lg bg-[#3B82F6] text-white hover:bg-[#2563EB]"
+              className="h-8 gap-1.5 rounded border border-[#ededed] bg-[#ededed] px-3 text-[13px] font-medium text-black hover:bg-white"
             >
-              {saving ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
-              {mode === "create" ? "Create article" : "Save changes"}
+              {saving ? <Loader2 className="size-3.5 animate-spin" /> : <Save className="size-3.5" />}
+              {mode === "create" ? "Create" : "Save"}
             </Button>
           </div>
         </div>

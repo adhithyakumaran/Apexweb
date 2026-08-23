@@ -16,10 +16,9 @@ export default async function AdminArticlesPage() {
   return (
     <AdminShell
       title="Articles"
-      description="Manage your knowledge hub content. Drafts remain private until published."
       actions={
         <AdminPrimaryButton href="/admin/articles/new">
-          <Plus className="size-4" />
+          <Plus className="size-3.5" />
           New article
         </AdminPrimaryButton>
       }
