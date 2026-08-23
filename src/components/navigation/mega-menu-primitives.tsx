@@ -84,7 +84,7 @@ export function MegaMenuShell({
         {open && (
           <>
             <motion.div
-              className="fixed inset-0 top-16 z-40 bg-foreground/20 backdrop-blur-md"
+              className="fixed inset-0 top-16 z-40 bg-foreground/40 backdrop-blur-sm"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -102,7 +102,7 @@ export function MegaMenuShell({
               onMouseEnter={onEnter}
               onMouseLeave={onLeave}
             >
-              <div className="min-h-[calc(100vh-4rem)] bg-background/98 shadow-2xl backdrop-blur-2xl supports-[backdrop-filter]:bg-background/96">
+              <div className="min-h-[calc(100vh-4rem)] border-t border-border/60 bg-background shadow-2xl">
                 {children}
                 {footer}
               </div>
@@ -116,7 +116,7 @@ export function MegaMenuShell({
 
 export function MegaMenuFooter({ children }: { children: ReactNode }) {
   return (
-    <div className="border-t border-border/50 bg-muted/25 px-8 py-5 lg:px-14">
+    <div className="border-t border-border/60 bg-muted/70 px-8 py-5 lg:px-14">
       <div className="mx-auto flex max-w-350 flex-wrap items-center gap-x-8 gap-y-2">
         {children}
       </div>
