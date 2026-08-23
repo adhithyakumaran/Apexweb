@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Menu, Phone, MessageCircle, ChevronDown } from "lucide-react";
+import { Menu, Phone, MessageCircle, ChevronDown, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -155,6 +155,9 @@ export function MobileNav() {
                 className="flex items-center gap-1 rounded-md px-3 py-3 text-base font-medium text-foreground transition-colors hover:bg-muted"
               >
                 {item.label}
+                {item.label === "Articles" && (
+                  <ArrowUpRight className="size-3.5 opacity-60" />
+                )}
               </Link>
             );
           })}
