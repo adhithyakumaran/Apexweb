@@ -10,7 +10,6 @@ import {
   AdminPanelHeader,
   AdminPrimaryButton,
   AdminSecondaryButton,
-  AdminStatCard,
   AdminStatusDot,
   AdminStatusStrip,
 } from "@/components/admin/admin-ui";

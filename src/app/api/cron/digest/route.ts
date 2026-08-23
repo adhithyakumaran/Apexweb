@@ -14,20 +14,8 @@ export async function GET(request: Request) {
   }
 
   const settings = await getAlertSettings();
-  const now = new Date();
-  const dayNames = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"] as const;
-  const today = dayNames[now.getUTCDay()];
-  const hour = now.getUTCHours();
-
   if (!settings.digestEnabled) {
     return NextResponse.json({ skipped: true, reason: "Digest disabled" });
-  }
-
-  if (today !== settings.digestDay || hour !== settings.digestHourUtc) {
-    return NextResponse.json({
-      skipped: true,
-      reason: `Scheduled for ${settings.digestDay} ${settings.digestHourUtc}:00 UTC`,
-    });
   }
 
   const result = await sendWeeklyDigest();

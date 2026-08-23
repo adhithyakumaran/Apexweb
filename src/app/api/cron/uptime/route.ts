@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { dispatchAlert } from "@/lib/alerts/dispatch";
 import { getAlertSettings } from "@/lib/alerts/settings";
-import { sendWeeklyDigest } from "@/lib/alerts/digest";
 import {
   getUptimeStats,
   listUptimeChecksWithLatest,

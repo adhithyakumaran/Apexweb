@@ -119,7 +119,7 @@ export function UptimeAdmin({ checks: initialChecks, stats: initialStats }: Upti
       </div>
 
       <AdminPanel>
-        <AdminPanelHeader title="Monitored endpoints" description="HTTP checks against your site and APIs. Cron runs every 5 minutes on Vercel." />
+        <AdminPanelHeader title="Monitored endpoints" description="HTTP checks against your site and APIs. Vercel Hobby runs the cron once daily; use Run all checks anytime." />
         <AdminPanelBody className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[720px] text-left text-[13px]">

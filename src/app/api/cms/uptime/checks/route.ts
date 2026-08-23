@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import {
   getUptimeStats,
   listUptimeChecksWithLatest,
-  runAllUptimeChecks,
   saveUptimeCheck,
 } from "@/lib/uptime/checks";
 import { requireCmsAuth } from "@/lib/cms/api-auth";

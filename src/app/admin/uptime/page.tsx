@@ -14,7 +14,7 @@ export default async function AdminUptimePage() {
   return (
     <AdminShell
       title="Uptime Monitor"
-      description="Synthetic checks across your site and APIs — runs every 5 minutes in production."
+      description="Synthetic checks across your site and APIs — daily cron on Hobby; run manually anytime from here."
     >
       <UptimeAdmin checks={checks} stats={stats} />
     </AdminShell>
