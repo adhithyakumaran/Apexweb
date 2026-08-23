@@ -11,5 +11,3 @@ export const partners: PartnerWordmark[] = [
   { id: "grewbie", name: "Grewbie Technologies" },
   { id: "chatpilot", name: "Chatpilot" },
 ];
-
-export const PARTNER_CYCLE_S = 2.4;

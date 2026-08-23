@@ -11,6 +11,7 @@ import {
   type MotionValue,
 } from "motion/react";
 import { moatPillars } from "@/config/moat";
+import { SectionHeader } from "@/components/animations/section-header";
 
 const CENTER = 50;
 const OUTER_RADIUS = 44;
@@ -179,18 +180,13 @@ export function Moat() {
       <div className="pointer-events-none absolute left-1/2 top-1/3 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/8 blur-[140px]" />
 
       <div className="relative mx-auto max-w-6xl px-6 lg:px-10">
-        <div className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-medium uppercase tracking-[0.2em] text-brand-orange">
-            The Apex Moat
-          </p>
-          <h2 className="mt-4 text-3xl font-normal tracking-tight text-footer-foreground sm:text-4xl lg:text-5xl">
-            Four defenses. One core.
-          </h2>
-          <p className="mt-4 text-base leading-relaxed text-footer-muted">
-            Every layer of Apex Node closes a different gap in enterprise QA —
-            and they only work because they work together.
-          </p>
-        </div>
+        <SectionHeader
+          variant="dark"
+          eyebrow="The Apex Moat"
+          title="Four defenses. One core."
+          description="Every layer of Apex Node closes a different gap in enterprise QA — and they only work because they work together."
+          delay={0.2}
+        />
 
         <motion.div
           style={{ rotateX: gridTilt, perspective: 1000 }}

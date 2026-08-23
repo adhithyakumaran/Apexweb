@@ -1,74 +1,68 @@
 "use client";
 
-import type { ReactNode } from "react";
 import { motion, useReducedMotion } from "motion/react";
-import { partners, PARTNER_CYCLE_S } from "@/config/partners";
+import { partners } from "@/config/partners";
 import { PartnerWordmark } from "@/components/sections/partner-wordmark";
+import { SectionHeader } from "@/components/animations/section-header";
 import { smoothEase } from "@/components/animations/motion-presets";
 
-function PartnerCell({ children }: { children: ReactNode }) {
-  const prefersReducedMotion = useReducedMotion();
-
-  if (prefersReducedMotion) {
-    return (
-      <div className="flex h-28 items-center justify-center px-6 sm:h-32">{children}</div>
-    );
-  }
-
-  return (
-    <div className="relative flex h-28 items-center justify-center overflow-hidden px-6 sm:h-32">
-      <motion.div
-        className="flex w-full items-center justify-center"
-        animate={{
-          y: [18, 0, 0, 18],
-          opacity: [0, 1, 1, 0],
-          scale: [0.94, 1, 1, 0.94],
-        }}
-        transition={{
-          duration: PARTNER_CYCLE_S,
-          times: [0, 0.18, 0.72, 1],
-          repeat: Infinity,
-          ease: smoothEase,
-        }}
-      >
-        {children}
-      </motion.div>
-    </div>
-  );
-}
+const cellAccents = [
+  "from-primary/5 to-transparent",
+  "from-brand-orange/5 to-transparent",
+  "from-success/5 to-transparent",
+  "from-primary/5 to-transparent",
+  "from-brand-orange/5 to-transparent",
+  "from-success/5 to-transparent",
+];
 
 export function TrustedPartners() {
   const prefersReducedMotion = useReducedMotion();
 
   return (
-    <section className="w-full bg-surface px-4 py-24 sm:px-6 lg:px-10">
-      <div className="mx-auto max-w-350">
-        <motion.div
-          className="mx-auto max-w-3xl text-center"
-          initial={prefersReducedMotion ? false : { opacity: 0, y: 28 }}
-          whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.7, ease: smoothEase }}
-        >
-          <h2 className="text-2xl font-normal leading-snug tracking-tight text-foreground sm:text-3xl sm:leading-snug lg:text-4xl lg:leading-normal">
-            Built for modern, client-obsessed,{" "}
-            <br className="hidden sm:block" />
-            revenue-responsible delivery teams
-          </h2>
-        </motion.div>
+    <section className="relative w-full overflow-hidden bg-surface px-4 py-24 sm:px-6 lg:px-10">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,color-mix(in_oklab,var(--primary)_6%,transparent),transparent_50%)]" />
+
+      <div className="relative mx-auto max-w-350">
+        <SectionHeader
+          delay={0.2}
+          title={
+            <>
+              Built for modern, client-obsessed,{" "}
+              <br className="hidden sm:block" />
+              revenue-responsible delivery teams
+            </>
+          }
+        />
 
         <motion.div
-          className="mt-16 overflow-hidden rounded-2xl border border-border bg-background"
-          initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
-          whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.25 }}
-          transition={{ duration: 0.7, delay: 0.1, ease: smoothEase }}
+          className="relative mt-16 overflow-hidden rounded-3xl border border-border/80 bg-background p-3 shadow-[0_20px_60px_-24px_color-mix(in_oklab,var(--foreground)_18%,transparent)] sm:p-4"
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 40, scale: 0.98 }}
+          whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0, scale: 1 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.9, delay: 0.45, ease: smoothEase }}
         >
-          <div className="grid grid-cols-2 divide-x divide-y divide-border md:grid-cols-3">
-            {partners.map((partner) => (
-              <PartnerCell key={partner.id}>
+          <div className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl bg-border md:grid-cols-3">
+            {partners.map((partner, index) => (
+              <motion.div
+                key={partner.id}
+                className={`group relative flex h-32 items-center justify-center bg-linear-to-br ${cellAccents[index]} bg-background px-4 transition-colors duration-500 hover:bg-muted/40 sm:h-36`}
+                initial={prefersReducedMotion ? false : { opacity: 0, y: 28 }}
+                whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{
+                  duration: 0.75,
+                  delay: 0.55 + index * 0.1,
+                  ease: smoothEase,
+                }}
+                whileHover={
+                  prefersReducedMotion
+                    ? undefined
+                    : { y: -3, transition: { duration: 0.25, ease: smoothEase } }
+                }
+              >
+                <span className="pointer-events-none absolute inset-x-6 top-0 h-px bg-linear-to-r from-transparent via-brand-orange/30 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
                 <PartnerWordmark id={partner.id} />
-              </PartnerCell>
+              </motion.div>
             ))}
           </div>
         </motion.div>
