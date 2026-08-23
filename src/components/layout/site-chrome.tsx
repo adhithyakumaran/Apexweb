@@ -16,7 +16,7 @@ export function SiteChrome({ children }: SiteChromeProps) {
   const isAdmin = pathname?.startsWith("/admin");
 
   return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+    <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange>
       {!isAdmin && <LoadingScreen />}
       {!isAdmin && <Navbar />}
       {children}
