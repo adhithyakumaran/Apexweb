@@ -7,6 +7,7 @@ import { Logo } from "@/components/navigation/logo";
 import { siteConfig } from "@/config/site";
 import { mainNav } from "@/config/navigation";
 import { agents } from "@/config/agents";
+import { coreServices } from "@/config/services";
 import { getWhatsAppLink } from "@/lib/utils/whatsapp";
 import {
   defaultTransition,
@@ -19,6 +20,10 @@ const legalLinks = [
   { label: "Privacy Policy", href: "/privacy" },
   { label: "Terms of Service", href: "/terms" },
 ];
+
+const companyLinks = mainNav.filter(
+  (item) => item.label !== "Services" && item.label !== "Agents"
+);
 
 const contactLinks = [
   {
@@ -58,7 +63,7 @@ export function Footer() {
     <footer className="w-full bg-footer text-footer-foreground">
       <div className="mx-auto max-w-350 px-6 py-20 lg:px-10">
         <motion.div
-          className="grid grid-cols-1 gap-12 lg:grid-cols-[1.5fr_1fr_1fr_1fr]"
+          className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]"
           initial={prefersReducedMotion ? false : "hidden"}
           whileInView={prefersReducedMotion ? undefined : "visible"}
           viewport={defaultViewport}
@@ -93,9 +98,43 @@ export function Footer() {
 
           <motion.div variants={item} transition={defaultTransition}>
             <p className="text-xs font-semibold uppercase tracking-[0.15em] text-brand-orange">
-              Platform
+              Services
             </p>
             <ul className="mt-5 flex flex-col gap-3">
+              <li>
+                <Link
+                  href="/what-we-do"
+                  className="text-sm font-medium text-footer-foreground transition-all duration-300 hover:text-brand-orange"
+                >
+                  All services
+                </Link>
+              </li>
+              {coreServices.slice(0, 5).map((service) => (
+                <li key={service.title}>
+                  <Link
+                    href={service.href}
+                    className="text-sm text-footer-muted transition-all duration-300 hover:translate-x-1 hover:text-footer-foreground"
+                  >
+                    {service.title}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+
+          <motion.div variants={item} transition={defaultTransition}>
+            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-brand-orange">
+              Agents
+            </p>
+            <ul className="mt-5 flex flex-col gap-3">
+              <li>
+                <Link
+                  href="/agents"
+                  className="text-sm font-medium text-footer-foreground transition-all duration-300 hover:text-brand-orange"
+                >
+                  All agents
+                </Link>
+              </li>
               {agents.map((agent) => (
                 <li key={agent.slug}>
                   <Link
@@ -114,31 +153,29 @@ export function Footer() {
               Company
             </p>
             <ul className="mt-5 flex flex-col gap-3">
-              {mainNav.map((item) => (
-                <li key={item.href}>
+              {companyLinks.map((link) => (
+                <li key={link.href}>
                   <Link
-                    href={item.href}
+                    href={link.href}
                     className="text-sm text-footer-muted transition-all duration-300 hover:translate-x-1 hover:text-footer-foreground"
                   >
-                    {item.label}
+                    {link.label}
                   </Link>
                 </li>
               ))}
             </ul>
-          </motion.div>
 
-          <motion.div variants={item} transition={defaultTransition}>
-            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-brand-orange">
+            <p className="mt-8 text-xs font-semibold uppercase tracking-[0.15em] text-brand-orange">
               Legal
             </p>
-            <ul className="mt-5 flex flex-col gap-3">
-              {legalLinks.map((item) => (
-                <li key={item.href}>
+            <ul className="mt-4 flex flex-col gap-3">
+              {legalLinks.map((link) => (
+                <li key={link.href}>
                   <Link
-                    href={item.href}
+                    href={link.href}
                     className="text-sm text-footer-muted transition-all duration-300 hover:translate-x-1 hover:text-footer-foreground"
                   >
-                    {item.label}
+                    {link.label}
                   </Link>
                 </li>
               ))}

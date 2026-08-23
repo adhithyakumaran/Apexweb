@@ -12,6 +12,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { MobileSearch } from "@/components/navigation/mobile-search";
 import { mainNav, tryItCta, whatsappCta } from "@/config/navigation";
 import { getWhatsAppLink } from "@/lib/utils/whatsapp";
 import { siteConfig } from "@/config/site";
@@ -65,7 +66,8 @@ export function MobileNav() {
         <SheetHeader>
           <SheetTitle>Menu</SheetTitle>
         </SheetHeader>
-        <nav className="mt-6 flex flex-col gap-1 px-2">
+        <MobileSearch onNavigate={close} />
+        <nav className="flex flex-col gap-1 px-2">
           {mainNav.map((item) => {
             if (item.label === "Services") {
               return (
