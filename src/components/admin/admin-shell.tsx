@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
+  BarChart3,
   ExternalLink,
   FileText,
   LayoutDashboard,
   LogOut,
   Menu,
   Plus,
+  ScrollText,
   X,
 } from "lucide-react";
 import { useState } from "react";
@@ -19,6 +21,8 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard, exact: true },
   { href: "/admin/articles", label: "Articles", icon: FileText },
+  { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
+  { href: "/admin/logs", label: "Logs", icon: ScrollText },
 ];
 
 type AdminShellProps = {

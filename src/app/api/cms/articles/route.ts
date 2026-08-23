@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { logCmsActivity } from "@/lib/cms/activity-log";
 import { requireCmsAuth } from "@/lib/cms/api-auth";
 import { revalidateArticlePaths } from "@/lib/cms/revalidate";
 import {
@@ -27,6 +28,17 @@ export async function POST(request: Request) {
 
   try {
     const article = await createCmsArticle(body);
+    await logCmsActivity({
+      action: body.status === "published" ? "article.published" : "article.created",
+      level: "success",
+      message:
+        body.status === "published"
+          ? `Published "${body.title}"`
+          : `Created draft "${body.title}"`,
+      resourceType: "article",
+      resourceId: String(article.id),
+      metadata: { slug: body.slug, status: body.status },
+    });
     revalidateArticlePaths(body.slug);
     return NextResponse.json({ article }, { status: 201 });
   } catch (error) {

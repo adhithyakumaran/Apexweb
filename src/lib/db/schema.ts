@@ -29,3 +29,17 @@ export const cmsArticles = pgTable("cms_articles", {
 
 export type CmsArticleRow = typeof cmsArticles.$inferSelect;
 export type NewCmsArticleRow = typeof cmsArticles.$inferInsert;
+
+export const cmsActivityLogs = pgTable("cms_activity_logs", {
+  id: serial("id").primaryKey(),
+  action: varchar("action", { length: 80 }).notNull(),
+  level: varchar("level", { length: 20 }).notNull().default("info"),
+  message: text("message").notNull(),
+  resourceType: varchar("resource_type", { length: 50 }),
+  resourceId: varchar("resource_id", { length: 120 }),
+  metadata: jsonb("metadata").$type<Record<string, unknown>>().notNull().default({}),
+  createdAt: timestamp("created_at", { mode: "string" }).defaultNow(),
+});
+
+export type CmsActivityLogRow = typeof cmsActivityLogs.$inferSelect;
+export type NewCmsActivityLogRow = typeof cmsActivityLogs.$inferInsert;

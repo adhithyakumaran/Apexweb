@@ -39,7 +39,9 @@ npm run db:push
 ```
 
 **Option C — run SQL in Neon console:**  
-Open Neon → SQL Editor → paste and run `drizzle/0000_init_cms_articles.sql`.
+Open Neon → SQL Editor → paste and run:
+- `drizzle/0000_init_cms_articles.sql`
+- `drizzle/0001_init_cms_activity_logs.sql`
 
 ## Private CMS
 
@@ -48,6 +50,8 @@ The CMS is **not public** — `/admin` is protected by middleware, excluded from
 - **Login:** `/admin/login`
 - **Dashboard:** `/admin`
 - **Articles:** create, edit, publish, delete with 5 templates:
+- **Analytics:** `/admin/analytics` — publishing trends, template mix, CMS activity charts
+- **Logs:** `/admin/logs` — audit trail for sign-ins, publishes, uploads, and edits
   - Text only
   - Image + text
   - Media kit (image + file upload)

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import path from "path";
+import { logCmsActivity } from "@/lib/cms/activity-log";
 import { requireCmsAuth } from "@/lib/cms/api-auth";
 import { uploadCmsFile } from "@/lib/cms/storage";
 
@@ -52,6 +53,15 @@ export async function POST(request: Request) {
     const buffer = Buffer.from(await file.arrayBuffer());
     const { url } = await uploadCmsFile(filename, buffer, file.type);
 
+    await logCmsActivity({
+      action: "media.uploaded",
+      level: "success",
+      message: `Uploaded ${file.name}`,
+      resourceType: "media",
+      resourceId: filename,
+      metadata: { url, size: file.size, type: file.type },
+    });
+
     return NextResponse.json({
       url,
       name: file.name,
@@ -60,6 +70,13 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Upload failed";
+    await logCmsActivity({
+      action: "media.uploaded",
+      level: "error",
+      message: `Upload failed: ${file.name}`,
+      resourceType: "media",
+      metadata: { error: message },
+    });
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

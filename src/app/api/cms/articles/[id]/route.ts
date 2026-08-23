@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { logCmsActivity } from "@/lib/cms/activity-log";
 import { requireCmsAuth } from "@/lib/cms/api-auth";
 import { revalidateArticlePaths } from "@/lib/cms/revalidate";
 import {
@@ -45,6 +46,19 @@ export async function PATCH(request: Request, context: RouteContext) {
     if (!article) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
+
+    const publishedNow = body.status === "published";
+    await logCmsActivity({
+      action: publishedNow ? "article.published" : "article.updated",
+      level: publishedNow ? "success" : "info",
+      message: publishedNow
+        ? `Published "${article.title}"`
+        : `Updated "${article.title}"`,
+      resourceType: "article",
+      resourceId: String(article.id),
+      metadata: { slug: article.slug, status: article.status },
+    });
+
     revalidateArticlePaths(article.slug);
     return NextResponse.json({ article });
   } catch (error) {
@@ -72,6 +86,15 @@ export async function DELETE(_request: Request, context: RouteContext) {
   if (!deleted) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
+
+  await logCmsActivity({
+    action: "article.deleted",
+    level: "warning",
+    message: `Deleted "${existing.title}"`,
+    resourceType: "article",
+    resourceId: String(articleId),
+    metadata: { slug: existing.slug },
+  });
 
   revalidateArticlePaths(existing.slug);
   return NextResponse.json({ ok: true });

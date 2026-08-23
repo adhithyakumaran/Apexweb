@@ -69,12 +69,26 @@ export default async function AdminDashboardPage() {
               Quick access to your latest drafts and published pieces.
             </p>
           </div>
-          <Link
-            href="/admin/articles"
-            className="text-sm font-medium text-neutral-700 transition-colors hover:text-brand-orange"
-          >
-            View all
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link
+              href="/admin/analytics"
+              className="text-sm font-medium text-neutral-700 transition-colors hover:text-brand-orange"
+            >
+              Analytics
+            </Link>
+            <Link
+              href="/admin/logs"
+              className="text-sm font-medium text-neutral-700 transition-colors hover:text-brand-orange"
+            >
+              Logs
+            </Link>
+            <Link
+              href="/admin/articles"
+              className="text-sm font-medium text-neutral-700 transition-colors hover:text-brand-orange"
+            >
+              View all
+            </Link>
+          </div>
         </div>
         <ArticlesTable
           compact
