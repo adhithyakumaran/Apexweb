@@ -5,14 +5,12 @@ import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { MobileNav } from "@/components/navigation/mobile-nav";
 import { SearchBar } from "@/components/navigation/search-bar";
 import { Logo } from "@/components/navigation/logo";
-import { mainNav, tryItCta, whatsappCta } from "@/config/navigation";
-import { getWhatsAppLink } from "@/lib/utils/whatsapp";
+import { LetsTalkMenu } from "@/components/navigation/lets-talk-menu";
+import { mainNav, tryItCta } from "@/config/navigation";
 
 const dropdownItems = new Set(["Pricing", "Services"]);
 
 export function Navbar() {
-  const whatsappHref = getWhatsAppLink();
-
   return (
     <header className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-md transition-colors duration-300">
       <div className="mx-auto flex h-16 max-w-350 items-center px-4 lg:px-8">
@@ -40,11 +38,7 @@ export function Navbar() {
           <Button asChild variant="default" size="lg">
             <Link href={tryItCta.href}>{tryItCta.label}</Link>
           </Button>
-          <Button asChild variant="invert" size="lg">
-            <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
-              {whatsappCta.label}
-            </a>
-          </Button>
+          <LetsTalkMenu />
           <ThemeToggle />
         </div>
 

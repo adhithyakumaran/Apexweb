@@ -7,11 +7,9 @@ import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AgentCursor } from "@/components/hero/agent-cursor";
 import { tryItCta, whatsappCta } from "@/config/navigation";
-import { getWhatsAppLink } from "@/lib/utils/whatsapp";
 import { smoothEase } from "@/components/animations/motion-presets";
 
 export function Hero() {
-  const whatsappHref = getWhatsAppLink();
   const prefersReducedMotion = useReducedMotion();
 
   const fadeUp = (delay: number) =>
@@ -69,9 +67,7 @@ export function Hero() {
               size="xl"
               className="border-2 border-white bg-transparent text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/10"
             >
-              <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
-                {whatsappCta.label}
-              </a>
+              <Link href="/#contact">{whatsappCta.label}</Link>
             </Button>
             <Button
               asChild

@@ -15,9 +15,8 @@ import { moatPillars } from "@/config/moat";
 const CENTER = 50;
 const OUTER_RADIUS = 44;
 const INNER_RADIUS = 16;
-const SPIRAL_DEG = 55;
-const STAGGER = 0.09;
-const BRAND_ORANGE = "#f97316";
+const SPIRAL_DEG = 48;
+const STAGGER = 0.11;
 
 function toRad(deg: number) {
   return (deg * Math.PI) / 180;
@@ -63,8 +62,8 @@ function ConnectingLine({
   localT: MotionValue<number>;
 }) {
   const { x, y } = useNodePosition(angle, localT);
-  const pathLength = useTransform(localT, [0, 0.35], [0, 1], { clamp: true });
-  const opacity = useTransform(localT, [0, 0.08, 1], [0, 0.6, 0.75]);
+  const pathLength = useTransform(localT, [0, 0.4], [0, 1], { clamp: true });
+  const opacity = useTransform(localT, [0, 0.1, 1], [0, 0.5, 0.8]);
 
   return (
     <motion.line
@@ -73,7 +72,7 @@ function ConnectingLine({
       x2={CENTER}
       y2={CENTER}
       stroke="var(--primary)"
-      strokeWidth={0.4}
+      strokeWidth={0.45}
       strokeLinecap="round"
       style={{ opacity, pathLength }}
     />
@@ -83,43 +82,45 @@ function ConnectingLine({
 function Node({
   pillar,
   localT,
+  lock,
 }: {
   pillar: (typeof moatPillars)[number];
   localT: MotionValue<number>;
+  lock: MotionValue<number>;
 }) {
   const { x, y } = useNodePosition(pillar.angle, localT);
   const Icon = pillar.icon;
   const left = useTransform(x, (v) => `${v}%`);
   const top = useTransform(y, (v) => `${v}%`);
-  const labelOpacity = useTransform(localT, [0, 0.2, 1], [0.4, 0.7, 1]);
+  const labelOpacity = useTransform(localT, [0, 0.25, 1], [0.3, 0.75, 1]);
 
-  // glow blends blue -> brand orange as each node fully locks in
-  const ringGlow = useTransform(localT, [0.65, 0.9], [0, 1]);
-  const lockFlash = useTransform(localT, [0.9, 1], [0, 1]);
+  const ringGlow = useTransform(localT, [0.6, 0.95], [0, 1]);
+  const lockFlash = useTransform(localT, [0.88, 1], [0, 1]);
   const boxShadow = useTransform([ringGlow, lockFlash] as MotionValue<number>[], ([g, f]: number[]) => {
-    const blue = `0 0 ${8 + g * 18}px ${g * 3}px color-mix(in oklab, var(--primary) 55%, transparent)`;
-    const orange = `0 0 ${f * 26}px ${f * 5}px color-mix(in oklab, ${BRAND_ORANGE} 70%, transparent)`;
+    const blue = `0 0 ${6 + g * 16}px ${g * 2}px color-mix(in oklab, var(--primary) 50%, transparent)`;
+    const orange = `0 0 ${f * 22}px ${f * 4}px color-mix(in oklab, var(--brand-orange) 65%, transparent)`;
     return `${blue}, ${orange}`;
   });
   const borderColor = useTransform(lockFlash, (f) =>
-    `color-mix(in oklab, ${BRAND_ORANGE} ${f * 80}%, var(--primary))`
+    `color-mix(in oklab, var(--brand-orange) ${f * 75}%, var(--primary))`
   );
-  const scale = useTransform(localT, [0, 0.15, 0.9, 1], [0.85, 1.05, 1, 1.08]);
+  const scale = useTransform(localT, [0, 0.2, 0.85, 1], [0.8, 1.04, 1, 1.06]);
+  const floatY = useTransform(lock, [0.95, 1], [0, -4]);
 
   return (
     <motion.div
-      style={{ left, top, scale }}
+      style={{ left, top, scale, y: floatY }}
       className="absolute z-10 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-2"
     >
       <motion.div
         style={{ boxShadow, borderColor }}
-        className="flex size-14 items-center justify-center rounded-full border bg-gradient-to-b from-slate-900 to-black text-primary sm:size-16"
+        className="flex size-14 items-center justify-center rounded-full border bg-linear-to-b from-secondary to-footer text-primary sm:size-16"
       >
         <Icon className="size-6 sm:size-7" />
       </motion.div>
       <motion.p
         style={{ opacity: labelOpacity }}
-        className="max-w-[8rem] text-center text-xs font-semibold leading-tight text-slate-200 sm:text-sm"
+        className="max-w-[8rem] text-center text-xs font-semibold leading-tight text-footer-muted sm:text-sm"
       >
         {pillar.label}
       </motion.p>
@@ -128,20 +129,17 @@ function Node({
 }
 
 function RadarPulses({ lock }: { lock: MotionValue<number> }) {
-  const opacity = useTransform(lock, [0.9, 1], [0, 1]);
+  const opacity = useTransform(lock, [0.88, 1], [0, 1]);
   return (
     <motion.div
       style={{ opacity }}
       className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
     >
-      {[0, 0.5, 1].map((delay) => (
+      {[0, 0.6, 1.2].map((delay) => (
         <span
           key={delay}
-          style={{
-            animationDelay: `${delay}s`,
-            borderColor: BRAND_ORANGE,
-          }}
-          className="absolute left-1/2 top-1/2 size-16 -translate-x-1/2 -translate-y-1/2 animate-ping rounded-full border-2 opacity-60 sm:size-20"
+          style={{ animationDelay: `${delay}s` }}
+          className="absolute left-1/2 top-1/2 size-16 -translate-x-1/2 -translate-y-1/2 animate-ping rounded-full border-2 border-brand-orange opacity-50 sm:size-20"
         />
       ))}
     </motion.div>
@@ -154,65 +152,60 @@ export function Moat() {
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
-    offset: ["start 0.85", "end 0.35"],
+    offset: ["start 0.9", "end 0.4"],
   });
 
   const rawLock = useTransform(scrollYProgress, [0, 1], [0, 1], { clamp: true });
-  const smoothLock = useSpring(rawLock, { stiffness: 140, damping: 26, mass: 0.6 });
+  const smoothLock = useSpring(rawLock, { stiffness: 80, damping: 22, mass: 0.8 });
   const staticLock = useMotionValue(1);
   const lock = prefersReducedMotion ? staticLock : smoothLock;
 
-  const gridTilt = useTransform(lock, [0, 1], [8, 0]);
-  const gridOpacity = useTransform(lock, [0, 1], [0.14, 0.28]);
-  const sealScale = useTransform(lock, [0.5, 0.85, 1], [0.4, 0.9, 1]);
-  const sealOpacity = useTransform(lock, [0.4, 0.75, 1], [0, 0.5, 1]);
-  const sealRotate = useTransform(lock, [0, 1], [-30, 0]);
-  const glowOpacity = useTransform(lock, [0.75, 1], [0, 0.85]);
-  const glowColor = useTransform(lock, [0.75, 1], ["var(--primary)", BRAND_ORANGE]);
-  const captionOpacity = useTransform(lock, [0.92, 1], [0, 1]);
-  const captionY = useTransform(lock, [0.92, 1], [8, 0]);
+  const gridTilt = useTransform(lock, [0, 1], [6, 0]);
+  const gridOpacity = useTransform(lock, [0, 1], [0.1, 0.24]);
+  const sealScale = useTransform(lock, [0.45, 0.8, 1], [0.35, 0.92, 1]);
+  const sealOpacity = useTransform(lock, [0.35, 0.7, 1], [0, 0.55, 1]);
+  const sealRotate = useTransform(lock, [0, 1], [-24, 0]);
+  const glowOpacity = useTransform(lock, [0.7, 1], [0, 0.75]);
+  const glowColor = useTransform(lock, [0.7, 1], ["var(--primary)", "var(--brand-orange)"]);
+  const captionOpacity = useTransform(lock, [0.9, 1], [0, 1]);
+  const captionY = useTransform(lock, [0.9, 1], [10, 0]);
+  const ringRotate = useTransform(lock, [0, 1], [0, 120]);
 
   return (
     <section
       ref={sectionRef}
-      className="dark relative w-full overflow-hidden bg-black py-28 sm:py-36"
+      className="dark relative w-full overflow-hidden bg-footer py-28 sm:py-36"
     >
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black via-[#050810] to-black" />
-      <div className="pointer-events-none absolute left-1/2 top-1/3 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/10 blur-[140px]" />
+      <div className="pointer-events-none absolute left-1/2 top-1/3 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/8 blur-[140px]" />
 
       <div className="relative mx-auto max-w-6xl px-6 lg:px-10">
         <div className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-medium uppercase tracking-[0.2em]" style={{ color: BRAND_ORANGE }}>
+          <p className="text-sm font-medium uppercase tracking-[0.2em] text-brand-orange">
             The Apex Moat
           </p>
-          <h2 className="mt-4 text-3xl font-normal tracking-tight text-white sm:text-4xl lg:text-5xl">
+          <h2 className="mt-4 text-3xl font-normal tracking-tight text-footer-foreground sm:text-4xl lg:text-5xl">
             Four defenses. One core.
           </h2>
-          {/* TODO: client-approved moat copy — placeholder, see handover Section 15 */}
-          <p className="mt-4 text-base leading-relaxed text-slate-400">
+          <p className="mt-4 text-base leading-relaxed text-footer-muted">
             Every layer of Apex Node closes a different gap in enterprise QA —
             and they only work because they work together.
           </p>
         </div>
 
         <motion.div
-          style={{ rotateX: gridTilt }}
+          style={{ rotateX: gridTilt, perspective: 1000 }}
           className="relative mx-auto mt-20 aspect-square w-full max-w-[600px]"
         >
-          {/* ambient always-on boundary ring, carrying an orbiting orange spark */}
-          <div className="absolute inset-0 animate-[spin_38s_linear_infinite] rounded-full border border-dashed border-primary/15">
-            <span
-              style={{
-                background: BRAND_ORANGE,
-                boxShadow: `0 0 10px 2px ${BRAND_ORANGE}`,
-              }}
-              className="absolute left-1/2 top-0 size-2 -translate-x-1/2 -translate-y-1/2 rounded-full"
-            />
-          </div>
+          <motion.div
+            style={{ rotate: ringRotate }}
+            className="absolute inset-0 rounded-full border border-dashed border-primary/20"
+          >
+            <span className="absolute left-1/2 top-0 size-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand-orange shadow-[0_0_10px_2px_var(--brand-orange)]" />
+          </motion.div>
 
           <motion.div
             style={{ opacity: gridOpacity }}
-            className="absolute inset-0 rounded-full [background-image:linear-gradient(to_right,theme(colors.slate.400)_1px,transparent_1px),linear-gradient(to_bottom,theme(colors.slate.400)_1px,transparent_1px)] [background-size:12%_12%]"
+            className="absolute inset-0 rounded-full [background-image:linear-gradient(to_right,color-mix(in_oklab,var(--border)_60%,transparent)_1px,transparent_1px),linear-gradient(to_bottom,color-mix(in_oklab,var(--border)_60%,transparent)_1px,transparent_1px)] [background-size:12%_12%]"
           />
 
           <svg viewBox="0 0 100 100" className="absolute inset-0 h-full w-full overflow-visible">
@@ -225,13 +218,13 @@ export function Moat() {
                 points={hexPoints(CENTER, CENTER, 11)}
                 fill="none"
                 stroke="var(--primary)"
-                strokeWidth={0.6}
+                strokeWidth={0.55}
               />
               <motion.polygon
                 points={hexPoints(CENTER, CENTER, 7)}
-                fill={BRAND_ORANGE}
-                style={{ fillOpacity: useTransform(lock, [0.75, 1], [0.06, 0.22]) }}
-                stroke={BRAND_ORANGE}
+                fill="var(--brand-orange)"
+                style={{ fillOpacity: useTransform(lock, [0.7, 1], [0.05, 0.2]) }}
+                stroke="var(--brand-orange)"
                 strokeWidth={0.45}
               />
             </motion.g>
@@ -246,13 +239,13 @@ export function Moat() {
 
           {moatPillars.map((pillar, i) => {
             const localT = useStaggeredT(lock, i);
-            return <Node key={pillar.id} pillar={pillar} localT={localT} />;
+            return <Node key={pillar.id} pillar={pillar} localT={localT} lock={lock} />;
           })}
         </motion.div>
 
         <motion.p
-          style={{ opacity: captionOpacity, y: captionY, color: BRAND_ORANGE }}
-          className="mt-10 text-center text-sm font-medium uppercase tracking-[0.2em]"
+          style={{ opacity: captionOpacity, y: captionY }}
+          className="mt-10 text-center text-sm font-medium uppercase tracking-[0.2em] text-brand-orange"
         >
           One integrated defense system
         </motion.p>

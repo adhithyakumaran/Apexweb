@@ -8,7 +8,7 @@ export const mainNav: NavItem[] = [
   { label: "About Us", href: "/about" },
   { label: "Pricing", href: "/pricing" },
   { label: "Services", href: "/what-we-do" },
-  { label: "Contact", href: "/contact" },
+  { label: "Contact", href: "/#contact" },
 ];
 
 export const whatsappCta = {

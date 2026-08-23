@@ -45,7 +45,7 @@ export function Contact() {
   const prefersReducedMotion = useReducedMotion();
 
   return (
-    <section className="relative w-full overflow-hidden bg-brand-orange-light px-4 py-24 sm:px-6 lg:px-10">
+    <section id="contact" className="relative w-full overflow-hidden bg-brand-orange-light px-4 py-24 sm:px-6 lg:px-10">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,color-mix(in_oklab,var(--brand-orange)_18%,transparent),transparent_55%)]" />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,color-mix(in_oklab,var(--primary)_10%,transparent),transparent_50%)]" />
 
@@ -118,13 +118,14 @@ export function Contact() {
           </motion.div>
 
           <motion.div
-            className="rounded-3xl border border-brand-orange/20 bg-card p-8 shadow-lg sm:p-10"
+            className="relative overflow-hidden rounded-3xl border border-brand-orange/20 bg-card p-8 shadow-lg sm:p-10"
             initial={prefersReducedMotion ? false : { opacity: 0, y: 32 }}
             whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.2 }}
             transition={{ ...defaultTransition, delay: 0.1 }}
           >
-            <div className="mb-6">
+            <div className="pointer-events-none absolute -right-10 -top-10 size-40 rounded-full bg-brand-orange/10 blur-3xl" />
+            <div className="relative mb-6">
               <h3 className="text-xl font-semibold tracking-tight text-foreground">
                 Send us a message
               </h3>
