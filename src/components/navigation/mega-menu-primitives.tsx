@@ -94,7 +94,7 @@ export function MegaMenuShell({
             />
 
             <motion.div
-              className="fixed inset-x-0 top-16 z-50 min-h-[calc(100vh-4rem)] overflow-y-auto"
+              className="fixed inset-x-0 top-16 z-50 max-h-[calc(100vh-4rem)] overflow-y-auto overscroll-contain"
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
@@ -102,7 +102,7 @@ export function MegaMenuShell({
               onMouseEnter={onEnter}
               onMouseLeave={onLeave}
             >
-              <div className="min-h-[calc(100vh-4rem)] border-t border-border bg-background shadow-[0_24px_80px_rgba(0,0,0,0.18)]">
+              <div className="border-t border-border bg-background shadow-[0_24px_80px_rgba(0,0,0,0.18)]">
                 {children}
                 {footer}
               </div>

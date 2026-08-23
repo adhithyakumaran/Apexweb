@@ -34,8 +34,8 @@ export function AgentsMegaMenu() {
         </MegaMenuFooter>
       }
     >
-      <div className="mx-auto max-w-350 px-8 py-12 lg:px-14 lg:py-14">
-        <div className="mb-10 max-w-2xl">
+      <div className="mx-auto max-w-350 px-8 py-10 lg:px-14 lg:py-12">
+        <div className="mb-8 max-w-2xl">
           <p className="text-sm font-medium text-primary">Intelligent agents</p>
           <h2 className="mt-2 text-2xl font-semibold tracking-tight text-foreground lg:text-3xl">
             Purpose-built AI for every industry and quality workflow
@@ -46,7 +46,7 @@ export function AgentsMegaMenu() {
           </p>
         </div>
 
-        <div className="grid gap-12 lg:grid-cols-12 lg:gap-14">
+        <div className="grid gap-10 lg:grid-cols-12 lg:gap-12">
           <div className="lg:col-span-6 lg:border-r lg:border-border/50 lg:pr-10">
             <MegaMenuSectionLabel>Industry-Specific Agents</MegaMenuSectionLabel>
             <div className="grid gap-1 sm:grid-cols-2">
