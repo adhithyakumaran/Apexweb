@@ -43,3 +43,32 @@ export const cmsActivityLogs = pgTable("cms_activity_logs", {
 
 export type CmsActivityLogRow = typeof cmsActivityLogs.$inferSelect;
 export type NewCmsActivityLogRow = typeof cmsActivityLogs.$inferInsert;
+
+export const cmsChatbotSettings = pgTable("cms_chatbot_settings", {
+  id: serial("id").primaryKey(),
+  provider: varchar("provider", { length: 40 }).notNull().default("groq"),
+  model: varchar("model", { length: 120 }).notNull().default("llama-3.3-70b-versatile"),
+  systemPrompt: text("system_prompt").notNull().default(""),
+  tone: varchar("tone", { length: 80 }).notNull().default("professional"),
+  skills: jsonb("skills").$type<string[]>().notNull().default([]),
+  crawlEnabled: boolean("crawl_enabled").notNull().default(true),
+  crawlBaseUrl: text("crawl_base_url"),
+  lastCrawledAt: timestamp("last_crawled_at", { mode: "string" }),
+  enabled: boolean("enabled").notNull().default(false),
+  welcomeMessage: text("welcome_message").notNull().default("Hi — how can I help you today?"),
+  updatedAt: timestamp("updated_at", { mode: "string" }).defaultNow(),
+});
+
+export const cmsChatbotMemory = pgTable("cms_chatbot_memory", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  type: varchar("type", { length: 40 }).notNull(),
+  content: text("content"),
+  fileUrl: text("file_url"),
+  sourceUrl: text("source_url"),
+  charCount: integer("char_count").notNull().default(0),
+  createdAt: timestamp("created_at", { mode: "string" }).defaultNow(),
+});
+
+export type CmsChatbotSettingsRow = typeof cmsChatbotSettings.$inferSelect;
+export type CmsChatbotMemoryRow = typeof cmsChatbotMemory.$inferSelect;

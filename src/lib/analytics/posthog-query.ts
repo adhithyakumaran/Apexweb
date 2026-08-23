@@ -7,12 +7,14 @@ import {
   isPostHogQueryConfigured,
 } from "@/lib/analytics/posthog-config";
 
+export type AnalyticsPeriod = "week" | "month";
+
 export type VisitorKpis = {
-  pageviews7d: number;
+  pageviewsPeriod: number;
   pageviews24h: number;
-  uniqueVisitors7d: number;
+  uniqueVisitorsPeriod: number;
   uniqueVisitors24h: number;
-  sessions7d: number;
+  sessionsPeriod: number;
   avgSessionSeconds: number;
   pagesPerSession: number;
   bounceRate: number;
@@ -38,6 +40,7 @@ export type WebVitals = {
 };
 
 export type VisitorAnalyticsData = {
+  period: AnalyticsPeriod;
   configured: {
     capture: boolean;
     query: boolean;
@@ -63,23 +66,34 @@ type HogQLResponse = {
   error?: string;
 };
 
+const PERIOD_DAYS: Record<AnalyticsPeriod, number> = {
+  week: 7,
+  month: 30,
+};
+
+const PERIOD_LABELS: Record<AnalyticsPeriod, string> = {
+  week: "Last 7 days",
+  month: "Last 30 days",
+};
+
 const EMPTY_KPIS: VisitorKpis = {
-  pageviews7d: 0,
+  pageviewsPeriod: 0,
   pageviews24h: 0,
-  uniqueVisitors7d: 0,
+  uniqueVisitorsPeriod: 0,
   uniqueVisitors24h: 0,
-  sessions7d: 0,
+  sessionsPeriod: 0,
   avgSessionSeconds: 0,
   pagesPerSession: 0,
   bounceRate: 0,
 };
 
-const ANALYTICS_QUERY = `
-SELECT row_type, label, toFloat64(value) AS value
+function buildAnalyticsQuery(days: number) {
+  return `
+SELECT row_type, label, toFloat(value) AS value
 FROM (
-  SELECT 'kpi' AS row_type, 'pageviews_7d' AS label, count() AS value
+  SELECT 'kpi' AS row_type, 'pageviews_period' AS label, count() AS value
   FROM events
-  WHERE event = '$pageview' AND timestamp >= now() - INTERVAL 7 DAY
+  WHERE event = '$pageview' AND timestamp >= now() - INTERVAL ${days} DAY
 
   UNION ALL
   SELECT 'kpi', 'pageviews_24h', count()
@@ -87,9 +101,9 @@ FROM (
   WHERE event = '$pageview' AND timestamp >= now() - INTERVAL 1 DAY
 
   UNION ALL
-  SELECT 'kpi', 'visitors_7d', uniqExact(distinct_id)
+  SELECT 'kpi', 'visitors_period', uniqExact(distinct_id)
   FROM events
-  WHERE timestamp >= now() - INTERVAL 7 DAY
+  WHERE timestamp >= now() - INTERVAL ${days} DAY
 
   UNION ALL
   SELECT 'kpi', 'visitors_24h', uniqExact(distinct_id)
@@ -97,27 +111,27 @@ FROM (
   WHERE timestamp >= now() - INTERVAL 1 DAY
 
   UNION ALL
-  SELECT 'kpi', 'sessions_7d', uniqExact(properties.$session_id)
+  SELECT 'kpi', 'sessions_period', uniqExact(properties.$session_id)
   FROM events
-  WHERE timestamp >= now() - INTERVAL 7 DAY AND properties.$session_id IS NOT NULL
+  WHERE timestamp >= now() - INTERVAL ${days} DAY AND properties.$session_id IS NOT NULL
 
   UNION ALL
   SELECT 'kpi', 'avg_session_seconds',
     ifNull(avgIf(toFloat(properties.$session_duration), event = '$pageleave' AND toFloat(properties.$session_duration) > 0), 0)
   FROM events
-  WHERE timestamp >= now() - INTERVAL 7 DAY
+  WHERE timestamp >= now() - INTERVAL ${days} DAY
 
   UNION ALL
   SELECT 'kpi', 'bounce_rate',
     ifNull(avgIf(if(toFloat(properties.$session_duration) < 10, 1, 0), event = '$pageleave'), 0) * 100
   FROM events
-  WHERE timestamp >= now() - INTERVAL 7 DAY
+  WHERE timestamp >= now() - INTERVAL ${days} DAY
 
   UNION ALL
   SELECT 'trend', toString(day), views FROM (
     SELECT toDate(timestamp) AS day, count() AS views
     FROM events
-    WHERE event = '$pageview' AND timestamp >= now() - INTERVAL 7 DAY
+    WHERE event = '$pageview' AND timestamp >= now() - INTERVAL ${days} DAY
     GROUP BY day
   )
 
@@ -125,7 +139,7 @@ FROM (
   SELECT 'page', label, value FROM (
     SELECT ifNull(nullIf(properties.$pathname, ''), '/') AS label, count() AS value
     FROM events
-    WHERE event = '$pageview' AND timestamp >= now() - INTERVAL 7 DAY
+    WHERE event = '$pageview' AND timestamp >= now() - INTERVAL ${days} DAY
     GROUP BY label
     ORDER BY value DESC
     LIMIT 8
@@ -135,7 +149,7 @@ FROM (
   SELECT 'referrer', label, value FROM (
     SELECT ifNull(nullIf(properties.$referring_domain, ''), 'Direct') AS label, count() AS value
     FROM events
-    WHERE event = '$pageview' AND timestamp >= now() - INTERVAL 7 DAY
+    WHERE event = '$pageview' AND timestamp >= now() - INTERVAL ${days} DAY
     GROUP BY label
     ORDER BY value DESC
     LIMIT 8
@@ -145,7 +159,7 @@ FROM (
   SELECT 'country', label, value FROM (
     SELECT ifNull(nullIf(properties.$geoip_country_code, ''), 'Unknown') AS label, count() AS value
     FROM events
-    WHERE event = '$pageview' AND timestamp >= now() - INTERVAL 7 DAY
+    WHERE event = '$pageview' AND timestamp >= now() - INTERVAL ${days} DAY
     GROUP BY label
     ORDER BY value DESC
     LIMIT 8
@@ -155,7 +169,7 @@ FROM (
   SELECT 'device', label, value FROM (
     SELECT ifNull(nullIf(properties.$device_type, ''), 'Unknown') AS label, count() AS value
     FROM events
-    WHERE event = '$pageview' AND timestamp >= now() - INTERVAL 7 DAY
+    WHERE event = '$pageview' AND timestamp >= now() - INTERVAL ${days} DAY
     GROUP BY label
     ORDER BY value DESC
     LIMIT 5
@@ -165,7 +179,7 @@ FROM (
   SELECT 'browser', label, value FROM (
     SELECT ifNull(nullIf(properties.$browser, ''), 'Unknown') AS label, count() AS value
     FROM events
-    WHERE event = '$pageview' AND timestamp >= now() - INTERVAL 7 DAY
+    WHERE event = '$pageview' AND timestamp >= now() - INTERVAL ${days} DAY
     GROUP BY label
     ORDER BY value DESC
     LIMIT 5
@@ -175,7 +189,7 @@ FROM (
   SELECT 'exit', label, value FROM (
     SELECT ifNull(nullIf(properties.$pathname, ''), '/') AS label, count() AS value
     FROM events
-    WHERE event = '$pageleave' AND timestamp >= now() - INTERVAL 7 DAY
+    WHERE event = '$pageleave' AND timestamp >= now() - INTERVAL ${days} DAY
     GROUP BY label
     ORDER BY value DESC
     LIMIT 8
@@ -185,34 +199,35 @@ FROM (
   SELECT 'vital', 'lcp_ms',
     ifNull(avgIf(toFloat(properties.$web_vitals_LCP_value), event = '$web_vitals'), 0)
   FROM events
-  WHERE timestamp >= now() - INTERVAL 7 DAY
+  WHERE timestamp >= now() - INTERVAL ${days} DAY
 
   UNION ALL
   SELECT 'vital', 'fcp_ms',
     ifNull(avgIf(toFloat(properties.$web_vitals_FCP_value), event = '$web_vitals'), 0)
   FROM events
-  WHERE timestamp >= now() - INTERVAL 7 DAY
+  WHERE timestamp >= now() - INTERVAL ${days} DAY
 
   UNION ALL
   SELECT 'vital', 'cls',
     ifNull(avgIf(toFloat(properties.$web_vitals_CLS_value), event = '$web_vitals'), 0)
   FROM events
-  WHERE timestamp >= now() - INTERVAL 7 DAY
+  WHERE timestamp >= now() - INTERVAL ${days} DAY
 
   UNION ALL
   SELECT 'vital', 'inp_ms',
     ifNull(avgIf(toFloat(properties.$web_vitals_INP_value), event = '$web_vitals'), 0)
   FROM events
-  WHERE timestamp >= now() - INTERVAL 7 DAY
+  WHERE timestamp >= now() - INTERVAL ${days} DAY
 
   UNION ALL
   SELECT 'vital', 'samples', count()
   FROM events
-  WHERE event = '$web_vitals' AND timestamp >= now() - INTERVAL 7 DAY
+  WHERE event = '$web_vitals' AND timestamp >= now() - INTERVAL ${days} DAY
 )
 `;
+}
 
-async function runHogQLQuery(): Promise<HogQLResponse> {
+async function runHogQLQuery(days: number): Promise<HogQLResponse> {
   const apiKey = getPostHogPersonalApiKey();
   const projectId = getPostHogProjectId();
   const host = getPostHogHost().replace(/\/$/, "");
@@ -226,7 +241,7 @@ async function runHogQLQuery(): Promise<HogQLResponse> {
     body: JSON.stringify({
       query: {
         kind: "HogQLQuery",
-        query: ANALYTICS_QUERY,
+        query: buildAnalyticsQuery(days),
       },
       refresh: "force_cache",
     }),
@@ -251,7 +266,9 @@ function toRanked(rows: { label: string; value: number }[], total: number): Rank
     }));
 }
 
-function parseHogQLResults(results: unknown[][]): Omit<VisitorAnalyticsData, "configured" | "periodLabel" | "cacheNote" | "setupMessage"> {
+function parseHogQLResults(
+  results: unknown[][]
+): Omit<VisitorAnalyticsData, "configured" | "periodLabel" | "cacheNote" | "setupMessage" | "period"> {
   const kpis = { ...EMPTY_KPIS };
   const trendMap = new Map<string, number>();
   const pages: { label: string; value: number }[] = [];
@@ -275,11 +292,11 @@ function parseHogQLResults(results: unknown[][]): Omit<VisitorAnalyticsData, "co
 
     switch (rowType) {
       case "kpi":
-        if (label === "pageviews_7d") kpis.pageviews7d = value;
+        if (label === "pageviews_period") kpis.pageviewsPeriod = value;
         if (label === "pageviews_24h") kpis.pageviews24h = value;
-        if (label === "visitors_7d") kpis.uniqueVisitors7d = value;
+        if (label === "visitors_period") kpis.uniqueVisitorsPeriod = value;
         if (label === "visitors_24h") kpis.uniqueVisitors24h = value;
-        if (label === "sessions_7d") kpis.sessions7d = value;
+        if (label === "sessions_period") kpis.sessionsPeriod = value;
         if (label === "avg_session_seconds") kpis.avgSessionSeconds = value;
         if (label === "bounce_rate") kpis.bounceRate = value;
         break;
@@ -317,12 +334,18 @@ function parseHogQLResults(results: unknown[][]): Omit<VisitorAnalyticsData, "co
   }
 
   kpis.pagesPerSession =
-    kpis.sessions7d > 0 ? Math.round((kpis.pageviews7d / kpis.sessions7d) * 10) / 10 : 0;
+    kpis.sessionsPeriod > 0
+      ? Math.round((kpis.pageviewsPeriod / kpis.sessionsPeriod) * 10) / 10
+      : 0;
 
   const trend: TrendPoint[] = [...trendMap.entries()]
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([day, pageviews]) => ({
-      day: new Date(day).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" }),
+      day: new Date(day).toLocaleDateString(undefined, {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+      }),
       pageviews,
     }));
 
@@ -332,23 +355,24 @@ function parseHogQLResults(results: unknown[][]): Omit<VisitorAnalyticsData, "co
     kpis,
     trend,
     topPages: toRanked(pages, pageTotal),
-    topReferrers: toRanked(referrers, kpis.pageviews7d),
-    topCountries: toRanked(countries, kpis.pageviews7d),
-    devices: toRanked(devices, kpis.pageviews7d),
-    browsers: toRanked(browsers, kpis.pageviews7d),
+    topReferrers: toRanked(referrers, kpis.pageviewsPeriod),
+    topCountries: toRanked(countries, kpis.pageviewsPeriod),
+    devices: toRanked(devices, kpis.pageviewsPeriod),
+    browsers: toRanked(browsers, kpis.pageviewsPeriod),
     exitPages: toRanked(exits, exits.reduce((sum, row) => sum + row.value, 0)),
     webVitals: vitals,
     lastSyncedAt: new Date().toISOString(),
   };
 }
 
-function emptyAnalytics(setupMessage?: string): VisitorAnalyticsData {
+function emptyAnalytics(period: AnalyticsPeriod, setupMessage?: string): VisitorAnalyticsData {
   return {
+    period,
     configured: {
       capture: isPostHogCaptureConfigured(),
       query: isPostHogQueryConfigured(),
     },
-    periodLabel: "Last 7 days",
+    periodLabel: PERIOD_LABELS[period],
     kpis: EMPTY_KPIS,
     trend: [],
     topPages: [],
@@ -364,21 +388,25 @@ function emptyAnalytics(setupMessage?: string): VisitorAnalyticsData {
   };
 }
 
-async function fetchVisitorAnalyticsUncached(): Promise<VisitorAnalyticsData> {
-  const base = emptyAnalytics();
+async function fetchVisitorAnalyticsUncached(period: AnalyticsPeriod): Promise<VisitorAnalyticsData> {
+  const base = emptyAnalytics(period);
 
   if (!base.configured.capture) {
-    return emptyAnalytics("Add NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN and NEXT_PUBLIC_POSTHOG_HOST to start tracking visitors.");
+    return emptyAnalytics(
+      period,
+      "Add NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN and NEXT_PUBLIC_POSTHOG_HOST to start tracking visitors."
+    );
   }
 
   if (!base.configured.query) {
     return emptyAnalytics(
+      period,
       "Tracking is active. Add POSTHOG_PERSONAL_API_KEY and POSTHOG_PROJECT_ID in Vercel to load the dashboard (1 API query, cached 45 min)."
     );
   }
 
   try {
-    const response = await runHogQLQuery();
+    const response = await runHogQLQuery(PERIOD_DAYS[period]);
     if (!response.results?.length) {
       return {
         ...base,
@@ -403,12 +431,99 @@ async function fetchVisitorAnalyticsUncached(): Promise<VisitorAnalyticsData> {
   }
 }
 
-const getCachedVisitorAnalytics = unstable_cache(
-  fetchVisitorAnalyticsUncached,
-  ["visitor-analytics-posthog"],
+const getCachedVisitorAnalyticsWeek = unstable_cache(
+  () => fetchVisitorAnalyticsUncached("week"),
+  ["visitor-analytics-posthog-week"],
   { revalidate: 45 * 60 }
 );
 
-export async function getVisitorAnalytics(): Promise<VisitorAnalyticsData> {
-  return getCachedVisitorAnalytics();
+const getCachedVisitorAnalyticsMonth = unstable_cache(
+  () => fetchVisitorAnalyticsUncached("month"),
+  ["visitor-analytics-posthog-month"],
+  { revalidate: 45 * 60 }
+);
+
+export async function getVisitorAnalytics(period: AnalyticsPeriod = "week"): Promise<VisitorAnalyticsData> {
+  return period === "month" ? getCachedVisitorAnalyticsMonth() : getCachedVisitorAnalyticsWeek();
+}
+
+export function analyticsToCsv(data: VisitorAnalyticsData): string {
+  const lines: string[] = [
+    `Apexweb Analytics Report`,
+    `Period,${data.periodLabel}`,
+    `Generated,${new Date().toISOString()}`,
+    "",
+    "KPI,Value",
+    `Unique visitors,${data.kpis.uniqueVisitorsPeriod}`,
+    `Page views,${data.kpis.pageviewsPeriod}`,
+    `Sessions,${data.kpis.sessionsPeriod}`,
+    `Avg session (seconds),${Math.round(data.kpis.avgSessionSeconds)}`,
+    `Pages per session,${data.kpis.pagesPerSession}`,
+    `Bounce rate (%),${data.kpis.bounceRate.toFixed(1)}`,
+    "",
+    "Date,Page views",
+    ...data.trend.map((row) => `${row.day},${row.pageviews}`),
+    "",
+    "Top pages,Views,Share %",
+    ...data.topPages.map((row) => `"${row.label}",${row.value},${row.share}`),
+    "",
+    "Traffic sources,Views,Share %",
+    ...data.topReferrers.map((row) => `"${row.label}",${row.value},${row.share}`),
+    "",
+    "Countries,Views,Share %",
+    ...data.topCountries.map((row) => `"${row.label}",${row.value},${row.share}`),
+    "",
+    "Devices,Views,Share %",
+    ...data.devices.map((row) => `"${row.label}",${row.value},${row.share}`),
+    "",
+    "Browsers,Views,Share %",
+    ...data.browsers.map((row) => `"${row.label}",${row.value},${row.share}`),
+    "",
+    "Web vital,Value",
+    `LCP (ms),${data.webVitals.lcpMs ?? ""}`,
+    `FCP (ms),${data.webVitals.fcpMs ?? ""}`,
+    `CLS,${data.webVitals.cls ?? ""}`,
+    `INP (ms),${data.webVitals.inpMs ?? ""}`,
+    `Samples,${data.webVitals.samples}`,
+  ];
+  return lines.join("\n");
+}
+
+export function analyticsToPrintHtml(data: VisitorAnalyticsData): string {
+  const section = (title: string, rows: RankedRow[]) => `
+    <h2>${title}</h2>
+    <table>
+      <tr><th>Label</th><th>Views</th><th>Share</th></tr>
+      ${rows.map((r) => `<tr><td>${r.label}</td><td>${r.value}</td><td>${r.share}%</td></tr>`).join("")}
+    </table>`;
+
+  return `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Analytics Report</title>
+<style>
+  body { font-family: system-ui, sans-serif; padding: 40px; color: #111; }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  p { color: #666; font-size: 13px; }
+  h2 { font-size: 14px; margin: 24px 0 8px; border-bottom: 1px solid #ddd; padding-bottom: 4px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #eee; }
+  th { color: #666; font-weight: 500; }
+  .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 20px 0; }
+  .kpi { border: 1px solid #eee; padding: 12px; border-radius: 4px; }
+  .kpi label { font-size: 11px; color: #666; text-transform: uppercase; }
+  .kpi value { display: block; font-size: 22px; font-weight: 600; margin-top: 4px; }
+</style></head><body>
+  <h1>Website Analytics</h1>
+  <p>${data.periodLabel} · Generated ${new Date().toLocaleString()}</p>
+  <div class="kpis">
+    <div class="kpi"><label>Unique visitors</label><value>${data.kpis.uniqueVisitorsPeriod.toLocaleString()}</value></div>
+    <div class="kpi"><label>Page views</label><value>${data.kpis.pageviewsPeriod.toLocaleString()}</value></div>
+    <div class="kpi"><label>Sessions</label><value>${data.kpis.sessionsPeriod.toLocaleString()}</value></div>
+    <div class="kpi"><label>Avg session</label><value>${Math.round(data.kpis.avgSessionSeconds)}s</value></div>
+    <div class="kpi"><label>Pages / session</label><value>${data.kpis.pagesPerSession}</value></div>
+    <div class="kpi"><label>Bounce rate</label><value>${data.kpis.bounceRate.toFixed(1)}%</value></div>
+  </div>
+  ${section("Top pages", data.topPages)}
+  ${section("Traffic sources", data.topReferrers)}
+  ${section("Countries", data.topCountries)}
+</body></html>`;
 }

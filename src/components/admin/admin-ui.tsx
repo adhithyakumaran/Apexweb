@@ -305,3 +305,89 @@ export function AdminFilterSelect({
     </label>
   );
 }
+
+export function AdminDataGrid({
+  children,
+  className,
+  wide,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  wide?: boolean;
+}) {
+  return (
+    <div className={cn(wide ? adminClasses.dataGridWide : adminClasses.dataGrid, className)}>
+      {children}
+    </div>
+  );
+}
+
+export function AdminDataGridHeader({
+  children,
+  className,
+  wide,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  wide?: boolean;
+}) {
+  return (
+    <AdminDataGrid
+      wide={wide}
+      className={cn(
+        "border-b border-[#333] px-4 py-2 text-[11px] font-medium uppercase tracking-wide text-[#666]",
+        className
+      )}
+    >
+      {children}
+    </AdminDataGrid>
+  );
+}
+
+export function AdminDataGridRow({
+  children,
+  className,
+  wide,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  wide?: boolean;
+}) {
+  return (
+    <AdminDataGrid
+      wide={wide}
+      className={cn(
+        "group px-4 py-2.5 text-[13px] transition-colors hover:bg-[#0a0a0a]",
+        className
+      )}
+    >
+      {children}
+    </AdminDataGrid>
+  );
+}
+
+export function AdminDataGridCell({
+  children,
+  className,
+  align = "left",
+  mono,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  align?: "left" | "right" | "center";
+  mono?: boolean;
+}) {
+  return (
+    <div
+      className={cn(
+        "min-w-0 truncate",
+        align === "right" && "text-right",
+        align === "center" && "text-center",
+        mono && "font-mono text-[12px]",
+        className
+      )}
+    >
+      {children}
+    </div>
+  );
+}

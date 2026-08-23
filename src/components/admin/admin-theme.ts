@@ -34,4 +34,9 @@ export const adminClasses = {
   tableHead:
     "border-b border-[#333] text-[11px] font-medium uppercase tracking-wide text-[#666]",
   tableRow: "border-b border-[#333] transition-colors hover:bg-[#0a0a0a] last:border-b-0",
+  /** Vercel-style aligned data grid columns */
+  dataGrid:
+    "grid w-full grid-cols-[minmax(0,1fr)_6.5rem_8.5rem_minmax(8rem,11rem)_4.5rem_6.5rem] items-center gap-x-4",
+  dataGridWide:
+    "grid w-full grid-cols-[minmax(0,1fr)_6.5rem_8.5rem_minmax(10rem,14rem)_5rem_7rem] items-center gap-x-4",
 } as const;

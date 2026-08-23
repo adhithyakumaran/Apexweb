@@ -3,8 +3,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ExternalLink, GitBranch, Pencil, Trash2 } from "lucide-react";
+import { ExternalLink, Pencil, Trash2 } from "lucide-react";
 import {
+  AdminDataGridCell,
+  AdminDataGridHeader,
+  AdminDataGridRow,
   AdminEmptyState,
   AdminPrimaryButton,
   AdminSecondaryButton,
@@ -130,99 +133,109 @@ export function ArticlesTable({ articles, compact = false }: ArticlesTableProps)
       )}
 
       {!compact && (
-        <div className="flex flex-wrap items-center gap-2 border-b border-[#333] pb-4">
+        <div className="flex items-center border-b border-[#333] pb-4">
           <span className="text-[13px] text-[#666]">{rows.length} articles</span>
         </div>
       )}
 
-      <div className="overflow-hidden rounded-md border border-[#333]">
-        {rows.map((article, index) => {
-          const template = getCmsTemplate(article.cmsTemplate as CmsTemplateId);
-          const isBusy = busyId === article.id;
-          const updated = article.updatedAt ?? article.publishedAt;
+      <div className="overflow-x-auto rounded-md border border-[#333]">
+        <div className="min-w-[56rem]">
+          <AdminDataGridHeader wide>
+            <AdminDataGridCell>Article</AdminDataGridCell>
+            <AdminDataGridCell>Status</AdminDataGridCell>
+            <AdminDataGridCell>Template</AdminDataGridCell>
+            <AdminDataGridCell>Path</AdminDataGridCell>
+            <AdminDataGridCell align="right">Updated</AdminDataGridCell>
+            <AdminDataGridCell align="right">Actions</AdminDataGridCell>
+          </AdminDataGridHeader>
 
-          return (
-            <div
-              key={article.id}
-              className={cn(
-                "group flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 transition-colors hover:bg-[#0a0a0a]",
-                index !== rows.length - 1 && "border-b border-[#333]"
-              )}
-            >
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                  <Link
-                    href={`/admin/articles/${article.id}/edit`}
-                    className="text-[13px] font-medium text-[#ededed] hover:underline"
-                  >
-                    {article.title}
-                  </Link>
-                  {article.status === "published" && (
-                    <span className="rounded border border-[#0070f3]/40 bg-[#0070f3]/10 px-1.5 py-0.5 text-[11px] font-medium text-[#3291ff]">
-                      Production
-                    </span>
-                  )}
-                </div>
-              </div>
+          {rows.map((article, index) => {
+            const template = getCmsTemplate(article.cmsTemplate as CmsTemplateId);
+            const isBusy = busyId === article.id;
+            const updated = article.updatedAt ?? article.publishedAt;
 
-              <div className="flex items-center gap-4 text-[13px]">
-                <AdminStatusDot
-                  tone={article.status === "published" ? "success" : "warning"}
-                >
-                  {article.status === "published" ? "Ready" : "Draft"}
-                </AdminStatusDot>
-
-                <span className="hidden items-center gap-1.5 text-[#666] sm:inline-flex">
-                  <GitBranch className="size-3.5" />
-                  <span className="font-mono text-[12px]">{template?.label ?? article.cmsTemplate}</span>
-                </span>
-
-                <span className="hidden font-mono text-[12px] text-[#666] md:inline">
-                  /articles/{article.slug}
-                </span>
-
-                <span className="tabular-nums text-[#666]">{relativeTime(updated)}</span>
-
-                <div className="flex items-center gap-0.5 opacity-60 transition-opacity group-hover:opacity-100">
-                  {article.status === "draft" && (
-                    <AdminSecondaryButton
-                      onClick={() => handlePublish(article)}
-                      className={cn("h-7 px-2 text-[12px]", isBusy && "opacity-50")}
-                    >
-                      Publish
-                    </AdminSecondaryButton>
-                  )}
-                  {article.status === "published" && (
+            return (
+              <AdminDataGridRow
+                key={article.id}
+                wide
+                className={cn(index !== rows.length - 1 && "border-b border-[#333]")}
+              >
+                <AdminDataGridCell>
+                  <div className="flex min-w-0 items-center gap-2">
                     <Link
-                      href={`/articles/${article.slug}`}
-                      target="_blank"
-                      className="inline-flex size-7 items-center justify-center rounded text-[#a1a1a1] hover:bg-[#111] hover:text-white"
-                      title="View live"
+                      href={`/admin/articles/${article.id}/edit`}
+                      className="truncate font-medium text-[#ededed] hover:underline"
                     >
-                      <ExternalLink className="size-3.5" />
+                      {article.title}
                     </Link>
-                  )}
-                  <Link
-                    href={`/admin/articles/${article.id}/edit`}
-                    className="inline-flex size-7 items-center justify-center rounded text-[#a1a1a1] hover:bg-[#111] hover:text-white"
-                    title="Edit"
-                  >
-                    <Pencil className="size-3.5" />
-                  </Link>
-                  <button
-                    type="button"
-                    className="inline-flex size-7 items-center justify-center rounded text-[#a1a1a1] hover:bg-[#111] hover:text-[#ff6666] disabled:opacity-50"
-                    disabled={isBusy}
-                    onClick={() => handleDelete(article)}
-                    title="Delete"
-                  >
-                    <Trash2 className="size-3.5" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          );
-        })}
+                    {article.status === "published" && (
+                      <span className="shrink-0 rounded border border-[#0070f3]/40 bg-[#0070f3]/10 px-1.5 py-0.5 text-[10px] font-medium text-[#3291ff]">
+                        Production
+                      </span>
+                    )}
+                  </div>
+                </AdminDataGridCell>
+
+                <AdminDataGridCell>
+                  <AdminStatusDot tone={article.status === "published" ? "success" : "warning"}>
+                    {article.status === "published" ? "Ready" : "Draft"}
+                  </AdminStatusDot>
+                </AdminDataGridCell>
+
+                <AdminDataGridCell className="text-[#a1a1a1]">
+                  {template?.label ?? article.cmsTemplate}
+                </AdminDataGridCell>
+
+                <AdminDataGridCell mono className="text-[#666]">
+                  /articles/{article.slug}
+                </AdminDataGridCell>
+
+                <AdminDataGridCell align="right" className="tabular-nums text-[#666]">
+                  {relativeTime(updated)}
+                </AdminDataGridCell>
+
+                <AdminDataGridCell align="right">
+                  <div className="flex items-center justify-end gap-0.5 opacity-70 transition-opacity group-hover:opacity-100">
+                    {article.status === "draft" && (
+                      <AdminSecondaryButton
+                        onClick={() => handlePublish(article)}
+                        className={cn("h-7 px-2 text-[12px]", isBusy && "opacity-50")}
+                      >
+                        Publish
+                      </AdminSecondaryButton>
+                    )}
+                    {article.status === "published" && (
+                      <Link
+                        href={`/articles/${article.slug}`}
+                        target="_blank"
+                        className="inline-flex size-7 items-center justify-center rounded text-[#a1a1a1] hover:bg-[#111] hover:text-white"
+                        title="View live"
+                      >
+                        <ExternalLink className="size-3.5" />
+                      </Link>
+                    )}
+                    <Link
+                      href={`/admin/articles/${article.id}/edit`}
+                      className="inline-flex size-7 items-center justify-center rounded text-[#a1a1a1] hover:bg-[#111] hover:text-white"
+                      title="Edit"
+                    >
+                      <Pencil className="size-3.5" />
+                    </Link>
+                    <button
+                      type="button"
+                      className="inline-flex size-7 items-center justify-center rounded text-[#a1a1a1] hover:bg-[#111] hover:text-[#ff6666] disabled:opacity-50"
+                      disabled={isBusy}
+                      onClick={() => handleDelete(article)}
+                      title="Delete"
+                    >
+                      <Trash2 className="size-3.5" />
+                    </button>
+                  </div>
+                </AdminDataGridCell>
+              </AdminDataGridRow>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

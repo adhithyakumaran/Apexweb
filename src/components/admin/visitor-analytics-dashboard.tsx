@@ -1,18 +1,27 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import type { VisitorAnalyticsData } from "@/lib/analytics/posthog-query";
+import {
+  analyticsToCsv,
+  analyticsToPrintHtml,
+  type AnalyticsPeriod,
+  type VisitorAnalyticsData,
+} from "@/lib/analytics/posthog-query";
 import {
   AdminAlert,
+  AdminFilterBar,
   AdminPanel,
   AdminPanelBody,
   AdminPanelHeader,
+  AdminSecondaryButton,
   AdminStatCard,
   AdminStatusDot,
   AdminStatusStrip,
 } from "@/components/admin/admin-ui";
 import { adminClasses } from "@/components/admin/admin-theme";
-import { Clock3, Globe2, MousePointerClick, Timer } from "lucide-react";
+import { Download, FileSpreadsheet, Printer } from "lucide-react";
 
 type VisitorAnalyticsDashboardProps = {
   data: VisitorAnalyticsData;
@@ -36,6 +45,16 @@ function formatMs(ms: number | null) {
   return `${Math.round(ms)}ms`;
 }
 
+function downloadFile(content: string, filename: string, mime: string) {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
 function DataTable({
   title,
   description,
@@ -54,20 +73,18 @@ function DataTable({
         {rows.length === 0 ? (
           <p className="px-4 py-10 text-center text-[13px] text-[#666]">No data yet.</p>
         ) : (
-          <table className="w-full text-left text-[13px]">
+          <table className="w-full table-fixed text-left text-[13px]">
             <thead className={adminClasses.tableHead}>
               <tr>
-                <th className="px-4 py-2.5 font-medium">Page / source</th>
-                <th className="px-3 py-2.5 text-right font-medium">{valueLabel}</th>
-                <th className="px-4 py-2.5 text-right font-medium">Share</th>
+                <th className="w-[55%] px-4 py-2.5 font-medium">Page / source</th>
+                <th className="w-[22%] px-3 py-2.5 text-right font-medium">{valueLabel}</th>
+                <th className="w-[23%] px-4 py-2.5 text-right font-medium">Share</th>
               </tr>
             </thead>
             <tbody>
               {rows.map((row) => (
                 <tr key={row.label} className={adminClasses.tableRow}>
-                  <td className="max-w-[16rem] truncate px-4 py-2.5 text-[#ededed]">
-                    {row.label}
-                  </td>
+                  <td className="truncate px-4 py-2.5 text-[#ededed]">{row.label}</td>
                   <td className="px-3 py-2.5 text-right tabular-nums text-[#a1a1a1]">
                     {row.value.toLocaleString()}
                   </td>
@@ -85,10 +102,73 @@ function DataTable({
 }
 
 export function VisitorAnalyticsDashboard({ data }: VisitorAnalyticsDashboardProps) {
-  const { kpis, webVitals } = data;
+  const router = useRouter();
+  const [exporting, setExporting] = useState(false);
+  const { kpis, webVitals, period } = data;
+
+  function setPeriod(next: AnalyticsPeriod) {
+    router.push(`/admin/analytics?period=${next}`);
+  }
+
+  function exportCsv() {
+    setExporting(true);
+    try {
+      const csv = analyticsToCsv(data);
+      downloadFile(csv, `analytics-${period}-${new Date().toISOString().slice(0, 10)}.csv`, "text/csv");
+    } finally {
+      setExporting(false);
+    }
+  }
+
+  function exportPdf() {
+    setExporting(true);
+    try {
+      const html = analyticsToPrintHtml(data);
+      const printWindow = window.open("", "_blank");
+      if (!printWindow) return;
+      printWindow.document.write(html);
+      printWindow.document.close();
+      printWindow.focus();
+      printWindow.print();
+    } finally {
+      setExporting(false);
+    }
+  }
 
   return (
     <div className="space-y-6">
+      <AdminFilterBar>
+        <div className="flex gap-1">
+          {(["week", "month"] as const).map((item) => (
+            <button
+              key={item}
+              type="button"
+              onClick={() => setPeriod(item)}
+              className={
+                period === item
+                  ? "rounded bg-[#ededed] px-2.5 py-1 text-[13px] text-black"
+                  : "rounded px-2.5 py-1 text-[13px] text-[#a1a1a1] hover:bg-[#111] hover:text-white"
+              }
+            >
+              {item === "week" ? "Last 7 days" : "Last 30 days"}
+            </button>
+          ))}
+        </div>
+        <div className="ml-auto flex items-center gap-2">
+          <AdminSecondaryButton onClick={exportCsv} className={exporting ? "opacity-60" : ""}>
+            <FileSpreadsheet className="size-3.5" />
+            Export CSV
+          </AdminSecondaryButton>
+          <AdminSecondaryButton onClick={exportPdf} className={exporting ? "opacity-60" : ""}>
+            <Printer className="size-3.5" />
+            Export PDF
+          </AdminSecondaryButton>
+          <a href={`/api/cms/analytics/export?period=${period}&format=csv`} className="hidden">
+            <Download className="size-3.5" />
+          </a>
+        </div>
+      </AdminFilterBar>
+
       <AdminStatusStrip>
         <AdminStatusDot tone={data.configured.capture ? "success" : "warning"}>
           {data.configured.capture ? "Tracking live" : "Tracking off"}
@@ -109,13 +189,13 @@ export function VisitorAnalyticsDashboard({ data }: VisitorAnalyticsDashboardPro
       <div className="grid gap-px overflow-hidden rounded-md border border-[#333] sm:grid-cols-2 xl:grid-cols-4">
         <AdminStatCard
           label="Unique visitors"
-          value={kpis.uniqueVisitors7d.toLocaleString()}
+          value={kpis.uniqueVisitorsPeriod.toLocaleString()}
           hint={`${kpis.uniqueVisitors24h.toLocaleString()} in 24h`}
           className="rounded-none border-0 border-r border-[#333]"
         />
         <AdminStatCard
           label="Page views"
-          value={kpis.pageviews7d.toLocaleString()}
+          value={kpis.pageviewsPeriod.toLocaleString()}
           hint={`${kpis.pageviews24h.toLocaleString()} in 24h`}
           className="rounded-none border-0 border-r border-[#333]"
         />
@@ -128,7 +208,7 @@ export function VisitorAnalyticsDashboard({ data }: VisitorAnalyticsDashboardPro
         <AdminStatCard
           label="Bounce rate"
           value={kpis.bounceRate > 0 ? `${kpis.bounceRate.toFixed(1)}%` : "—"}
-          hint={`${kpis.sessions7d.toLocaleString()} sessions`}
+          hint={`${kpis.sessionsPeriod.toLocaleString()} sessions`}
           className="rounded-none border-0"
         />
       </div>
@@ -184,7 +264,7 @@ export function VisitorAnalyticsDashboard({ data }: VisitorAnalyticsDashboardPro
         </AdminPanel>
 
         <AdminPanel>
-          <AdminPanelHeader title="Web Vitals" description="Real user performance (7d)." />
+          <AdminPanelHeader title="Web Vitals" description="Real user performance." />
           <AdminPanelBody className="space-y-2">
             <div className="border-b border-[#333] pb-3">
               <p className="text-[11px] font-medium uppercase tracking-wide text-[#666]">LCP</p>
@@ -239,10 +319,10 @@ export function VisitorAnalyticsDashboard({ data }: VisitorAnalyticsDashboardPro
                     section.rows.map((row) => (
                       <div
                         key={row.label}
-                        className="flex items-center justify-between gap-3 text-[13px]"
+                        className="grid grid-cols-[1fr_auto] gap-4 text-[13px]"
                       >
-                        <span className="capitalize text-[#ededed]">{row.label}</span>
-                        <span className="tabular-nums text-[#666]">
+                        <span className="truncate capitalize text-[#ededed]">{row.label}</span>
+                        <span className="shrink-0 tabular-nums text-[#666]">
                           {row.value.toLocaleString()} · {row.share}%
                         </span>
                       </div>
@@ -254,38 +334,6 @@ export function VisitorAnalyticsDashboard({ data }: VisitorAnalyticsDashboardPro
           </AdminPanelBody>
         </AdminPanel>
       </div>
-
-      <AdminPanel>
-        <AdminPanelHeader title="Engagement" />
-        <AdminPanelBody>
-          <div className="grid gap-px overflow-hidden rounded-md border border-[#333] sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              { label: "Sessions", value: kpis.sessions7d.toLocaleString(), icon: Globe2 },
-              {
-                label: "Pages / session",
-                value: kpis.pagesPerSession > 0 ? kpis.pagesPerSession.toFixed(1) : "—",
-                icon: MousePointerClick,
-              },
-              { label: "Avg. time", value: formatDuration(kpis.avgSessionSeconds), icon: Timer },
-              {
-                label: "Tracking",
-                value: data.configured.capture ? "Active" : "Off",
-                icon: Clock3,
-              },
-            ].map((item, i, arr) => (
-              <div
-                key={item.label}
-                className={`bg-black px-4 py-3 ${i < arr.length - 1 ? "border-r border-[#333]" : ""}`}
-              >
-                <p className="text-[11px] font-medium uppercase tracking-wide text-[#666]">
-                  {item.label}
-                </p>
-                <p className="mt-1 text-lg font-medium tabular-nums text-[#ededed]">{item.value}</p>
-              </div>
-            ))}
-          </div>
-        </AdminPanelBody>
-      </AdminPanel>
     </div>
   );
 }
