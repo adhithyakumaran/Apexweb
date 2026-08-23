@@ -67,7 +67,7 @@ export function Hero() {
               size="xl"
               className="border-2 border-white bg-transparent text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/10"
             >
-              <Link href="/#contact">{whatsappCta.label}</Link>
+              <Link href="/contact">{whatsappCta.label}</Link>
             </Button>
             <Button
               asChild
