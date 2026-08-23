@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Loader2 } from "lucide-react";
+import { ArrowRight, Loader2, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type LoginFormProps = {
@@ -40,27 +40,30 @@ export function LoginForm({ nextPath = "/admin" }: LoginFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-2">
-        <label htmlFor="password" className="text-sm font-medium text-black">
+        <label htmlFor="password" className="text-sm font-medium text-neutral-900">
           Password
         </label>
-        <input
-          id="password"
-          type="password"
-          autoComplete="current-password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Enter your CMS password"
-          required
-          className={cn(
-            "flex h-12 w-full rounded-lg border border-neutral-200 bg-white px-4 text-sm text-black",
-            "outline-none transition-colors placeholder:text-neutral-400",
-            "focus:border-black focus:ring-2 focus:ring-black/5"
-          )}
-        />
+        <div className="relative">
+          <Lock className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-neutral-400" />
+          <input
+            id="password"
+            type="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Enter your CMS password"
+            required
+            className={cn(
+              "flex h-12 w-full rounded-xl border border-neutral-200 bg-white pr-4 pl-10 text-sm text-neutral-900",
+              "outline-none transition-colors placeholder:text-neutral-400",
+              "focus:border-neutral-900 focus:ring-2 focus:ring-neutral-900/5"
+            )}
+          />
+        </div>
       </div>
 
       {error && (
-        <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700">
+        <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700">
           {error}
         </p>
       )}
@@ -69,7 +72,7 @@ export function LoginForm({ nextPath = "/admin" }: LoginFormProps) {
         type="submit"
         disabled={loading}
         className={cn(
-          "flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-black text-sm font-medium text-white",
+          "flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-neutral-900 text-sm font-medium text-white",
           "transition-colors hover:bg-neutral-800 disabled:opacity-60"
         )}
       >
@@ -77,7 +80,7 @@ export function LoginForm({ nextPath = "/admin" }: LoginFormProps) {
           <Loader2 className="size-4 animate-spin" />
         ) : (
           <>
-            Sign in
+            Sign in to Content Studio
             <ArrowRight className="size-4" />
           </>
         )}

@@ -3,10 +3,17 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ExternalLink, Pencil, Trash2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { ExternalLink, Pencil, Send, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  AdminEmptyState,
+  AdminPanel,
+  AdminPanelBody,
+  AdminPanelHeader,
+  AdminStatusPill,
+} from "@/components/admin/admin-ui";
 import { getCmsTemplate, type CmsTemplateId } from "@/lib/cms/templates";
+import { cn } from "@/lib/utils";
 
 type ArticleRow = {
   id: number;
@@ -20,12 +27,13 @@ type ArticleRow = {
 
 type ArticlesTableProps = {
   articles: ArticleRow[];
+  compact?: boolean;
 };
 
-export function ArticlesTable({ articles }: ArticlesTableProps) {
+export function ArticlesTable({ articles, compact = false }: ArticlesTableProps) {
   const router = useRouter();
   const [rows, setRows] = useState(articles);
-  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [busyId, setBusyId] = useState<number | null>(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -34,7 +42,7 @@ export function ArticlesTable({ articles }: ArticlesTableProps) {
 
   async function handlePublish(article: ArticleRow) {
     setError("");
-    setDeletingId(article.id);
+    setBusyId(article.id);
 
     try {
       const response = await fetch(`/api/cms/articles/${article.id}`, {
@@ -59,7 +67,7 @@ export function ArticlesTable({ articles }: ArticlesTableProps) {
     } catch {
       setError("Publish failed. Please try again.");
     } finally {
-      setDeletingId(null);
+      setBusyId(null);
     }
   }
 
@@ -67,7 +75,7 @@ export function ArticlesTable({ articles }: ArticlesTableProps) {
     const confirmed = window.confirm(`Delete "${article.title}"? This cannot be undone.`);
     if (!confirmed) return;
 
-    setDeletingId(article.id);
+    setBusyId(article.id);
     setError("");
 
     try {
@@ -87,107 +95,138 @@ export function ArticlesTable({ articles }: ArticlesTableProps) {
     } catch {
       setError("Delete failed. Please try again.");
     } finally {
-      setDeletingId(null);
+      setBusyId(null);
     }
   }
 
   if (rows.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-border bg-card px-6 py-16 text-center">
-        <p className="text-sm font-medium">No articles yet</p>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Create your first article with one of five templates.
-        </p>
-        <Button asChild className="mt-4">
-          <Link href="/admin/articles/new">New article</Link>
-        </Button>
-      </div>
+      <AdminEmptyState
+        title="No articles yet"
+        description="Create your first article with one of five professional templates."
+        action={
+          <Button asChild>
+            <Link href="/admin/articles/new">Create article</Link>
+          </Button>
+        }
+      />
     );
   }
 
   return (
     <div className="space-y-3">
       {error && (
-        <p className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+        <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
           {error}
         </p>
       )}
 
-      <div className="overflow-hidden rounded-2xl border border-border/80 bg-card shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[720px] text-left text-sm">
-            <thead className="border-b border-border/70 bg-surface/60 text-xs uppercase tracking-wide text-muted-foreground">
-              <tr>
-                <th className="px-4 py-3 font-semibold">Title</th>
-                <th className="px-4 py-3 font-semibold">Template</th>
-                <th className="px-4 py-3 font-semibold">Status</th>
-                <th className="px-4 py-3 font-semibold">Updated</th>
-                <th className="px-4 py-3 font-semibold text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border/60">
-              {rows.map((article) => {
-                const template = getCmsTemplate(article.cmsTemplate as CmsTemplateId);
-                return (
-                  <tr key={article.id} className="hover:bg-muted/30">
-                    <td className="px-4 py-3">
-                      <p className="font-medium text-foreground">{article.title}</p>
-                      <p className="text-xs text-muted-foreground">/{article.slug}</p>
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground">
-                      {template?.label ?? article.cmsTemplate}
-                    </td>
-                    <td className="px-4 py-3">
-                      <Badge variant={article.status === "published" ? "success" : "warning"}>
-                        {article.status}
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground">
-                      {new Date(article.updatedAt ?? article.publishedAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center justify-end gap-1">
-                        {article.status === "draft" && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-8 text-xs"
-                            disabled={deletingId === article.id}
-                            onClick={() => handlePublish(article)}
-                          >
-                            Publish
-                          </Button>
+      <AdminPanel>
+        {!compact && (
+          <AdminPanelHeader
+            title="All articles"
+            description="Drafts stay private until you publish them to the live site."
+          />
+        )}
+        <AdminPanelBody className={cn("p-0", compact && "p-0")}>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[760px] text-left text-sm">
+              <thead className="border-b border-neutral-100 bg-neutral-50/80 text-[0.68rem] uppercase tracking-[0.14em] text-neutral-500">
+                <tr>
+                  <th className="px-5 py-3 font-semibold">Article</th>
+                  <th className="px-4 py-3 font-semibold">Template</th>
+                  <th className="px-4 py-3 font-semibold">Status</th>
+                  <th className="px-4 py-3 font-semibold">Updated</th>
+                  <th className="px-5 py-3 text-right font-semibold">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-neutral-100">
+                {rows.map((article) => {
+                  const template = getCmsTemplate(article.cmsTemplate as CmsTemplateId);
+                  const isBusy = busyId === article.id;
+
+                  return (
+                    <tr
+                      key={article.id}
+                      className="transition-colors hover:bg-neutral-50/70"
+                    >
+                      <td className="px-5 py-3.5">
+                        <p className="font-medium text-neutral-900">{article.title}</p>
+                        <p className="mt-0.5 font-mono text-xs text-neutral-400">
+                          /articles/{article.slug}
+                        </p>
+                      </td>
+                      <td className="px-4 py-3.5 text-neutral-600">
+                        {template?.label ?? article.cmsTemplate}
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <AdminStatusPill
+                          tone={article.status === "published" ? "success" : "warning"}
+                        >
+                          {article.status}
+                        </AdminStatusPill>
+                      </td>
+                      <td className="px-4 py-3.5 tabular-nums text-neutral-500">
+                        {new Date(article.updatedAt ?? article.publishedAt).toLocaleDateString(
+                          undefined,
+                          { month: "short", day: "numeric", year: "numeric" }
                         )}
-                        {article.status === "published" && (
-                          <Button asChild variant="ghost" size="icon-sm">
-                            <Link href={`/articles/${article.slug}`} target="_blank">
-                              <ExternalLink className="size-4" />
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center justify-end gap-0.5">
+                          {article.status === "draft" && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-8 gap-1.5 rounded-lg border-neutral-200 text-xs"
+                              disabled={isBusy}
+                              onClick={() => handlePublish(article)}
+                            >
+                              <Send className="size-3.5" />
+                              Publish
+                            </Button>
+                          )}
+                          {article.status === "published" && (
+                            <Button
+                              asChild
+                              variant="ghost"
+                              size="icon-sm"
+                              className="rounded-lg text-neutral-500"
+                            >
+                              <Link href={`/articles/${article.slug}`} target="_blank">
+                                <ExternalLink className="size-4" />
+                              </Link>
+                            </Button>
+                          )}
+                          <Button
+                            asChild
+                            variant="ghost"
+                            size="icon-sm"
+                            className="rounded-lg text-neutral-500"
+                          >
+                            <Link href={`/admin/articles/${article.id}/edit`}>
+                              <Pencil className="size-4" />
                             </Link>
                           </Button>
-                        )}
-                        <Button asChild variant="ghost" size="icon-sm">
-                          <Link href={`/admin/articles/${article.id}/edit`}>
-                            <Pencil className="size-4" />
-                          </Link>
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          className="text-destructive hover:text-destructive"
-                          disabled={deletingId === article.id}
-                          onClick={() => handleDelete(article)}
-                        >
-                          <Trash2 className="size-4" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            className="rounded-lg text-neutral-500 hover:text-red-600"
+                            disabled={isBusy}
+                            onClick={() => handleDelete(article)}
+                          >
+                            <Trash2 className="size-4" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </AdminPanelBody>
+      </AdminPanel>
     </div>
   );
 }

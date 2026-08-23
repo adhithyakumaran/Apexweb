@@ -31,75 +31,70 @@ export function ArticleCard({ article, variant = "default", index = 0 }: Article
       <Link
         href={`/articles/${article.slug}`}
         className={cn(
-          "group flex h-full flex-col overflow-hidden rounded-xl border border-border/80 bg-card transition-all duration-300 hover:border-brand-orange/30 hover:shadow-sm",
-          isFeatured ? "sm:flex-row sm:items-stretch" : "",
-          isCompact && "p-4",
-          !isFeatured && !isCompact && "p-0"
+          "group flex h-full gap-4 overflow-hidden rounded-xl border border-border/80 bg-card p-4 transition-all duration-300 hover:border-brand-orange/30 hover:shadow-sm",
+          isFeatured && "flex-col sm:flex-row sm:items-stretch sm:p-5",
+          isCompact && "gap-3 p-3"
         )}
       >
         {article.heroImageUrl && !isCompact && (
-          <div className={cn(isFeatured ? "sm:w-2/5" : "w-full")}>
+          <div
+            className={cn(
+              "shrink-0 overflow-hidden rounded-lg bg-muted",
+              isFeatured ? "h-36 w-full sm:h-auto sm:w-44" : "size-20 sm:size-24"
+            )}
+          >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={article.heroImageUrl}
               alt=""
-              className={cn(
-                "h-full w-full object-cover",
-                isFeatured ? "min-h-48 sm:min-h-full" : "aspect-[16/9]"
-              )}
+              className="size-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
             />
           </div>
         )}
 
-        <div
-          className={cn(
-            "flex min-w-0 flex-1 flex-col",
-            isFeatured ? "p-6 sm:p-7" : isCompact ? "" : "p-5"
+        <div className="flex min-w-0 flex-1 flex-col">
+          {isFeatured && !article.heroImageUrl && (
+            <div className="mb-3 h-1 w-8 rounded-full bg-brand-orange" />
           )}
-        >
-        {isFeatured && !article.heroImageUrl && (
-          <div className="mb-4 h-1 w-10 rounded-full bg-brand-orange sm:mb-0 sm:hidden" />
-        )}
 
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-            <span className="font-medium text-brand-orange">
-              {articleTemplateLabels[article.template]}
-            </span>
-            <span aria-hidden>·</span>
-            <span>{formatArticleDate(article.publishedAt)}</span>
-            <span aria-hidden>·</span>
-            <span>{article.readTime} min read</span>
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+              <span className="font-medium text-brand-orange">
+                {articleTemplateLabels[article.template]}
+              </span>
+              <span aria-hidden>·</span>
+              <span>{formatArticleDate(article.publishedAt)}</span>
+              {!isCompact && (
+                <>
+                  <span aria-hidden>·</span>
+                  <span>{article.readTime} min read</span>
+                </>
+              )}
+            </div>
+
+            <h3
+              className={cn(
+                "mt-1.5 font-medium tracking-tight text-foreground transition-colors group-hover:text-brand-orange",
+                isFeatured ? "text-xl sm:text-2xl" : isCompact ? "text-base" : "text-lg"
+              )}
+            >
+              {article.title}
+            </h3>
+
+            <p
+              className={cn(
+                "mt-1.5 text-muted-foreground",
+                isCompact ? "line-clamp-2 text-xs" : "line-clamp-2 text-sm leading-relaxed"
+              )}
+            >
+              {article.hook}
+            </p>
           </div>
 
-          <h3
-            className={cn(
-              "mt-2 font-medium tracking-tight text-foreground transition-colors group-hover:text-brand-orange",
-              isFeatured ? "text-xl sm:text-2xl" : isCompact ? "text-base" : "text-lg"
-            )}
-          >
-            {article.title}
-          </h3>
-
-          <p
-            className={cn(
-              "mt-2 text-muted-foreground",
-              isCompact ? "line-clamp-2 text-xs" : "line-clamp-2 text-sm leading-relaxed"
-            )}
-          >
-            {article.hook}
-          </p>
-        </div>
-
-        <span
-          className={cn(
-            "mt-4 inline-flex items-center gap-1 text-sm font-medium text-foreground/70 transition-all group-hover:gap-2 group-hover:text-brand-orange",
-            isFeatured && "sm:mt-4"
-          )}
-        >
-          Read article
-          <ArrowRight className="size-3.5" />
-        </span>
+          <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-foreground/70 transition-all group-hover:gap-2 group-hover:text-brand-orange">
+            Read article
+            <ArrowRight className="size-3.5" />
+          </span>
         </div>
       </Link>
     </motion.article>

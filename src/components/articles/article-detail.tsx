@@ -19,7 +19,6 @@ export function ArticleDetail({ article, related }: ArticleDetailProps) {
   return (
     <main className="bg-background">
       <ArticleHeader article={article} />
-      <ArticleHeroImage article={article} />
 
       <motion.article
         initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
@@ -27,6 +26,7 @@ export function ArticleDetail({ article, related }: ArticleDetailProps) {
         transition={{ duration: 0.5, ease: smoothEase }}
         className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-10 lg:py-12"
       >
+        <ArticleHeroImage article={article} />
         <ArticleTemplateRenderer article={article} />
         <ArticleAttachment article={article} />
 
