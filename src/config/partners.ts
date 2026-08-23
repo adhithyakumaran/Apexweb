@@ -1,45 +1,55 @@
-export type Partner = {
-  name: string;
-  logo: string;
-  width?: number;
-  height?: number;
-};
+export type Partner =
+  | {
+      name: string;
+      type: "image";
+      logo: string;
+      width?: number;
+      height?: number;
+    }
+  | {
+      name: string;
+      type: "text";
+      variant: "geetham";
+    };
 
 export const partners: Partner[] = [
-  {
-    name: "Geetham Enterprises",
-    logo: "/images/partners/geetham.svg",
-    width: 140,
-    height: 48,
-  },
+  { name: "Geetham Enterprises", type: "text", variant: "geetham" },
   {
     name: "SwayUp Software Agency",
-    logo: "/images/partners/swayup.svg",
+    type: "image",
+    logo: "/images/partners/swayup.png",
     width: 160,
     height: 40,
   },
   {
     name: "Prowess IQ",
-    logo: "/images/partners/prowessiq.svg",
+    type: "image",
+    logo: "/images/partners/prowessiq.png",
     width: 150,
     height: 44,
   },
   {
     name: "BorrowBox",
-    logo: "/images/partners/borrowbox.svg",
+    type: "image",
+    logo: "/images/partners/borrowbox.png",
     width: 140,
     height: 52,
   },
   {
     name: "Grewbie Technologies",
-    logo: "/images/partners/grewbie.svg",
+    type: "image",
+    logo: "/images/partners/grewbie.png",
     width: 170,
     height: 48,
   },
   {
     name: "Chatpilot",
-    logo: "/images/partners/chatpilot.svg",
+    type: "image",
+    logo: "/images/partners/chatpilot.png",
     width: 140,
     height: 40,
   },
 ];
+
+export const PARTNER_STAGGER_S = 0.1;
+export const PARTNER_CYCLE_S = 4.8;

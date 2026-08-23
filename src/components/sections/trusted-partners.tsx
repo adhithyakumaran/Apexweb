@@ -1,9 +1,51 @@
 "use client";
 
 import Image from "next/image";
+import type { ReactNode } from "react";
 import { motion, useReducedMotion } from "motion/react";
-import { partners } from "@/config/partners";
+import { partners, PARTNER_CYCLE_S, PARTNER_STAGGER_S } from "@/config/partners";
+import { GeethamLogo } from "@/components/sections/geetham-logo";
 import { smoothEase } from "@/components/animations/motion-presets";
+
+const HOLD_END = (partners.length * PARTNER_STAGGER_S + 1.6) / PARTNER_CYCLE_S;
+
+function PartnerCell({
+  index,
+  children,
+}: {
+  index: number;
+  children: ReactNode;
+}) {
+  const prefersReducedMotion = useReducedMotion();
+  const enterAt = (index * PARTNER_STAGGER_S) / PARTNER_CYCLE_S;
+  const peakAt = (index * PARTNER_STAGGER_S + 0.4) / PARTNER_CYCLE_S;
+
+  if (prefersReducedMotion) {
+    return (
+      <div className="flex h-28 items-center justify-center px-6 sm:h-32">{children}</div>
+    );
+  }
+
+  return (
+    <div className="relative flex h-28 items-center justify-center overflow-hidden px-6 sm:h-32">
+      <motion.div
+        className="flex w-full items-center justify-center"
+        animate={{
+          y: ["100%", "100%", "0%", "0%", "100%"],
+          opacity: [0, 0, 1, 1, 0],
+        }}
+        transition={{
+          duration: PARTNER_CYCLE_S,
+          times: [0, enterAt, peakAt, HOLD_END, 1],
+          repeat: Infinity,
+          ease: smoothEase,
+        }}
+      >
+        {children}
+      </motion.div>
+    </div>
+  );
+}
 
 export function TrustedPartners() {
   const prefersReducedMotion = useReducedMotion();
@@ -33,19 +75,20 @@ export function TrustedPartners() {
           transition={{ duration: 0.7, delay: 0.1, ease: smoothEase }}
         >
           <div className="grid grid-cols-2 divide-x divide-y divide-border md:grid-cols-3">
-            {partners.map((partner) => (
-              <div
-                key={partner.name}
-                className="group flex h-28 items-center justify-center px-6 sm:h-32"
-              >
+            {partners.map((partner, index) => (
+              <PartnerCell key={partner.name} index={index}>
+                {partner.type === "text" ? (
+                  <GeethamLogo />
+                ) : (
                   <Image
                     src={partner.logo}
                     alt={partner.name}
                     width={partner.width ?? 140}
                     height={partner.height ?? 40}
-                    className="max-h-10 w-auto object-contain opacity-60 grayscale transition-all duration-300 group-hover:opacity-100 group-hover:grayscale-0 sm:max-h-12"
+                    className="max-h-10 w-auto object-contain sm:max-h-12"
                   />
-                </div>
+                )}
+              </PartnerCell>
             ))}
           </div>
         </motion.div>
