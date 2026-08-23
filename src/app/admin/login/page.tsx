@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LoginForm } from "@/components/admin/login-form";
+import { Logo } from "@/components/navigation/logo";
 import {
   FileText,
   Image,
@@ -61,17 +62,7 @@ export default async function AdminLoginPage({ searchParams }: LoginPageProps) {
         <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,transparent,rgba(0,0,0,0.35))]" />
 
         <div className="relative">
-          <div className="flex items-center gap-3">
-            <span className="flex size-10 items-center justify-center rounded-lg bg-brand-orange text-xs font-bold text-white">
-              AN
-            </span>
-            <div>
-              <p className="text-sm font-semibold tracking-tight">Apex Node</p>
-              <p className="text-[0.62rem] uppercase tracking-[0.18em] text-neutral-500">
-                Content Studio
-              </p>
-            </div>
-          </div>
+          <Logo href={false} variant="light" size="md" />
           <h2 className="mt-10 max-w-lg text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
             Enterprise content management for your knowledge hub.
           </h2>
@@ -103,10 +94,11 @@ export default async function AdminLoginPage({ searchParams }: LoginPageProps) {
 
       <section className="flex w-full flex-col justify-center bg-[#f7f7f8] px-6 py-12 sm:px-10 lg:w-[48%] lg:px-16 xl:px-24">
         <div className="mx-auto w-full max-w-md rounded-2xl border border-neutral-200/80 bg-white p-8 shadow-[0_8px_30px_rgba(15,23,42,0.06)] sm:p-10">
-          <p className="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-brand-orange">
-            Secure access
+          <Logo href={false} size="sm" />
+          <p className="mt-3 text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-brand-orange">
+            Content Studio
           </p>
-          <h1 className="mt-3 text-2xl font-semibold tracking-tight text-neutral-900">
+          <h1 className="mt-4 text-2xl font-semibold tracking-tight text-neutral-900">
             Sign in to Content Studio
           </h1>
           <p className="mt-2 text-sm leading-relaxed text-neutral-500">

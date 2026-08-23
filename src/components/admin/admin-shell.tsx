@@ -12,6 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { useState } from "react";
+import { Logo } from "@/components/navigation/logo";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -76,19 +77,10 @@ export function AdminShell({ children, title, description, actions }: AdminShell
   const sidebar = (
     <>
       <div className="border-b border-white/8 px-5 py-6">
-        <Link href="/admin" className="block" onClick={() => setMobileOpen(false)}>
-          <div className="flex items-center gap-3">
-            <span className="flex size-9 items-center justify-center rounded-lg bg-brand-orange text-[11px] font-bold tracking-tight text-white">
-              AN
-            </span>
-            <div>
-              <p className="text-sm font-semibold tracking-tight text-white">Apex Node</p>
-              <p className="text-[0.62rem] uppercase tracking-[0.18em] text-neutral-500">
-                Content Studio
-              </p>
-            </div>
-          </div>
-        </Link>
+        <Logo href="/admin" variant="light" size="sm" className="group" />
+        <p className="mt-3 text-[0.62rem] uppercase tracking-[0.18em] text-neutral-500">
+          Content Studio
+        </p>
       </div>
 
       <div className="flex-1 p-4">
@@ -134,12 +126,7 @@ export function AdminShell({ children, title, description, actions }: AdminShell
   return (
     <div className="min-h-screen bg-[#ececee] text-foreground">
       <div className="sticky top-0 z-30 flex items-center justify-between border-b border-neutral-200 bg-white px-4 py-3 lg:hidden">
-        <div className="flex items-center gap-2">
-          <span className="flex size-7 items-center justify-center rounded-md bg-brand-orange text-[10px] font-bold text-white">
-            AN
-          </span>
-          <span className="text-sm font-semibold">Content Studio</span>
-        </div>
+        <Logo href="/admin" size="sm" />
         <button
           type="button"
           aria-label="Toggle menu"

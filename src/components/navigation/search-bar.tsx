@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { ArrowRight, Search, X } from "lucide-react";
@@ -41,35 +42,15 @@ export function SearchBar() {
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    const q = query.trim();
-    if (q.length < 2) {
-      setResults([]);
-      setLoading(false);
-      return;
-    }
-
-    const timer = window.setTimeout(async () => {
-      setLoading(true);
-      try {
-        const response = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
-        const data = (await response.json()) as { results?: SearchResult[] };
-        setResults(data.results ?? []);
-      } catch {
-        setResults([]);
-      } finally {
-        setLoading(false);
-      }
-    }, 180);
-
-    return () => window.clearTimeout(timer);
-  }, [query]);
+  const [fetchError, setFetchError] = useState(false);
+  const [dropdownStyle, setDropdownStyle] = useState({ top: 0, left: 0, width: 380 });
+  const [mounted, setMounted] = useState(false);
 
   const grouped = useMemo(() => groupResults(results), [results]);
   const flatResults = useMemo(() => grouped.flatMap((g) => g.items), [grouped]);
@@ -81,9 +62,81 @@ export function SearchBar() {
     setActiveIndex(0);
   }, []);
 
+  const handleSelect = useCallback(
+    (href: string) => {
+      close();
+      if (href.startsWith("http") || href.startsWith("mailto:") || href.startsWith("tel:")) {
+        window.open(href, href.startsWith("http") ? "_blank" : "_self");
+        return;
+      }
+      router.push(href);
+    },
+    [close, router]
+  );
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    const q = query.trim();
+    if (q.length < 2) {
+      setResults([]);
+      setLoading(false);
+      setFetchError(false);
+      return;
+    }
+
+    const timer = window.setTimeout(async () => {
+      setLoading(true);
+      setFetchError(false);
+      try {
+        const response = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+        if (!response.ok) {
+          setFetchError(true);
+          setResults([]);
+          return;
+        }
+        const data = (await response.json()) as { results?: SearchResult[] };
+        setResults(data.results ?? []);
+      } catch {
+        setFetchError(true);
+        setResults([]);
+      } finally {
+        setLoading(false);
+      }
+    }, 180);
+
+    return () => window.clearTimeout(timer);
+  }, [query]);
+
   useEffect(() => {
     setActiveIndex(0);
   }, [query]);
+
+  useEffect(() => {
+    if (!showResults || !containerRef.current) return;
+
+    function updatePosition() {
+      const node = containerRef.current;
+      if (!node) return;
+      const rect = node.getBoundingClientRect();
+      const width = Math.min(380, window.innerWidth - 32);
+      setDropdownStyle({
+        top: rect.bottom + 8,
+        left: Math.max(16, rect.right - width),
+        width,
+      });
+    }
+
+    updatePosition();
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
+    return () => {
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
+    };
+  }, [showResults, query, open]);
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -100,7 +153,11 @@ export function SearchBar() {
 
   useEffect(() => {
     function onPointerDown(e: MouseEvent) {
-      if (!containerRef.current?.contains(e.target as Node)) {
+      const target = e.target as Node;
+      if (
+        !containerRef.current?.contains(target) &&
+        !dropdownRef.current?.contains(target)
+      ) {
         close();
       }
     }
@@ -109,15 +166,6 @@ export function SearchBar() {
       return () => document.removeEventListener("mousedown", onPointerDown);
     }
   }, [open, close]);
-
-  function handleSelect(href: string) {
-    close();
-    if (href.startsWith("http") || href.startsWith("mailto:") || href.startsWith("tel:")) {
-      window.open(href, href.startsWith("http") ? "_blank" : "_self");
-      return;
-    }
-    router.push(href);
-  }
 
   function handleFormKeyDown(e: React.KeyboardEvent) {
     if (!showResults || flatResults.length === 0) return;
@@ -132,6 +180,120 @@ export function SearchBar() {
       handleSelect(flatResults[activeIndex].href);
     }
   }
+
+  const dropdown =
+    showResults && mounted ? (
+      <motion.div
+        ref={dropdownRef}
+        initial={{ opacity: 0, y: 6, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 4, scale: 0.98 }}
+        transition={{ duration: 0.16, ease: "easeOut" }}
+        style={{
+          position: "fixed",
+          top: dropdownStyle.top,
+          left: dropdownStyle.left,
+          width: dropdownStyle.width,
+        }}
+        className="z-[200] overflow-hidden rounded-2xl border border-border/80 bg-card shadow-2xl ring-1 ring-black/[0.04] dark:ring-white/[0.06]"
+        role="listbox"
+      >
+        <div className="border-b border-border/60 bg-surface/50 px-4 py-2.5">
+          <p className="text-[0.65rem] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+            {loading
+              ? "Searching…"
+              : fetchError
+                ? "Search unavailable"
+                : results.length > 0
+                  ? `${results.length} result${results.length === 1 ? "" : "s"}`
+                  : "No matches"}
+          </p>
+        </div>
+
+        <div className="max-h-[min(68vh,400px)] overflow-y-auto overscroll-contain">
+          {fetchError ? (
+            <div className="px-4 py-10 text-center">
+              <p className="text-sm font-medium text-foreground">Search is temporarily unavailable</p>
+              <p className="mt-1 text-xs text-muted-foreground">Please try again in a moment</p>
+            </div>
+          ) : grouped.length === 0 ? (
+            <div className="px-4 py-10 text-center">
+              <p className="text-sm font-medium text-foreground">Nothing found</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Try services, agents, or article topics
+              </p>
+            </div>
+          ) : (
+            grouped.map(({ category, items }) => (
+              <div key={category} className="border-b border-border/50 last:border-0">
+                <p className="sticky top-0 z-10 bg-card/95 px-4 pb-1.5 pt-3 text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground backdrop-blur-sm">
+                  {category}
+                </p>
+                <ul>
+                  {items.map((result) => {
+                    const index = flatResults.indexOf(result);
+                    const isActive = index === activeIndex;
+                    return (
+                      <li key={result.id}>
+                        <button
+                          type="button"
+                          role="option"
+                          aria-selected={isActive}
+                          onClick={() => handleSelect(result.href)}
+                          onMouseEnter={() => setActiveIndex(index)}
+                          className={cn(
+                            "group flex w-full items-start gap-3 px-4 py-2.5 text-left transition-colors",
+                            isActive ? "bg-muted/70" : "hover:bg-muted/50"
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              "mt-0.5 shrink-0 rounded-md px-1.5 py-0.5 text-[0.6rem] font-semibold uppercase tracking-wide",
+                              categoryAccent[category]
+                            )}
+                          >
+                            {category.slice(0, 3)}
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+                              {result.title}
+                              <ArrowRight
+                                className={cn(
+                                  "size-3 shrink-0 text-muted-foreground transition-all",
+                                  isActive
+                                    ? "translate-x-0 opacity-100"
+                                    : "-translate-x-1 opacity-0 group-hover:translate-x-0 group-hover:opacity-60"
+                                )}
+                              />
+                            </span>
+                            <span className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
+                              {result.description}
+                            </span>
+                          </span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ))
+          )}
+        </div>
+
+        {flatResults.length > 0 && (
+          <div className="border-t border-border/60 bg-surface/40 px-4 py-2 text-[0.65rem] text-muted-foreground">
+            <kbd className="rounded border border-border bg-background px-1 py-0.5 font-mono text-[0.6rem]">
+              ↑↓
+            </kbd>{" "}
+            navigate ·{" "}
+            <kbd className="rounded border border-border bg-background px-1 py-0.5 font-mono text-[0.6rem]">
+              ↵
+            </kbd>{" "}
+            open
+          </div>
+        )}
+      </motion.div>
+    ) : null;
 
   return (
     <div ref={containerRef} className="relative flex items-center">
@@ -195,107 +357,6 @@ export function SearchBar() {
                 <span className="text-[10px] font-semibold tracking-tight">Esc</span>
               </button>
             </form>
-
-            <AnimatePresence>
-              {showResults && (
-                <motion.div
-                  initial={{ opacity: 0, y: 6, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 4, scale: 0.98 }}
-                  transition={{ duration: 0.16, ease: "easeOut" }}
-                  className="absolute right-0 top-[calc(100%+0.5rem)] z-[70] w-[min(100vw-2rem,380px)] overflow-hidden rounded-2xl border border-border/80 bg-card shadow-2xl ring-1 ring-black/[0.04] dark:ring-white/[0.06]"
-                  role="listbox"
-                >
-                  <div className="border-b border-border/60 bg-surface/50 px-4 py-2.5">
-                    <p className="text-[0.65rem] font-medium uppercase tracking-[0.16em] text-muted-foreground">
-                      {loading
-                        ? "Searching…"
-                        : results.length > 0
-                          ? `${results.length} result${results.length === 1 ? "" : "s"}`
-                          : "No matches"}
-                    </p>
-                  </div>
-
-                  <div className="max-h-[min(68vh,400px)] overflow-y-auto overscroll-contain">
-                    {grouped.length === 0 ? (
-                      <div className="px-4 py-10 text-center">
-                        <p className="text-sm font-medium text-foreground">Nothing found</p>
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          Try services, agents, or article topics
-                        </p>
-                      </div>
-                    ) : (
-                      grouped.map(({ category, items }) => (
-                        <div key={category} className="border-b border-border/50 last:border-0">
-                          <p className="sticky top-0 z-10 bg-card/95 px-4 pb-1.5 pt-3 text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground backdrop-blur-sm">
-                            {category}
-                          </p>
-                          <ul>
-                            {items.map((result) => {
-                              const index = flatResults.indexOf(result);
-                              const isActive = index === activeIndex;
-                              return (
-                                <li key={result.id}>
-                                  <button
-                                    type="button"
-                                    role="option"
-                                    aria-selected={isActive}
-                                    onClick={() => handleSelect(result.href)}
-                                    onMouseEnter={() => setActiveIndex(index)}
-                                    className={cn(
-                                      "group flex w-full items-start gap-3 px-4 py-2.5 text-left transition-colors",
-                                      isActive ? "bg-muted/70" : "hover:bg-muted/50"
-                                    )}
-                                  >
-                                    <span
-                                      className={cn(
-                                        "mt-0.5 shrink-0 rounded-md px-1.5 py-0.5 text-[0.6rem] font-semibold uppercase tracking-wide",
-                                        categoryAccent[category]
-                                      )}
-                                    >
-                                      {category.slice(0, 3)}
-                                    </span>
-                                    <span className="min-w-0 flex-1">
-                                      <span className="flex items-center gap-1.5 text-sm font-medium text-foreground">
-                                        {result.title}
-                                        <ArrowRight
-                                          className={cn(
-                                            "size-3 shrink-0 text-muted-foreground transition-all",
-                                            isActive
-                                              ? "translate-x-0 opacity-100"
-                                              : "-translate-x-1 opacity-0 group-hover:translate-x-0 group-hover:opacity-60"
-                                          )}
-                                        />
-                                      </span>
-                                      <span className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
-                                        {result.description}
-                                      </span>
-                                    </span>
-                                  </button>
-                                </li>
-                              );
-                            })}
-                          </ul>
-                        </div>
-                      ))
-                    )}
-                  </div>
-
-                  {flatResults.length > 0 && (
-                    <div className="border-t border-border/60 bg-surface/40 px-4 py-2 text-[0.65rem] text-muted-foreground">
-                      <kbd className="rounded border border-border bg-background px-1 py-0.5 font-mono text-[0.6rem]">
-                        ↑↓
-                      </kbd>{" "}
-                      navigate ·{" "}
-                      <kbd className="rounded border border-border bg-background px-1 py-0.5 font-mono text-[0.6rem]">
-                        ↵
-                      </kbd>{" "}
-                      open
-                    </div>
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
           </motion.div>
         ) : (
           <motion.div
@@ -316,6 +377,8 @@ export function SearchBar() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {mounted && dropdown ? createPortal(<AnimatePresence>{dropdown}</AnimatePresence>, document.body) : null}
     </div>
   );
 }

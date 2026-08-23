@@ -220,13 +220,27 @@ export async function listCmsArticles(includeDrafts = false) {
 }
 
 export async function getPublishedArticlesMerged(): Promise<Article[]> {
-  const cmsRows = await listCmsArticles(false);
+  const cmsRows = await listPublishedCmsArticles();
   const cmsArticlesMapped = cmsRows.map((row) => rowToArticle(row as CmsArticleRow));
   const cmsSlugs = new Set(cmsArticlesMapped.map((a) => a.slug));
   const legacy = seedArticles.filter((a) => !cmsSlugs.has(a.slug));
   return [...cmsArticlesMapped, ...legacy].sort(
     (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
   );
+}
+
+/** Fast read for public routes (search, listings) — no DB seeding side effects. */
+export async function listPublishedCmsArticles() {
+  if (isDatabaseConfigured()) {
+    return queryCmsArticlesFromDb(false);
+  }
+
+  if (!canUseLocalFileStore()) {
+    return [];
+  }
+
+  const items = await readFileStore();
+  return items.filter((item) => item.status === "published");
 }
 
 export async function getArticleBySlugMerged(slug: string) {

@@ -37,7 +37,39 @@ function item(
   category: SearchResultCategory,
   keywords: string[] = []
 ): SearchResult {
-  return { id, title, description, href, category, keywords };
+  return {
+    id,
+    title,
+    description,
+    href,
+    category,
+    keywords: keywords.map((keyword) => keyword.toLowerCase()),
+  };
+}
+
+function articleSearchTerms(article: Article): string[] {
+  const sectionText = article.content.sections.flatMap((section) => [
+    section.heading,
+    ...section.body,
+  ]);
+
+  return [
+    article.title,
+    article.hook,
+    article.excerpt,
+    article.slug,
+    article.topic,
+    article.author.name,
+    article.author.role,
+    article.content.intro,
+    ...article.tags,
+    ...sectionText,
+    "article",
+    "blog",
+    "case study",
+  ]
+    .filter((value): value is string => Boolean(value))
+    .map((value) => value.toLowerCase());
 }
 
 export function buildSearchIndex(articleList: Article[] = seedArticles): SearchResult[] {
@@ -48,7 +80,12 @@ export function buildSearchIndex(articleList: Article[] = seedArticles): SearchR
   }
 
   results.push(
-    item("page-home", "Home", siteConfig.description, "/", "Pages", ["homepage", "apex"]),
+    item("page-home", "Home", siteConfig.description, "/", "Pages", [
+      "homepage",
+      "apex",
+      "apex node",
+      siteConfig.name.toLowerCase(),
+    ]),
     item("page-demo", tryItCta.label, "Book a demo with Apex Node", tryItCta.href, "Pages", [
       "demo",
       "trial",
@@ -108,15 +145,7 @@ export function buildSearchIndex(articleList: Article[] = seedArticles): SearchR
         article.hook,
         `/articles/${article.slug}`,
         "Articles",
-        [
-          article.title.toLowerCase(),
-          article.hook.toLowerCase(),
-          ...article.tags.map((t) => t.toLowerCase()),
-          article.topic.toLowerCase(),
-          "article",
-          "blog",
-          "case study",
-        ]
+        articleSearchTerms(article)
       )
     );
   }
@@ -187,18 +216,33 @@ function scoreResult(result: SearchResult, query: string): number {
   const q = query.trim().toLowerCase();
   if (!q) return 0;
 
+  const tokens = q.split(/\s+/).filter(Boolean);
   const title = result.title.toLowerCase();
   const description = result.description.toLowerCase();
+  const keywordBlob = result.keywords.join(" ");
+  const haystack = `${title} ${description} ${keywordBlob}`;
+
+  if (!tokens.every((token) => haystack.includes(token))) return 0;
+
   let score = 0;
 
-  if (title === q) score += 100;
-  if (title.startsWith(q)) score += 50;
-  if (title.includes(q)) score += 30;
-  if (description.includes(q)) score += 15;
+  if (title === q) score += 120;
+  if (title.startsWith(q)) score += 60;
+  if (title.includes(q)) score += 40;
+  if (description.includes(q)) score += 20;
+
+  for (const token of tokens) {
+    if (title === token) score += 30;
+    if (title.startsWith(token)) score += 18;
+    if (title.includes(token)) score += 12;
+    if (description.includes(token)) score += 8;
+    if (keywordBlob.includes(token)) score += 6;
+  }
 
   for (const keyword of result.keywords) {
-    if (keyword.includes(q)) score += 10;
-    if (keyword.startsWith(q)) score += 8;
+    if (keyword === q) score += 15;
+    if (keyword.startsWith(q)) score += 10;
+    if (keyword.includes(q)) score += 6;
   }
 
   return score;
@@ -220,8 +264,31 @@ export function searchSite(query: string, limit = 12): SearchResult[] {
   return rankResults(buildSearchIndex(), query, limit);
 }
 
+let cachedArticles: { articles: Article[]; expiresAt: number } | null = null;
+const SEARCH_CACHE_TTL_MS = 60_000;
+
+export function invalidateSearchCache() {
+  cachedArticles = null;
+}
+
+async function getArticlesForSearch(): Promise<Article[]> {
+  const now = Date.now();
+  if (cachedArticles && cachedArticles.expiresAt > now) {
+    return cachedArticles.articles;
+  }
+
+  try {
+    const merged = await getPublishedArticlesMerged();
+    cachedArticles = { articles: merged, expiresAt: now + SEARCH_CACHE_TTL_MS };
+    return merged;
+  } catch (error) {
+    console.error("[search] Failed to load CMS articles, using defaults:", error);
+    return seedArticles;
+  }
+}
+
 export async function searchSiteAsync(query: string, limit = 12): Promise<SearchResult[]> {
-  const articles = await getPublishedArticlesMerged();
+  const articles = await getArticlesForSearch();
   return rankResults(buildSearchIndex(articles), query, limit);
 }
 
