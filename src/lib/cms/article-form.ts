@@ -73,7 +73,7 @@ export function createEmptyArticleForm(): ArticleFormState {
     heroImageUrl: "",
     attachmentUrl: "",
     attachmentName: "",
-    status: "draft",
+    status: "published",
     intro: "",
     pullQuote: "",
     sectionsJson: defaultSections(),

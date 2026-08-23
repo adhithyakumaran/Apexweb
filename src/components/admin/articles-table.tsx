@@ -32,6 +32,37 @@ export function ArticlesTable({ articles }: ArticlesTableProps) {
     setRows(articles);
   }, [articles]);
 
+  async function handlePublish(article: ArticleRow) {
+    setError("");
+    setDeletingId(article.id);
+
+    try {
+      const response = await fetch(`/api/cms/articles/${article.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ status: "published" }),
+      });
+
+      if (!response.ok) {
+        const data = (await response.json().catch(() => null)) as { error?: string } | null;
+        setError(data?.error ?? `Publish failed (${response.status})`);
+        return;
+      }
+
+      setRows((current) =>
+        current.map((row) =>
+          row.id === article.id ? { ...row, status: "published" as const } : row
+        )
+      );
+      router.refresh();
+    } catch {
+      setError("Publish failed. Please try again.");
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
   async function handleDelete(article: ArticleRow) {
     const confirmed = window.confirm(`Delete "${article.title}"? This cannot be undone.`);
     if (!confirmed) return;
@@ -116,6 +147,17 @@ export function ArticlesTable({ articles }: ArticlesTableProps) {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">
+                        {article.status === "draft" && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8 text-xs"
+                            disabled={deletingId === article.id}
+                            onClick={() => handlePublish(article)}
+                          >
+                            Publish
+                          </Button>
+                        )}
                         {article.status === "published" && (
                           <Button asChild variant="ghost" size="icon-sm">
                             <Link href={`/articles/${article.slug}`} target="_blank">

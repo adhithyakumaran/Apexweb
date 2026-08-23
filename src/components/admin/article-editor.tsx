@@ -208,11 +208,18 @@ export function ArticleEditor({ initial, mode }: ArticleEditorProps) {
                 onChange={(e) => update("status", e.target.value as "draft" | "published")}
                 className="flex h-10 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
               >
-                <option value="draft">Draft</option>
-                <option value="published">Published</option>
+                <option value="draft">Draft (hidden from public site)</option>
+                <option value="published">Published (live on /articles)</option>
               </select>
             </div>
           </div>
+
+          {form.status === "draft" && (
+            <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+              This article is a draft and will not appear on the public Articles page until you set
+              status to Published.
+            </p>
+          )}
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">

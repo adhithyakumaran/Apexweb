@@ -126,6 +126,57 @@ function mapDisplayToCmsTemplate(template: Article["template"]): CmsTemplateId {
   }
 }
 
+function seedArticleToInput(article: Article): ArticleInput {
+  return {
+    slug: article.slug,
+    title: article.title,
+    hook: article.hook,
+    excerpt: article.excerpt,
+    cmsTemplate: mapDisplayToCmsTemplate(article.template),
+    displayTemplate: article.template,
+    category: article.category,
+    topic: article.topic,
+    readTime: article.readTime,
+    publishedAt: article.publishedAt,
+    authorName: article.author.name,
+    authorRole: article.author.role,
+    featured: Boolean(article.featured),
+    tags: article.tags,
+    coverAccent: article.cover.accent,
+    heroImageUrl: null,
+    attachmentUrl: null,
+    attachmentName: null,
+    content: article.content,
+    status: "published",
+  };
+}
+
+async function ensureCmsDatabaseSeeded() {
+  if (!isDatabaseConfigured()) return;
+
+  const db = getDb();
+  if (!db) return;
+
+  try {
+    const existing = await db.select({ slug: cmsArticles.slug }).from(cmsArticles);
+    const existingSlugs = new Set(existing.map((row) => row.slug));
+    const missing = seedArticles.filter((article) => !existingSlugs.has(article.slug));
+    if (missing.length === 0) return;
+
+    const now = new Date().toISOString();
+    for (const article of missing) {
+      await db.insert(cmsArticles).values({
+        ...seedArticleToInput(article),
+        createdAt: now,
+        updatedAt: now,
+      });
+    }
+  } catch (error) {
+    if (isMissingTableError(error)) return;
+    console.error("[cms] Failed to seed default articles:", error);
+  }
+}
+
 function isMissingTableError(error: unknown) {
   const code =
     (error as { code?: string })?.code ??
@@ -153,6 +204,7 @@ async function queryCmsArticlesFromDb(includeDrafts: boolean) {
 
 export async function listCmsArticles(includeDrafts = false) {
   if (isDatabaseConfigured()) {
+    await ensureCmsDatabaseSeeded();
     return queryCmsArticlesFromDb(includeDrafts);
   }
 
@@ -197,6 +249,7 @@ export async function getCmsArticleById(id: number) {
   }
 
   const items = await seedFileStoreIfEmpty();
+  return items.find((item) => item.id === id) ?? null;
 }
 
 export async function createCmsArticle(input: ArticleInput) {

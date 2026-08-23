@@ -17,7 +17,7 @@ export default async function AdminArticlesPage() {
   return (
     <AdminShell
       title="Articles"
-      description="Create, edit, publish, and delete articles. Each article uses one of five templates."
+      description="Create, edit, publish, and delete articles. Draft articles are hidden from the public site — set status to Published to go live."
       actions={
         <Button asChild>
           <Link href="/admin/articles/new" className="gap-2">
