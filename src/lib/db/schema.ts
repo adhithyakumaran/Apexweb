@@ -47,7 +47,7 @@ export type NewCmsActivityLogRow = typeof cmsActivityLogs.$inferInsert;
 export const cmsChatbotSettings = pgTable("cms_chatbot_settings", {
   id: serial("id").primaryKey(),
   provider: varchar("provider", { length: 40 }).notNull().default("groq"),
-  model: varchar("model", { length: 120 }).notNull().default("openai/gpt-oss-20b"),
+  model: varchar("model", { length: 120 }).notNull().default("qwen/qwen3.6-27b"),
   systemPrompt: text("system_prompt").notNull().default(""),
   tone: varchar("tone", { length: 80 }).notNull().default("professional"),
   skills: jsonb("skills").$type<string[]>().notNull().default([]),

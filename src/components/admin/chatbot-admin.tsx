@@ -250,7 +250,16 @@ export function ChatbotAdmin({ initialSettings, initialMemory }: ChatbotAdminPro
                   ))}
                 </select>
                 <p className="text-[11px] text-[#666]">
-                  Llama 3.3 was retired by Groq in Aug 2026 — use GPT-OSS models.
+                  If GPT-OSS shows a 403 error, use Qwen or enable models at{" "}
+                  <a
+                    href="https://console.groq.com/settings/project/limits"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline"
+                  >
+                    Groq project limits
+                  </a>
+                  .
                 </p>
               </div>
             </div>

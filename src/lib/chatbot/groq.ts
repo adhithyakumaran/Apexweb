@@ -1,12 +1,12 @@
 const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
-/** Groq retired Llama 3.x models on 2026-08-16. See console.groq.com/docs/models */
-export const DEFAULT_GROQ_MODEL = "openai/gpt-oss-20b";
+/** Qwen is usually enabled on free Groq projects; GPT-OSS may need admin enablement. */
+export const DEFAULT_GROQ_MODEL = "qwen/qwen3.6-27b";
 
 export const GROQ_MODEL_OPTIONS = [
-  { id: "openai/gpt-oss-20b", label: "GPT-OSS 20B (fast, recommended)" },
-  { id: "openai/gpt-oss-120b", label: "GPT-OSS 120B (smarter)" },
-  { id: "qwen/qwen3.6-27b", label: "Qwen 3.6 27B (preview)" },
+  { id: "qwen/qwen3.6-27b", label: "Qwen 3.6 27B (default — works on most free projects)" },
+  { id: "openai/gpt-oss-20b", label: "GPT-OSS 20B (enable in Groq project limits)" },
+  { id: "openai/gpt-oss-120b", label: "GPT-OSS 120B (enable in Groq project limits)" },
 ] as const;
 
 const RETIRED_MODEL_MAP: Record<string, string> = {
@@ -25,11 +25,51 @@ export function isGroqConfigured() {
   return Boolean(process.env.GROQ_API_KEY?.trim());
 }
 
+export function getDefaultGroqModel() {
+  return process.env.GROQ_MODEL?.trim() || DEFAULT_GROQ_MODEL;
+}
+
 /** Map retired Groq model IDs to a currently supported model. */
 export function resolveGroqModel(model?: string | null) {
   const trimmed = model?.trim();
-  if (!trimmed) return DEFAULT_GROQ_MODEL;
+  if (!trimmed) return getDefaultGroqModel();
   return RETIRED_MODEL_MAP[trimmed] ?? trimmed;
+}
+
+function buildModelTryList(requested: string) {
+  const resolved = resolveGroqModel(requested);
+  const envDefault = getDefaultGroqModel();
+  return [
+    ...new Set([
+      resolved,
+      envDefault,
+      DEFAULT_GROQ_MODEL,
+      "qwen/qwen3.6-27b",
+      "openai/gpt-oss-20b",
+      "openai/gpt-oss-120b",
+    ]),
+  ];
+}
+
+function isRetryableModelError(status: number, body: string) {
+  return (
+    status === 404 ||
+    status === 403 ||
+    body.includes("model_not_found") ||
+    body.includes("does not exist") ||
+    body.includes("blocked at the project level") ||
+    body.includes("permissions_error")
+  );
+}
+
+function formatGroqError(status: number, body: string) {
+  if (status === 403 && body.includes("blocked at the project level")) {
+    return (
+      "This Groq model is disabled for your project. In Chat Bot admin, switch Model to " +
+      "`qwen/qwen3.6-27b`, or enable GPT-OSS at console.groq.com/settings/project/limits"
+    );
+  }
+  return `Groq API error (${status}): ${body.slice(0, 240)}`;
 }
 
 export async function chatWithGroq({
@@ -46,9 +86,7 @@ export async function chatWithGroq({
     throw new Error("GROQ_API_KEY is not configured");
   }
 
-  const resolvedModel = resolveGroqModel(model);
-  const modelsToTry = [...new Set([resolvedModel, DEFAULT_GROQ_MODEL, "openai/gpt-oss-120b"])];
-
+  const modelsToTry = buildModelTryList(model);
   let lastError = "";
 
   for (const modelId of modelsToTry) {
@@ -76,11 +114,9 @@ export async function chatWithGroq({
     }
 
     const text = await response.text();
-    lastError = `Groq API error (${response.status}): ${text.slice(0, 240)}`;
+    lastError = formatGroqError(response.status, text);
 
-    const isModelError =
-      response.status === 404 || text.includes("model_not_found") || text.includes("does not exist");
-    if (!isModelError) break;
+    if (!isRetryableModelError(response.status, text)) break;
   }
 
   throw new Error(lastError || "Groq chat request failed");

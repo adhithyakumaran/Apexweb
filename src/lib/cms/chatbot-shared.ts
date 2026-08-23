@@ -52,7 +52,7 @@ export const CHATBOT_SKILL_SUGGESTIONS = [
 
 export const DEFAULT_CHATBOT_SETTINGS: Omit<ChatbotSettings, "groqConfigured" | "updatedAt" | "lastCrawledAt"> = {
   provider: "groq",
-  model: "openai/gpt-oss-20b",
+  model: "qwen/qwen3.6-27b",
   systemPrompt:
     "You are the Apexweb assistant. Answer using the company website, knowledge base, and uploaded documents. Be accurate and concise.",
   tone: "professional",
