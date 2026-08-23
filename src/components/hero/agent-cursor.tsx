@@ -1,12 +1,19 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function AgentCursor() {
   const dotRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
+  const [enabled, setEnabled] = useState(false);
 
   useEffect(() => {
+    const canHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+    const isWide = window.matchMedia("(min-width: 768px)").matches;
+    if (!canHover || !isWide) return;
+
+    setEnabled(true);
+
     let dotX = 0;
     let dotY = 0;
     let ringX = 0;
@@ -44,11 +51,13 @@ export function AgentCursor() {
     };
   }, []);
 
+  if (!enabled) return null;
+
   return (
     <>
-           <div
+      <div
         ref={ringRef}
-        className="pointer-events-none fixed left-0 top-0 z-[60] size-10 rounded-full border border-foreground/70 shadow-[0_0_20px_rgba(0,0,0,0.1)] transition-[width,height] duration-200"
+        className="pointer-events-none fixed left-0 top-0 z-[60] size-10 rounded-full border border-foreground/70 shadow-[0_0_20px_rgba(0,0,0,0.1)]"
         aria-hidden="true"
       />
       <div

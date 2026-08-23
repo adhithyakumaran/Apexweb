@@ -24,7 +24,7 @@ export function Hero() {
   return (
     <section className="w-full px-4 pt-2 sm:px-6 sm:pt-3 lg:px-10 lg:pt-4">
       <motion.div
-        className="relative flex h-[85vh] min-h-140 w-full cursor-none items-center justify-center overflow-hidden rounded-3xl bg-secondary"
+        className="relative flex h-[85vh] min-h-140 w-full items-center justify-center overflow-hidden rounded-3xl bg-secondary md:cursor-none"
         initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.98 }}
         animate={prefersReducedMotion ? undefined : { opacity: 1, scale: 1 }}
         transition={{ duration: 0.9, ease: smoothEase }}

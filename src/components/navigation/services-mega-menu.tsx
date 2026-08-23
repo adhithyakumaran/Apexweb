@@ -16,34 +16,22 @@ import {
 import { smoothEase } from "@/components/animations/motion-presets";
 import { cn } from "@/lib/utils";
 
-function ServiceLink({
-  item,
-  variant = "default",
-}: {
-  item: ServiceItem;
-  variant?: "default" | "compact";
-}) {
+function ServiceLink({ item }: { item: ServiceItem }) {
   const Icon = item.icon;
-  const isCompact = variant === "compact";
 
   return (
     <Link
       href={item.href}
-      className="group flex items-start gap-2.5 rounded-lg px-2 py-1.5 transition-colors duration-200 hover:bg-muted/70"
+      className="group flex items-start gap-3 rounded-xl px-3 py-3 transition-colors duration-200 hover:bg-muted/60"
     >
-      <Icon
-        className="mt-0.5 size-3.5 shrink-0 text-foreground"
-        strokeWidth={1.75}
-      />
+      <Icon className="mt-1 size-3.5 shrink-0 text-foreground" strokeWidth={1.75} />
       <span className="min-w-0">
-        <span className="block text-[0.82rem] font-semibold leading-snug text-foreground">
+        <span className="block text-sm font-semibold leading-snug text-foreground">
           {item.title}
         </span>
-        {!isCompact && (
-          <span className="mt-0.5 block text-[0.72rem] leading-snug text-muted-foreground line-clamp-2">
-            {item.description}
-          </span>
-        )}
+        <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">
+          {item.description}
+        </span>
       </span>
     </Link>
   );
@@ -51,7 +39,7 @@ function ServiceLink({
 
 function SectionLabel({ children }: { children: ReactNode }) {
   return (
-    <p className="mb-2.5 text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+    <p className="mb-4 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
       {children}
     </p>
   );
@@ -98,70 +86,70 @@ export function ServicesMegaMenu() {
         {open && (
           <>
             <motion.div
-              className="fixed inset-0 top-16 z-40 bg-foreground/15 backdrop-blur-sm"
+              className="fixed inset-0 top-16 z-40 bg-foreground/20 backdrop-blur-md"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.25, ease: smoothEase }}
+              transition={{ duration: 0.28, ease: smoothEase }}
               onMouseEnter={handleEnter}
               onMouseLeave={handleLeave}
             />
 
             <motion.div
-              className="fixed inset-x-0 top-16 z-50 max-h-[calc(100vh-4rem)] overflow-y-auto"
-              initial={{ opacity: 0, y: -6 }}
+              className="fixed inset-x-0 top-16 z-50 min-h-[calc(100vh-4rem)] overflow-y-auto"
+              initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -4 }}
-              transition={{ duration: 0.3, ease: smoothEase }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.32, ease: smoothEase }}
               onMouseEnter={handleEnter}
               onMouseLeave={handleLeave}
             >
-              <div className="border-b border-border bg-background/97 shadow-2xl backdrop-blur-xl supports-[backdrop-filter]:bg-background/95">
-                <div className="mx-auto grid max-w-350 gap-0 px-6 py-6 lg:grid-cols-12 lg:px-8 lg:py-7">
-                  <div className="lg:col-span-5 lg:border-r lg:border-border/60 lg:pr-6">
+              <div className="min-h-[calc(100vh-4rem)] bg-background/98 shadow-2xl backdrop-blur-2xl supports-[backdrop-filter]:bg-background/96">
+                <div className="mx-auto grid max-w-350 gap-10 px-8 py-12 lg:grid-cols-12 lg:gap-12 lg:px-14 lg:py-14">
+                  <div className="lg:col-span-5 lg:border-r lg:border-border/50 lg:pr-10">
                     <SectionLabel>Core Service Options</SectionLabel>
-                    <div className="grid gap-0.5 sm:grid-cols-2">
+                    <div className="grid gap-1 sm:grid-cols-2">
                       {coreServices.map((item) => (
                         <ServiceLink key={item.title} item={item} />
                       ))}
                     </div>
                   </div>
 
-                  <div className="mt-6 border-t border-border/60 pt-6 lg:col-span-3 lg:mt-0 lg:border-t-0 lg:border-r lg:pt-0 lg:pr-5">
+                  <div className="lg:col-span-3 lg:border-r lg:border-border/50 lg:pr-8">
                     <SectionLabel>AI Accelerator Platforms</SectionLabel>
-                    <div className="flex flex-col gap-0.5">
+                    <div className="flex flex-col gap-1">
                       {aiPlatforms.map((item) => (
-                        <ServiceLink key={item.title} item={item} variant="compact" />
+                        <ServiceLink key={item.title} item={item} />
                       ))}
                     </div>
 
-                    <div className="mt-5 border-t border-border/50 pt-5">
+                    <div className="mt-10 border-t border-border/50 pt-10">
                       <SectionLabel>Testing Agents</SectionLabel>
-                      <div className="flex flex-col gap-0.5">
+                      <div className="flex flex-col gap-1">
                         {testingAgents.map((item) => (
-                          <ServiceLink key={item.title} item={item} variant="compact" />
+                          <ServiceLink key={item.title} item={item} />
                         ))}
                       </div>
                     </div>
                   </div>
 
-                  <div className="mt-6 border-t border-border/60 pt-6 lg:col-span-4 lg:mt-0 lg:border-t-0 lg:pl-2 lg:pt-0">
+                  <div className="lg:col-span-4 lg:pl-2">
                     <SectionLabel>Industry-Specific Agents</SectionLabel>
-                    <div className="grid gap-0.5 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+                    <div className="grid gap-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
                       {industryAgents.map((item) => (
-                        <ServiceLink key={item.title} item={item} variant="compact" />
+                        <ServiceLink key={item.title} item={item} />
                       ))}
                     </div>
                   </div>
                 </div>
 
-                <div className="border-t border-border/60 bg-muted/30 px-6 py-3.5 lg:px-8">
-                  <div className="mx-auto flex max-w-350 flex-wrap items-center gap-x-5 gap-y-1.5">
+                <div className="border-t border-border/50 bg-muted/25 px-8 py-5 lg:px-14">
+                  <div className="mx-auto flex max-w-350 flex-wrap items-center gap-x-8 gap-y-2">
                     {serviceQuickLinks.map((link) => (
                       <Link
                         key={link.href}
                         href={link.href}
-                        className="text-xs font-medium text-primary transition-colors hover:text-primary/80"
+                        className="text-sm font-medium text-primary transition-colors hover:text-primary/80"
                       >
                         {link.label} →
                       </Link>
