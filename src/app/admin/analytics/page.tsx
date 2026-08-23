@@ -4,7 +4,7 @@ import { VisitorAnalyticsDashboard } from "@/components/admin/visitor-analytics-
 import { getVisitorAnalytics, type AnalyticsPeriod } from "@/lib/analytics/posthog-query";
 
 export const metadata: Metadata = {
-  title: "Analytics",
+  title: "PostHog Analytics",
   robots: { index: false, follow: false },
 };
 
@@ -18,7 +18,10 @@ export default async function AdminAnalyticsPage({ searchParams }: AdminAnalytic
   const data = await getVisitorAnalytics(period, { fresh: refresh === "1" });
 
   return (
-    <AdminShell title="Analytics">
+    <AdminShell
+      title="PostHog Analytics"
+      description="Visitor traffic, sessions, and web vitals from PostHog."
+    >
       <VisitorAnalyticsDashboard data={data} />
     </AdminShell>
   );

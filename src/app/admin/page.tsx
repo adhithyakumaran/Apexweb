@@ -58,7 +58,8 @@ export default async function AdminDashboardPage() {
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <AdminSectionHeading title="Recent articles" />
           <div className="flex items-center gap-4">
-            <AdminLink href="/admin/analytics">Analytics</AdminLink>
+            <AdminLink href="/admin/analytics">PostHog</AdminLink>
+            <AdminLink href="/admin/analytics/google">Google Analytics</AdminLink>
             <AdminLink href="/admin/logs">Logs</AdminLink>
             <AdminLink href="/admin/articles">View all</AdminLink>
           </div>

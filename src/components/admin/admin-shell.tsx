@@ -8,6 +8,7 @@ import {
   ExternalLink,
   FileText,
   LayoutDashboard,
+  LineChart,
   LogOut,
   Menu,
   Plus,
@@ -20,13 +21,41 @@ import { Logo } from "@/components/navigation/logo";
 import { adminClasses } from "@/components/admin/admin-theme";
 import { cn } from "@/lib/utils";
 
-const mainNav = [
-  { href: "/admin", label: "Overview", icon: LayoutDashboard, exact: true },
-  { href: "/admin/articles", label: "Articles", icon: FileText },
-  { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
-  { href: "/admin/logs", label: "Logs", icon: ScrollText },
-  { href: "/admin/chatbot", label: "Chat Bot", icon: Bot },
+type NavItem = {
+  href: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+  exact?: boolean;
+};
+
+type NavSection = {
+  label?: string;
+  items: NavItem[];
+};
+
+const navSections: NavSection[] = [
+  {
+    items: [
+      { href: "/admin", label: "Overview", icon: LayoutDashboard, exact: true },
+      { href: "/admin/articles", label: "Articles", icon: FileText },
+    ],
+  },
+  {
+    label: "Analytics",
+    items: [
+      { href: "/admin/analytics", label: "PostHog Analytics", icon: BarChart3, exact: true },
+      { href: "/admin/analytics/google", label: "Google Analytics", icon: LineChart },
+    ],
+  },
+  {
+    items: [
+      { href: "/admin/logs", label: "Logs", icon: ScrollText },
+      { href: "/admin/chatbot", label: "Chat Bot", icon: Bot },
+    ],
+  },
 ];
+
+const mainNav = navSections.flatMap((section) => section.items);
 
 type AdminShellProps = {
   children: React.ReactNode;
@@ -36,37 +65,48 @@ type AdminShellProps = {
 };
 
 function SidebarNav({
-  items,
+  sections,
   pathname,
   onNavigate,
 }: {
-  items: typeof mainNav;
+  sections: NavSection[];
   pathname: string;
   onNavigate?: () => void;
 }) {
   return (
-    <nav className="space-y-0.5 px-2">
-      {items.map((item) => {
-        const Icon = item.icon;
-        const active = item.exact
-          ? pathname === item.href
-          : pathname === item.href || pathname.startsWith(`${item.href}/`);
+    <nav className="space-y-4 px-2">
+      {sections.map((section, index) => (
+        <div key={section.label ?? `section-${index}`}>
+          {section.label && (
+            <p className="mb-1 px-2 text-[11px] font-medium uppercase tracking-wide text-[#666]">
+              {section.label}
+            </p>
+          )}
+          <div className="space-y-0.5">
+            {section.items.map((item) => {
+              const Icon = item.icon;
+              const active = item.exact
+                ? pathname === item.href
+                : pathname === item.href || pathname.startsWith(`${item.href}/`);
 
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            onClick={onNavigate}
-            className={cn(
-              "flex items-center gap-2.5 rounded px-2 py-1.5 text-[13px] font-normal transition-colors",
-              active ? adminClasses.navActive : adminClasses.navIdle
-            )}
-          >
-            <Icon className="size-4 shrink-0 opacity-70" strokeWidth={1.5} />
-            {item.label}
-          </Link>
-        );
-      })}
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={onNavigate}
+                  className={cn(
+                    "flex items-center gap-2.5 rounded px-2 py-1.5 text-[13px] font-normal transition-colors",
+                    active ? adminClasses.navActive : adminClasses.navIdle
+                  )}
+                >
+                  <Icon className="size-4 shrink-0 opacity-70" strokeWidth={1.5} />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      ))}
     </nav>
   );
 }
@@ -77,10 +117,17 @@ export function AdminShell({ children, title, description, actions }: AdminShell
   const [mobileOpen, setMobileOpen] = useState(false);
   const [search, setSearch] = useState("");
 
-  const filteredNav = useMemo(
-    () => mainNav.filter((item) => item.label.toLowerCase().includes(search.toLowerCase())),
-    [search]
-  );
+  const filteredSections = useMemo(() => {
+    const query = search.toLowerCase().trim();
+    if (!query) return navSections;
+
+    return navSections
+      .map((section) => ({
+        ...section,
+        items: section.items.filter((item) => item.label.toLowerCase().includes(query)),
+      }))
+      .filter((section) => section.items.length > 0);
+  }, [search]);
 
   async function handleLogout() {
     await fetch("/api/cms/logout", { method: "POST" });
@@ -112,7 +159,7 @@ export function AdminShell({ children, title, description, actions }: AdminShell
 
       <div className="flex-1 overflow-y-auto py-1">
         <SidebarNav
-          items={filteredNav}
+          sections={filteredSections}
           pathname={pathname}
           onNavigate={() => setMobileOpen(false)}
         />
@@ -211,3 +258,6 @@ export function AdminShell({ children, title, description, actions }: AdminShell
     </div>
   );
 }
+
+// Re-export for consumers that still import mainNav
+export { mainNav };
