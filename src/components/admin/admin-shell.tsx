@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   BarChart3,
+  Bell,
   Bot,
   ExternalLink,
   FileText,
@@ -14,6 +15,7 @@ import {
   Plus,
   ScrollText,
   Search,
+  Activity,
   X,
 } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -50,6 +52,8 @@ const navSections: NavSection[] = [
   {
     items: [
       { href: "/admin/logs", label: "Logs", icon: ScrollText },
+      { href: "/admin/uptime", label: "Uptime", icon: Activity },
+      { href: "/admin/alerts", label: "Alerts", icon: Bell },
       { href: "/admin/chatbot", label: "Chat Bot", icon: Bot },
     ],
   },

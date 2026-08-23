@@ -72,3 +72,41 @@ export const cmsChatbotMemory = pgTable("cms_chatbot_memory", {
 
 export type CmsChatbotSettingsRow = typeof cmsChatbotSettings.$inferSelect;
 export type CmsChatbotMemoryRow = typeof cmsChatbotMemory.$inferSelect;
+
+export const cmsAlertSettings = pgTable("cms_alert_settings", {
+  id: serial("id").primaryKey(),
+  emailEnabled: boolean("email_enabled").notNull().default(false),
+  emailRecipients: jsonb("email_recipients").$type<string[]>().notNull().default([]),
+  teamsEnabled: boolean("teams_enabled").notNull().default(false),
+  teamsWebhookUrl: text("teams_webhook_url").notNull().default(""),
+  smsEnabled: boolean("sms_enabled").notNull().default(false),
+  smsPhone: varchar("sms_phone", { length: 30 }).notNull().default(""),
+  digestEnabled: boolean("digest_enabled").notNull().default(false),
+  digestDay: varchar("digest_day", { length: 12 }).notNull().default("monday"),
+  digestHourUtc: integer("digest_hour_utc").notNull().default(6),
+  alertOnUptimeFailure: boolean("alert_on_uptime_failure").notNull().default(true),
+  alertOnDeploy: boolean("alert_on_deploy").notNull().default(false),
+  alertOnError: boolean("alert_on_error").notNull().default(true),
+  updatedAt: timestamp("updated_at", { mode: "string" }).defaultNow(),
+});
+
+export const cmsUptimeChecks = pgTable("cms_uptime_checks", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 120 }).notNull(),
+  url: text("url").notNull(),
+  method: varchar("method", { length: 8 }).notNull().default("GET"),
+  expectedStatus: integer("expected_status").notNull().default(200),
+  timeoutMs: integer("timeout_ms").notNull().default(10000),
+  enabled: boolean("enabled").notNull().default(true),
+  createdAt: timestamp("created_at", { mode: "string" }).defaultNow(),
+});
+
+export const cmsUptimeResults = pgTable("cms_uptime_results", {
+  id: serial("id").primaryKey(),
+  checkId: integer("check_id").notNull(),
+  ok: boolean("ok").notNull(),
+  statusCode: integer("status_code"),
+  responseMs: integer("response_ms").notNull(),
+  error: text("error"),
+  checkedAt: timestamp("checked_at", { mode: "string" }).defaultNow(),
+});
