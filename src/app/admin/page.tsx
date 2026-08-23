@@ -6,6 +6,7 @@ import { ArticlesTable } from "@/components/admin/articles-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getCmsStats, listCmsArticles } from "@/lib/cms/articles-repository";
+import { isR2Configured } from "@/lib/cms/r2";
 import { isDatabaseConfigured } from "@/lib/db";
 
 export const metadata: Metadata = {
@@ -31,8 +32,11 @@ export default async function AdminDashboardPage() {
       }
     >
       <div className="mb-6 flex flex-wrap items-center gap-2">
-        <Badge variant={isDatabaseConfigured() ? "success" : "warning"}>
-          {isDatabaseConfigured() ? "Neon database connected" : "Local file store (set DATABASE_URI for Neon)"}
+        <Badge variant={isDatabaseConfigured() ? "success" : "destructive"}>
+          {isDatabaseConfigured() ? "Neon database connected" : "DATABASE_URI missing — articles will not save"}
+        </Badge>
+        <Badge variant={isR2Configured() ? "success" : "warning"}>
+          {isR2Configured() ? "Cloudflare R2 connected" : "R2 not configured — uploads disabled"}
         </Badge>
         <Badge variant="secondary">5 article templates</Badge>
       </div>

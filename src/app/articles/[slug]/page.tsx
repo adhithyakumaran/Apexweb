@@ -5,16 +5,12 @@ import { getRelatedArticles } from "@/lib/articles";
 import { getAllArticles, getArticleBySlug } from "@/lib/articles/server";
 import { articleJsonLd, buildArticleMetadata } from "@/lib/articles/seo";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 type ArticlePageProps = {
   params: Promise<{ slug: string }>;
 };
-
-export async function generateStaticParams() {
-  const articles = await getAllArticles();
-  return articles.map((article) => ({ slug: article.slug }));
-}
 
 export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
   const { slug } = await params;

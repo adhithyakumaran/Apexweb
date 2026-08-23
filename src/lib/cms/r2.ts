@@ -9,12 +9,17 @@ export type R2Config = {
   endpoint?: string;
 };
 
+function env(name: string) {
+  const value = process.env[name];
+  return value?.trim() || "";
+}
+
 export function getR2Config(): R2Config | null {
-  const accountId = process.env.R2_ACCOUNT_ID;
-  const accessKeyId = process.env.R2_ACCESS_KEY_ID;
-  const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
-  const bucketName = process.env.R2_BUCKET_NAME;
-  const publicUrl = process.env.R2_PUBLIC_URL;
+  const accountId = env("R2_ACCOUNT_ID");
+  const accessKeyId = env("R2_ACCESS_KEY_ID");
+  const secretAccessKey = env("R2_SECRET_ACCESS_KEY");
+  const bucketName = env("R2_BUCKET_NAME");
+  const publicUrl = env("R2_PUBLIC_URL");
 
   if (!accountId || !accessKeyId || !secretAccessKey || !bucketName || !publicUrl) {
     return null;
@@ -26,7 +31,7 @@ export function getR2Config(): R2Config | null {
     secretAccessKey,
     bucketName,
     publicUrl: publicUrl.replace(/\/$/, ""),
-    endpoint: process.env.R2_ENDPOINT,
+    endpoint: env("R2_ENDPOINT") || undefined,
   };
 }
 
@@ -56,21 +61,26 @@ export async function uploadToR2(
   const config = getR2Config();
   if (!config) {
     throw new Error(
-      "Cloudflare R2 is not configured. Set R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, and R2_PUBLIC_URL."
+      "Cloudflare R2 is not configured. Set R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, and R2_PUBLIC_URL in Vercel."
     );
   }
 
   const objectKey = key.startsWith("cms/") ? key : `cms/${key}`;
   const client = createR2Client(config);
 
-  await client.send(
-    new PutObjectCommand({
-      Bucket: config.bucketName,
-      Key: objectKey,
-      Body: buffer,
-      ContentType: contentType,
-    })
-  );
+  try {
+    await client.send(
+      new PutObjectCommand({
+        Bucket: config.bucketName,
+        Key: objectKey,
+        Body: buffer,
+        ContentType: contentType,
+      })
+    );
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "R2 upload failed";
+    throw new Error(`R2 upload failed: ${message}`);
+  }
 
   return { url: `${config.publicUrl}/${objectKey}` };
 }
@@ -83,4 +93,15 @@ export function getR2PublicHostname() {
   } catch {
     return null;
   }
+}
+
+export function getR2ConfigStatus() {
+  return {
+    accountId: Boolean(env("R2_ACCOUNT_ID")),
+    accessKeyId: Boolean(env("R2_ACCESS_KEY_ID")),
+    secretAccessKey: Boolean(env("R2_SECRET_ACCESS_KEY")),
+    bucketName: Boolean(env("R2_BUCKET_NAME")),
+    publicUrl: Boolean(env("R2_PUBLIC_URL")),
+    configured: isR2Configured(),
+  };
 }

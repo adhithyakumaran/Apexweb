@@ -29,7 +29,7 @@ const cmsFeatures = [
   {
     icon: Image,
     title: "Hero images & files",
-    description: "Upload cover images and downloadable assets for media-rich posts.",
+    description: "Upload cover images and downloadable assets via Cloudflare R2.",
   },
   {
     icon: FileText,
@@ -56,31 +56,10 @@ export default async function AdminLoginPage({ searchParams }: LoginPageProps) {
   const { next } = await searchParams;
 
   return (
-    <main className="flex min-h-screen">
-      {/* Sign in — white */}
-      <section className="flex w-full flex-col justify-center bg-white px-6 py-12 sm:px-10 lg:w-1/2 lg:px-16 xl:px-24">
-        <div className="mx-auto w-full max-w-md">
-          <p className="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-brand-orange">
-            Apex Node · Content Studio
-          </p>
-          <h1 className="mt-4 text-3xl font-semibold tracking-tight text-black">Sign in</h1>
-          <p className="mt-2 text-sm text-neutral-500">
-            Authorized editors only. Enter your CMS password to continue.
-          </p>
-
-          <div className="mt-10">
-            <LoginForm nextPath={next || "/admin"} />
-          </div>
-
-          <p className="mt-8 text-xs text-neutral-400">
-            This area is private. Contact your site administrator if you need access.
-          </p>
-        </div>
-      </section>
-
-      {/* Features — black */}
-      <section className="relative hidden overflow-hidden bg-black text-white lg:flex lg:w-1/2 lg:flex-col lg:justify-between lg:px-16 lg:py-14 xl:px-20">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(249,115,22,0.12),transparent_55%)]" />
+    <main className="flex min-h-screen flex-col lg:flex-row">
+      {/* Features — black (left on desktop) */}
+      <section className="relative flex flex-col justify-between bg-black px-6 py-12 text-white sm:px-10 lg:w-1/2 lg:px-16 lg:py-14 xl:px-20">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(249,115,22,0.14),transparent_55%)]" />
 
         <div className="relative">
           <p className="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-brand-orange">
@@ -95,7 +74,7 @@ export default async function AdminLoginPage({ searchParams }: LoginPageProps) {
           </p>
         </div>
 
-        <ul className="relative mt-12 space-y-5">
+        <ul className="relative mt-10 space-y-5 lg:mt-12">
           {cmsFeatures.map((feature) => {
             const Icon = feature.icon;
             return (
@@ -112,9 +91,30 @@ export default async function AdminLoginPage({ searchParams }: LoginPageProps) {
           })}
         </ul>
 
-        <div className="relative mt-10 flex items-center gap-2 text-xs text-neutral-500">
+        <div className="relative mt-8 flex items-center gap-2 text-xs text-neutral-500 lg:mt-10">
           <Upload className="size-3.5 text-brand-orange" />
           Changes publish to your live site immediately after saving.
+        </div>
+      </section>
+
+      {/* Sign in — white (right on desktop) */}
+      <section className="flex w-full flex-col justify-center bg-white px-6 py-12 sm:px-10 lg:w-1/2 lg:px-16 xl:px-24">
+        <div className="mx-auto w-full max-w-md">
+          <p className="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-brand-orange">
+            Apex Node · Content Studio
+          </p>
+          <h1 className="mt-4 text-3xl font-semibold tracking-tight text-black">Sign in</h1>
+          <p className="mt-2 text-sm text-neutral-500">
+            Authorized editors only. Your session ends when you close the browser.
+          </p>
+
+          <div className="mt-10">
+            <LoginForm nextPath={next || "/admin"} />
+          </div>
+
+          <p className="mt-8 text-xs text-neutral-400">
+            This area is private. Contact your site administrator if you need access.
+          </p>
         </div>
       </section>
     </main>

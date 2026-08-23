@@ -5,7 +5,8 @@ import { buildArticlesHubMetadata } from "@/lib/articles/seo";
 
 export const metadata: Metadata = buildArticlesHubMetadata();
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function ArticlesPage() {
   const allArticles = await getAllArticles();

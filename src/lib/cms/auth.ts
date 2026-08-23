@@ -2,7 +2,7 @@ import { createHmac, timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
 
 const COOKIE_NAME = "apex_cms_session";
-const SESSION_TTL_MS = 1000 * 60 * 60 * 12;
+const SESSION_TTL_MS = 1000 * 60 * 60 * 8;
 
 function getSecret() {
   return process.env.PAYLOAD_SECRET || process.env.CMS_SESSION_SECRET || "dev-cms-secret-change-me";
@@ -26,13 +26,19 @@ export async function createCmsSession() {
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: SESSION_TTL_MS / 1000,
+    // No maxAge → session cookie; cleared when the browser closes.
   });
 }
 
 export async function clearCmsSession() {
   const cookieStore = await cookies();
-  cookieStore.delete(COOKIE_NAME);
+  cookieStore.set(COOKIE_NAME, "", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: 0,
+  });
 }
 
 export async function isCmsAuthenticated() {
@@ -51,20 +57,6 @@ export async function isCmsAuthenticated() {
     return false;
   }
 
-  const expires = Number(expiresRaw);
-  return Number.isFinite(expires) && expires > Date.now();
-}
-
-export function verifyCmsToken(token: string | undefined) {
-  if (!token) return false;
-  const [expiresRaw, signature] = token.split(".");
-  if (!expiresRaw || !signature) return false;
-  const expected = sign(expiresRaw);
-  try {
-    if (!timingSafeEqual(Buffer.from(signature), Buffer.from(expected))) return false;
-  } catch {
-    return false;
-  }
   const expires = Number(expiresRaw);
   return Number.isFinite(expires) && expires > Date.now();
 }
