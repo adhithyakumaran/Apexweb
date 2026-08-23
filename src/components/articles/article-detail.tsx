@@ -3,6 +3,7 @@
 import { motion, useReducedMotion } from "motion/react";
 import type { Article } from "@/config/articles";
 import { ArticleHeader } from "@/components/articles/article-header";
+import { ArticleAttachment, ArticleHeroImage } from "@/components/articles/article-media";
 import { RelatedArticles } from "@/components/articles/related-articles";
 import { ArticleTemplateRenderer } from "@/components/articles/templates";
 import { smoothEase } from "@/components/animations/motion-presets";
@@ -18,6 +19,7 @@ export function ArticleDetail({ article, related }: ArticleDetailProps) {
   return (
     <main className="bg-background">
       <ArticleHeader article={article} />
+      <ArticleHeroImage article={article} />
 
       <motion.article
         initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
@@ -26,6 +28,7 @@ export function ArticleDetail({ article, related }: ArticleDetailProps) {
         className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-10 lg:py-12"
       >
         <ArticleTemplateRenderer article={article} />
+        <ArticleAttachment article={article} />
 
         <div className="mt-10 flex flex-wrap gap-2 border-t border-border/70 pt-8">
           {article.tags.map((tag) => (

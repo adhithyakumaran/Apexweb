@@ -31,13 +31,34 @@ export function ArticleCard({ article, variant = "default", index = 0 }: Article
       <Link
         href={`/articles/${article.slug}`}
         className={cn(
-          "group flex h-full flex-col rounded-xl border border-border/80 bg-card transition-all duration-300 hover:border-brand-orange/30 hover:shadow-sm",
-          isFeatured ? "p-6 sm:flex-row sm:items-center sm:gap-8 sm:p-7" : "p-5",
-          isCompact && "p-4"
+          "group flex h-full flex-col overflow-hidden rounded-xl border border-border/80 bg-card transition-all duration-300 hover:border-brand-orange/30 hover:shadow-sm",
+          isFeatured ? "sm:flex-row sm:items-stretch" : "",
+          isCompact && "p-4",
+          !isFeatured && !isCompact && "p-0"
         )}
       >
-        {isFeatured && (
-          <div className="mb-4 h-1 w-10 rounded-full bg-brand-orange sm:mb-0 sm:h-12 sm:w-1 sm:shrink-0" />
+        {article.heroImageUrl && !isCompact && (
+          <div className={cn(isFeatured ? "sm:w-2/5" : "w-full")}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={article.heroImageUrl}
+              alt=""
+              className={cn(
+                "h-full w-full object-cover",
+                isFeatured ? "min-h-48 sm:min-h-full" : "aspect-[16/9]"
+              )}
+            />
+          </div>
+        )}
+
+        <div
+          className={cn(
+            "flex min-w-0 flex-1 flex-col",
+            isFeatured ? "p-6 sm:p-7" : isCompact ? "" : "p-5"
+          )}
+        >
+        {isFeatured && !article.heroImageUrl && (
+          <div className="mb-4 h-1 w-10 rounded-full bg-brand-orange sm:mb-0 sm:hidden" />
         )}
 
         <div className="min-w-0 flex-1">
@@ -73,12 +94,13 @@ export function ArticleCard({ article, variant = "default", index = 0 }: Article
         <span
           className={cn(
             "mt-4 inline-flex items-center gap-1 text-sm font-medium text-foreground/70 transition-all group-hover:gap-2 group-hover:text-brand-orange",
-            isFeatured && "sm:mt-0 sm:shrink-0"
+            isFeatured && "sm:mt-4"
           )}
         >
           Read article
           <ArrowRight className="size-3.5" />
         </span>
+        </div>
       </Link>
     </motion.article>
   );

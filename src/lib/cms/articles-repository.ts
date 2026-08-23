@@ -50,6 +50,9 @@ function rowToArticle(row: CmsArticleRow | FileStoreArticle): Article {
     featured: row.featured,
     tags: row.tags ?? [],
     cover: { accent: row.coverAccent, label: row.cmsTemplate },
+    heroImageUrl: row.heroImageUrl ?? null,
+    attachmentUrl: row.attachmentUrl ?? null,
+    attachmentName: row.attachmentName ?? null,
     content: row.content,
   };
 }

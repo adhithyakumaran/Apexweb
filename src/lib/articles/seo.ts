@@ -9,6 +9,10 @@ export function getArticleUrl(slug: string): string {
 export function buildArticleMetadata(article: Article): Metadata {
   const url = getArticleUrl(article.slug);
 
+  const ogImage = article.heroImageUrl
+    ? [{ url: article.heroImageUrl, alt: article.title }]
+    : undefined;
+
   return {
     title: article.title,
     description: article.excerpt,
@@ -22,11 +26,13 @@ export function buildArticleMetadata(article: Article): Metadata {
       authors: [article.author.name],
       url,
       siteName: siteConfig.name,
+      images: ogImage,
     },
     twitter: {
       card: "summary_large_image",
       title: article.title,
       description: article.excerpt,
+      images: article.heroImageUrl ? [article.heroImageUrl] : undefined,
     },
     alternates: {
       canonical: url,
@@ -76,5 +82,6 @@ export function articleJsonLd(article: Article) {
       "@id": getArticleUrl(article.slug),
     },
     keywords: article.tags.join(", "),
+    ...(article.heroImageUrl ? { image: [article.heroImageUrl] } : {}),
   };
 }

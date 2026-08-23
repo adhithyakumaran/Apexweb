@@ -1,20 +1,12 @@
 import type { NextConfig } from "next";
-import { getR2PublicHostname } from "@/lib/cms/r2";
-
-const r2Hostname = getR2PublicHostname();
 
 const nextConfig: NextConfig = {
-  images: r2Hostname
-    ? {
-        remotePatterns: [
-          {
-            protocol: "https",
-            hostname: r2Hostname,
-            pathname: "/**",
-          },
-        ],
-      }
-    : undefined,
+  images: {
+    remotePatterns: [
+      { protocol: "https", hostname: "**.r2.dev", pathname: "/**" },
+      { protocol: "https", hostname: "**.r2.cloudflarestorage.com", pathname: "/**" },
+    ],
+  },
 };
 
 export default nextConfig;

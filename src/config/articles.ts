@@ -51,6 +51,9 @@ export type Article = {
     accent: string;
     label: string;
   };
+  heroImageUrl?: string | null;
+  attachmentUrl?: string | null;
+  attachmentName?: string | null;
   content: ArticleContent;
 };
 
