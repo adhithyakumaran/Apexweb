@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getChatbotSettings } from "@/lib/cms/chatbot";
 import { chatWithGroq, isGroqConfigured, parseHumanHandoff } from "@/lib/chatbot/groq";
-import { buildChatKnowledgeContext, CHAT_SYSTEM_RULES } from "@/lib/chatbot/knowledge";
+import { buildChatKnowledgeContext, CHAT_SYSTEM_RULES, getToneInstruction } from "@/lib/chatbot/knowledge";
 
 export const dynamic = "force-dynamic";
 
@@ -31,13 +31,14 @@ export async function POST(request: Request) {
 
   try {
     const knowledge = await buildChatKnowledgeContext();
-    const toneLine = `Tone: ${settings.tone}. Skills: ${settings.skills.join(", ") || "general assistance"}.`;
+    const toneLine = `${getToneInstruction(settings.tone)} Skills: ${settings.skills.join(", ") || "general assistance"}.`;
 
     const system = `${CHAT_SYSTEM_RULES}\n\n${toneLine}\n\n${settings.systemPrompt}\n\n--- KNOWLEDGE BASE ---\n${knowledge}`;
 
     const reply = await chatWithGroq({
       model: settings.model,
       messages: [{ role: "system", content: system }, ...history],
+      maxTokens: 220,
     });
 
     const { text, needsHuman } = parseHumanHandoff(reply);

@@ -75,11 +75,13 @@ function formatGroqError(status: number, body: string) {
 export async function chatWithGroq({
   model,
   messages,
-  temperature = 0.4,
+  temperature = 0.3,
+  maxTokens = 1024,
 }: {
   model: string;
   messages: GroqMessage[];
   temperature?: number;
+  maxTokens?: number;
 }) {
   const apiKey = process.env.GROQ_API_KEY?.trim();
   if (!apiKey) {
@@ -100,7 +102,7 @@ export async function chatWithGroq({
         model: modelId,
         messages,
         temperature,
-        max_tokens: 1024,
+        max_tokens: maxTokens,
       }),
     });
 

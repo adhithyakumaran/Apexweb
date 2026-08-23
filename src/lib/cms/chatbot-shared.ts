@@ -54,11 +54,11 @@ export const DEFAULT_CHATBOT_SETTINGS: Omit<ChatbotSettings, "groqConfigured" | 
   provider: "groq",
   model: "qwen/qwen3.6-27b",
   systemPrompt:
-    "You are the Apexweb assistant. Answer using the company website, knowledge base, and uploaded documents. Be accurate and concise.",
-  tone: "professional",
+    "Reply like a helpful human in chat — short, direct, one point at a time. Never dump everything at once.",
+  tone: "concise",
   skills: ["Answer product questions", "Summarize articles"],
   crawlEnabled: true,
   crawlBaseUrl: "",
   enabled: true,
-  welcomeMessage: "Hi — how can I help you today?",
+  welcomeMessage: "Hi — ask me anything about Apex.",
 };
