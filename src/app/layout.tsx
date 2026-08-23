@@ -25,7 +25,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${jakarta.variable} light h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col font-sans" suppressHydrationWarning>
+      <body className="flex min-h-dvh min-w-0 flex-col overflow-x-clip font-sans antialiased" suppressHydrationWarning>
         <SiteChrome>{children}</SiteChrome>
       </body>
     </html>

@@ -17,11 +17,13 @@ export function SiteChrome({ children }: SiteChromeProps) {
 
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange>
-      {!isAdmin && <LoadingScreen />}
-      {!isAdmin && <Navbar />}
-      {children}
-      {!isAdmin && <Footer />}
-      {!isAdmin && <ChatWidget />}
+      <div className="flex min-h-dvh min-w-0 flex-1 flex-col overflow-x-clip">
+        {!isAdmin && <LoadingScreen />}
+        {!isAdmin && <Navbar />}
+        <div className="min-w-0 flex-1">{children}</div>
+        {!isAdmin && <Footer />}
+        {!isAdmin && <ChatWidget />}
+      </div>
     </ThemeProvider>
   );
 }

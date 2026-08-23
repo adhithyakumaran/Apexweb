@@ -175,11 +175,11 @@ export function Moat() {
   return (
     <section
       ref={sectionRef}
-      className="dark relative w-full overflow-hidden bg-footer py-28 sm:py-36"
+      className="dark relative w-full overflow-hidden bg-footer py-16 sm:py-28 lg:py-36"
     >
-      <div className="pointer-events-none absolute left-1/2 top-1/3 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/8 blur-[140px]" />
+      <div className="pointer-events-none absolute left-1/2 top-1/3 h-[min(100vw,600px)] w-[min(100vw,600px)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/8 blur-[140px]" />
 
-      <div className="relative mx-auto max-w-6xl px-6 lg:px-10">
+      <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-10">
         <SectionHeader
           variant="dark"
           eyebrow="The Apex Moat"
@@ -190,7 +190,7 @@ export function Moat() {
 
         <motion.div
           style={{ rotateX: gridTilt, perspective: 1000 }}
-          className="relative mx-auto mt-20 aspect-square w-full max-w-[600px]"
+          className="relative mx-auto mt-12 w-full max-w-[min(100%,600px)] aspect-square sm:mt-20"
         >
           <motion.div
             style={{ rotate: ringRotate }}

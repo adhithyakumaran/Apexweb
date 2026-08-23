@@ -7,7 +7,7 @@ import { Contact } from "@/components/sections/contact";
 
 export default function Home() {
   return (
-    <main className="overflow-x-hidden">
+    <main className="min-w-0 overflow-x-clip">
       <Hero />
       <TrustedPartners />
       <Agents />

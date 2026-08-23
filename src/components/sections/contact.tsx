@@ -13,7 +13,7 @@ export function Contact() {
   return (
     <section
       id="contact"
-      className="relative w-full overflow-hidden bg-surface px-4 py-24 sm:px-6 lg:px-10"
+      className="relative w-full overflow-x-clip bg-surface px-3 py-16 sm:px-6 sm:py-24 lg:px-10"
     >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,color-mix(in_oklab,var(--brand-orange)_14%,transparent),transparent_42%)]" />
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,transparent,rgba(255,255,255,0.35))] dark:bg-[linear-gradient(to_bottom,transparent,rgba(10,14,23,0.35))]" />

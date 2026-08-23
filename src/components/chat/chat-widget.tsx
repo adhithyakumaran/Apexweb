@@ -102,9 +102,11 @@ export function ChatWidget() {
 
   return (
     <>
-      <div className="fixed right-4 bottom-4 z-50 flex flex-col items-end gap-3 sm:right-6 sm:bottom-6">
+      <div
+        className="safe-bottom fixed right-[max(0.75rem,env(safe-area-inset-right))] bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-50 flex max-w-[calc(100vw-1.5rem)] flex-col items-end gap-3 sm:right-6 sm:bottom-6"
+      >
         {open && (
-          <div className="flex h-[min(32rem,calc(100vh-6rem))] w-[min(24rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-neutral-800 bg-black shadow-2xl">
+          <div className="flex h-[min(32rem,calc(100dvh-7rem))] w-[min(24rem,calc(100vw-1.5rem))] max-w-full flex-col overflow-hidden rounded-2xl border border-neutral-800 bg-black shadow-2xl">
             <div className="flex items-center justify-between border-b border-neutral-800 px-4 py-3">
               <div className="flex items-center gap-2">
                 <div className="flex size-8 items-center justify-center rounded-full bg-black ring-1 ring-neutral-700">

@@ -23,7 +23,7 @@ export function Agents() {
   const prefersReducedMotion = useReducedMotion();
 
   return (
-    <section className="w-full px-4 py-24 sm:px-6 lg:px-10">
+    <section className="w-full px-3 py-16 sm:px-6 sm:py-24 lg:px-10">
       <div className="mx-auto max-w-350">
         <SectionHeader
           eyebrow="Your AI-powered QA team"
@@ -45,7 +45,7 @@ export function Agents() {
                 >
                   <Link
                     href={`/agents/${agent.slug}`}
-                    className={`group flex h-80 flex-col justify-between rounded-2xl border-2 border-foreground p-6 shadow-sm transition-shadow duration-500 hover:shadow-xl ${agent.bg}`}
+                    className={`group flex min-h-64 flex-col justify-between rounded-2xl border-2 border-foreground p-5 shadow-sm transition-shadow duration-500 hover:shadow-xl sm:h-80 sm:p-6 ${agent.bg}`}
                   >
                     <div className="flex items-start justify-between">
                       <p className={`text-xs font-semibold uppercase tracking-[0.15em] ${agent.accent} opacity-70`}>
@@ -57,7 +57,7 @@ export function Agents() {
                     </div>
 
                     <div>
-                      <h3 className={`text-3xl tracking-tight ${agent.accent} ${agent.font}`}>
+                      <h3 className={`text-2xl tracking-tight sm:text-3xl ${agent.accent} ${agent.font}`}>
                         {agent.codename}
                       </h3>
                       <p className={`mt-2 text-sm leading-relaxed ${agent.accent} opacity-80`}>
@@ -80,14 +80,14 @@ export function Agents() {
             >
               <Link
                 href="/agents"
-                className="group relative flex h-80 flex-col justify-between overflow-hidden rounded-2xl border-2 border-foreground bg-primary p-6 text-primary-foreground shadow-sm transition-shadow duration-500 hover:shadow-xl"
+                className="group relative flex min-h-64 flex-col justify-between overflow-hidden rounded-2xl border-2 border-foreground bg-primary p-5 text-primary-foreground shadow-sm transition-shadow duration-500 hover:shadow-xl sm:h-80 sm:p-6"
               >
                 <p className="text-xs font-semibold uppercase tracking-[0.15em] opacity-80">
                   Full Platform
                 </p>
 
                 <div className="flex items-end justify-between">
-                  <h3 className="text-3xl font-normal tracking-tight">
+                  <h3 className="text-2xl font-normal tracking-tight sm:text-3xl">
                     Explore All Agents
                   </h3>
                   <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary-foreground/15 transition-transform duration-500 group-hover:translate-x-1">

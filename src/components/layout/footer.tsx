@@ -61,7 +61,7 @@ export function Footer() {
 
   return (
     <footer className="w-full bg-black text-footer-foreground">
-      <div className="mx-auto max-w-350 px-6 py-20 lg:px-10">
+      <div className="safe-x mx-auto max-w-350 px-4 py-12 sm:px-6 sm:py-16 lg:px-10 lg:py-20">
         <motion.div
           className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]"
           initial={prefersReducedMotion ? false : "hidden"}
@@ -84,12 +84,12 @@ export function Footer() {
                     href={link.href}
                     target={link.external ? "_blank" : undefined}
                     rel={link.external ? "noopener noreferrer" : undefined}
-                    className="group/link flex items-center gap-2.5 text-sm text-footer-muted transition-colors duration-300 hover:text-footer-foreground"
+                    className="group/link flex min-w-0 items-center gap-2.5 text-sm break-words text-footer-muted transition-colors duration-300 hover:text-footer-foreground"
                   >
-                    <span className="flex size-8 items-center justify-center rounded-full border border-white/10 bg-white/5 transition-colors duration-300 group-hover/link:border-brand-orange/40 group-hover/link:bg-brand-orange/10">
+                    <span className="flex size-8 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 transition-colors duration-300 group-hover/link:border-brand-orange/40 group-hover/link:bg-brand-orange/10">
                       <Icon className="size-3.5" />
                     </span>
-                    {link.label}
+                    <span className="min-w-0">{link.label}</span>
                   </a>
                 );
               })}
@@ -184,7 +184,7 @@ export function Footer() {
         </motion.div>
 
         <motion.div
-          className="mt-16 flex flex-col items-center justify-between gap-5 border-t border-white/10 pt-8 sm:flex-row"
+          className="mt-16 flex flex-col items-center justify-between gap-5 border-t border-white/10 pt-8 text-center sm:flex-row sm:text-left"
           initial={prefersReducedMotion ? false : { opacity: 0, y: 16 }}
           whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
           viewport={defaultViewport}

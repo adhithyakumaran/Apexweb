@@ -8,7 +8,7 @@ import { mainNav } from "@/config/navigation";
 
 export function DesktopNavLinks() {
   return (
-    <nav className="hidden items-center gap-6 lg:gap-7 md:flex">
+    <nav className="hidden items-center gap-5 lg:flex xl:gap-7">
       {mainNav.map((item) => {
         if (item.label === "Services") {
           return <ServicesMegaMenu key={item.href} />;

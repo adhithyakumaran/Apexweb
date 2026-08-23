@@ -20,7 +20,7 @@ export function Testimonials() {
   const prefersReducedMotion = useReducedMotion();
 
   return (
-    <section className="w-full px-4 py-24 sm:px-6 lg:px-10">
+    <section className="w-full px-3 py-16 sm:px-6 sm:py-24 lg:px-10">
       <div className="mx-auto max-w-350">
         <SectionHeader
           eyebrow="What our partners say"

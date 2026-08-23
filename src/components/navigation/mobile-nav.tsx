@@ -11,7 +11,6 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { MobileSearch } from "@/components/navigation/mobile-search";
 import { mainNav, tryItCta, whatsappCta } from "@/config/navigation";
 import { getWhatsAppLink } from "@/lib/utils/whatsapp";
@@ -62,7 +61,10 @@ export function MobileNav() {
           <Menu className="size-5" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-80 overflow-y-auto">
+      <SheetContent
+        side="right"
+        className="safe-bottom w-[min(100vw-1rem,24rem)] overflow-y-auto overscroll-contain pb-[max(1rem,env(safe-area-inset-bottom))]"
+      >
         <SheetHeader>
           <SheetTitle>Menu</SheetTitle>
         </SheetHeader>
@@ -221,10 +223,6 @@ export function MobileNav() {
                 {tryItCta.label}
               </Link>
             </Button>
-          </div>
-
-          <div className="mt-6 flex justify-center">
-            <ThemeToggle />
           </div>
         </nav>
       </SheetContent>
