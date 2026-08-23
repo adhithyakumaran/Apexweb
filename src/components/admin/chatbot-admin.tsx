@@ -11,6 +11,7 @@ import {
   AdminSecondaryButton,
   AdminStatusDot,
 } from "@/components/admin/admin-ui";
+import { GROQ_MODEL_OPTIONS } from "@/lib/chatbot/groq";
 import { adminClasses } from "@/components/admin/admin-theme";
 import {
   CHATBOT_SKILL_SUGGESTIONS,
@@ -233,13 +234,24 @@ export function ChatbotAdmin({ initialSettings, initialMemory }: ChatbotAdminPro
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[13px] text-[#a1a1a1]">Model</label>
-                <input
+                <label htmlFor="groq-model" className="text-[13px] text-[#a1a1a1]">
+                  Model
+                </label>
+                <select
+                  id="groq-model"
                   value={settings.model}
                   onChange={(e) => setSettings((s) => ({ ...s, model: e.target.value }))}
                   className={adminClasses.input}
-                  placeholder="llama-3.3-70b-versatile"
-                />
+                >
+                  {GROQ_MODEL_OPTIONS.map((opt) => (
+                    <option key={opt.id} value={opt.id}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-[11px] text-[#666]">
+                  Llama 3.3 was retired by Groq in Aug 2026 — use GPT-OSS models.
+                </p>
               </div>
             </div>
 

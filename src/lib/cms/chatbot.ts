@@ -2,6 +2,7 @@ import { promises as fs } from "fs";
 import path from "path";
 import { desc, eq } from "drizzle-orm";
 import { crawlPublicSite } from "@/lib/chatbot/crawl";
+import { resolveGroqModel } from "@/lib/chatbot/groq";
 import { getSiteBaseUrl } from "@/lib/site-url";
 import { canUseLocalFileStore } from "@/lib/cms/storage";
 import {
@@ -69,7 +70,7 @@ async function writeFileStore(store: FileStore) {
 function rowToSettings(row: typeof cmsChatbotSettings.$inferSelect): ChatbotSettings {
   return {
     provider: row.provider,
-    model: row.model,
+    model: resolveGroqModel(row.model),
     systemPrompt: row.systemPrompt,
     tone: row.tone as ChatbotTone,
     skills: row.skills ?? [],
@@ -102,7 +103,18 @@ export async function getChatbotSettings(): Promise<ChatbotSettings> {
     if (db) {
       try {
         const rows = await db.select().from(cmsChatbotSettings).limit(1);
-        if (rows[0]) return rowToSettings(rows[0]);
+        if (rows[0]) {
+          const resolved = resolveGroqModel(rows[0].model);
+          if (resolved !== rows[0].model) {
+            const [updated] = await db
+              .update(cmsChatbotSettings)
+              .set({ model: resolved, updatedAt: new Date().toISOString() })
+              .where(eq(cmsChatbotSettings.id, rows[0].id))
+              .returning();
+            return rowToSettings(updated);
+          }
+          return rowToSettings(rows[0]);
+        }
 
         const [created] = await db
           .insert(cmsChatbotSettings)
@@ -119,7 +131,7 @@ export async function getChatbotSettings(): Promise<ChatbotSettings> {
   }
 
   const store = await readFileStore();
-  return { ...store.settings, groqConfigured: isGroqConfigured() };
+  return { ...store.settings, model: resolveGroqModel(store.settings.model), groqConfigured: isGroqConfigured() };
 }
 
 export type ChatbotSettingsInput = Partial<{
@@ -137,6 +149,10 @@ export type ChatbotSettingsInput = Partial<{
 
 export async function updateChatbotSettings(input: ChatbotSettingsInput): Promise<ChatbotSettings> {
   const updatedAt = new Date().toISOString();
+  const normalized = {
+    ...input,
+    model: input.model ? resolveGroqModel(input.model) : undefined,
+  };
 
   if (isDatabaseConfigured()) {
     const db = getDb();
@@ -146,7 +162,7 @@ export async function updateChatbotSettings(input: ChatbotSettingsInput): Promis
         if (existing[0]) {
           const [row] = await db
             .update(cmsChatbotSettings)
-            .set({ ...input, updatedAt })
+            .set({ ...normalized, updatedAt })
             .where(eq(cmsChatbotSettings.id, existing[0].id))
             .returning();
           return rowToSettings(row);
@@ -156,7 +172,7 @@ export async function updateChatbotSettings(input: ChatbotSettingsInput): Promis
           .insert(cmsChatbotSettings)
           .values({
             ...DEFAULT_CHATBOT_SETTINGS,
-            ...input,
+            ...normalized,
             crawlBaseUrl: input.crawlBaseUrl ?? getSiteBaseUrl(),
             updatedAt,
           })
@@ -172,10 +188,11 @@ export async function updateChatbotSettings(input: ChatbotSettingsInput): Promis
   store.settings = {
     ...store.settings,
     ...input,
+    ...(normalized.model ? { model: normalized.model } : {}),
     updatedAt,
   };
   await writeFileStore(store);
-  return { ...store.settings, groqConfigured: isGroqConfigured() };
+  return { ...store.settings, model: resolveGroqModel(store.settings.model), groqConfigured: isGroqConfigured() };
 }
 
 export async function listChatbotMemory(): Promise<ChatbotMemoryItem[]> {
