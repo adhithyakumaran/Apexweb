@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { FileText, Plus, Radio, Sparkles } from "lucide-react";
+import { Plus, Radio, Sparkles, FileText } from "lucide-react";
 import { AdminShell } from "@/components/admin/admin-shell";
 import {
+  AdminLink,
+  AdminPrimaryButton,
+  AdminSectionHeading,
   AdminStatCard,
   AdminStatusPill,
   AdminStatusStrip,
 } from "@/components/admin/admin-ui";
 import { ArticlesTable } from "@/components/admin/articles-table";
-import { Button } from "@/components/ui/button";
 import { getCmsStats, listCmsArticles } from "@/lib/cms/articles-repository";
 import { isR2Configured } from "@/lib/cms/r2";
 import { isDatabaseConfigured } from "@/lib/db";
@@ -29,12 +31,10 @@ export default async function AdminDashboardPage() {
       title="Overview"
       description="Monitor publishing activity, system connectivity, and your latest content updates."
       actions={
-        <Button asChild className="rounded-lg shadow-sm">
-          <Link href="/admin/articles/new" className="gap-2">
-            <Plus className="size-4" />
-            New article
-          </Link>
-        </Button>
+        <AdminPrimaryButton href="/admin/articles/new">
+          <Plus className="size-4" />
+          New article
+        </AdminPrimaryButton>
       }
     >
       <AdminStatusStrip className="mb-6">
@@ -45,7 +45,7 @@ export default async function AdminDashboardPage() {
           {r2Ok ? "R2 storage ready" : "Uploads unavailable"}
         </AdminStatusPill>
         <AdminStatusPill tone="neutral">5 templates</AdminStatusPill>
-        <span className="ml-auto hidden text-xs text-neutral-500 sm:inline">
+        <span className="ml-auto hidden text-xs text-[#6b7280] sm:inline">
           Private workspace · not indexed
         </span>
       </AdminStatusStrip>
@@ -62,45 +62,28 @@ export default async function AdminDashboardPage() {
       </div>
 
       <section className="mt-8">
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <div>
-            <h2 className="text-base font-semibold text-neutral-900">Recent articles</h2>
-            <p className="mt-1 text-sm text-neutral-500">
-              Quick access to your latest drafts and published pieces.
-            </p>
-          </div>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <AdminSectionHeading
+            title="Recent articles"
+            description="Quick access to your latest drafts and published pieces."
+          />
           <div className="flex items-center gap-4">
-            <Link
-              href="/admin/analytics"
-              className="text-sm font-medium text-neutral-700 transition-colors hover:text-brand-orange"
-            >
-              Analytics
-            </Link>
-            <Link
-              href="/admin/logs"
-              className="text-sm font-medium text-neutral-700 transition-colors hover:text-brand-orange"
-            >
-              Logs
-            </Link>
-            <Link
-              href="/admin/articles"
-              className="text-sm font-medium text-neutral-700 transition-colors hover:text-brand-orange"
-            >
-              View all
-            </Link>
+            <AdminLink href="/admin/analytics">Analytics</AdminLink>
+            <AdminLink href="/admin/logs">Logs</AdminLink>
+            <AdminLink href="/admin/articles">View all</AdminLink>
           </div>
         </div>
         <ArticlesTable
           compact
           articles={recent.map((row) => ({
-                id: row.id,
-                slug: row.slug,
-                title: row.title,
-                cmsTemplate: row.cmsTemplate,
-                status: row.status as "draft" | "published",
-                updatedAt: row.updatedAt,
-                publishedAt: row.publishedAt,
-            }))}
+            id: row.id,
+            slug: row.slug,
+            title: row.title,
+            cmsTemplate: row.cmsTemplate,
+            status: row.status as "draft" | "published",
+            updatedAt: row.updatedAt,
+            publishedAt: row.publishedAt,
+          }))}
         />
       </section>
     </AdminShell>

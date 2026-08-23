@@ -8,6 +8,7 @@ import {
   AdminPanelHeader,
   AdminStatusPill,
 } from "@/components/admin/admin-ui";
+import { adminClasses } from "@/components/admin/admin-theme";
 import { cn } from "@/lib/utils";
 
 export type ActivityLogView = {
@@ -67,8 +68,8 @@ export function ActivityLogsTable({ logs }: ActivityLogsTableProps) {
             className={cn(
               "rounded-full border px-3 py-1.5 text-xs font-medium capitalize transition-colors",
               level === item
-                ? "border-neutral-900 bg-neutral-900 text-white"
-                : "border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50"
+                ? "border-[#3B82F6] bg-[#3B82F6] text-white"
+                : "border-white/[0.08] bg-[#2C2D33] text-[#9CA3AF] hover:border-white/[0.12] hover:text-white"
             )}
           >
             {item}
@@ -77,14 +78,14 @@ export function ActivityLogsTable({ logs }: ActivityLogsTableProps) {
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <label htmlFor="action-filter" className="text-xs font-medium text-neutral-500">
+        <label htmlFor="action-filter" className="text-xs font-medium text-[#9CA3AF]">
           Action
         </label>
         <select
           id="action-filter"
           value={action}
           onChange={(e) => setAction(e.target.value)}
-          className="h-9 rounded-lg border border-neutral-200 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-400"
+          className={adminClasses.input}
         >
           {actions.map((item) => (
             <option key={item} value={item}>
@@ -92,7 +93,7 @@ export function ActivityLogsTable({ logs }: ActivityLogsTableProps) {
             </option>
           ))}
         </select>
-        <span className="ml-auto text-xs text-neutral-500">
+        <span className="ml-auto text-xs text-[#9CA3AF]">
           Showing {filtered.length} of {logs.length}
         </span>
       </div>
@@ -104,13 +105,13 @@ export function ActivityLogsTable({ logs }: ActivityLogsTableProps) {
         />
         <AdminPanelBody className="p-0">
           {filtered.length === 0 ? (
-            <p className="px-6 py-14 text-center text-sm text-neutral-500">
+            <p className="px-6 py-14 text-center text-sm text-[#9CA3AF]">
               No log entries match your filters.
             </p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[760px] text-left text-sm">
-                <thead className="border-b border-neutral-100 bg-neutral-50/80 text-[0.68rem] uppercase tracking-[0.14em] text-neutral-500">
+                <thead className={adminClasses.tableHead}>
                   <tr>
                     <th className="px-5 py-3 font-semibold">Time</th>
                     <th className="px-4 py-3 font-semibold">Level</th>
@@ -118,10 +119,10 @@ export function ActivityLogsTable({ logs }: ActivityLogsTableProps) {
                     <th className="px-5 py-3 font-semibold">Message</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-neutral-100">
+                <tbody className="divide-y divide-white/[0.06]">
                   {filtered.map((log) => (
-                    <tr key={log.id} className="hover:bg-neutral-50/70">
-                      <td className="px-5 py-3.5 tabular-nums text-neutral-500">
+                    <tr key={log.id} className={adminClasses.tableRow}>
+                      <td className="px-5 py-3.5 tabular-nums text-[#9CA3AF]">
                         {new Date(log.createdAt).toLocaleString(undefined, {
                           month: "short",
                           day: "numeric",
@@ -136,13 +137,13 @@ export function ActivityLogsTable({ logs }: ActivityLogsTableProps) {
                           {log.level}
                         </AdminStatusPill>
                       </td>
-                      <td className="px-4 py-3.5 text-neutral-600">
+                      <td className="px-4 py-3.5 text-[#9CA3AF]">
                         {activityActionLabels[log.action] ?? log.action}
                       </td>
                       <td className="px-5 py-3.5">
-                        <p className="font-medium text-neutral-900">{log.message}</p>
+                        <p className="font-medium text-white">{log.message}</p>
                         {log.resourceType && (
-                          <p className="mt-0.5 font-mono text-xs text-neutral-400">
+                          <p className="mt-0.5 font-mono text-xs text-[#6b7280]">
                             {log.resourceType}
                             {log.resourceId ? ` · ${log.resourceId}` : ""}
                           </p>

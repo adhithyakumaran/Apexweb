@@ -4,12 +4,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ExternalLink, Pencil, Send, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
   AdminEmptyState,
   AdminPanel,
   AdminPanelBody,
   AdminPanelHeader,
+  AdminPrimaryButton,
   AdminStatusPill,
 } from "@/components/admin/admin-ui";
 import { getCmsTemplate, type CmsTemplateId } from "@/lib/cms/templates";
@@ -104,11 +104,7 @@ export function ArticlesTable({ articles, compact = false }: ArticlesTableProps)
       <AdminEmptyState
         title="No articles yet"
         description="Create your first article with one of five professional templates."
-        action={
-          <Button asChild>
-            <Link href="/admin/articles/new">Create article</Link>
-          </Button>
-        }
+        action={<AdminPrimaryButton href="/admin/articles/new">Create article</AdminPrimaryButton>}
       />
     );
   }
@@ -116,7 +112,7 @@ export function ArticlesTable({ articles, compact = false }: ArticlesTableProps)
   return (
     <div className="space-y-3">
       {error && (
-        <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+        <p className="rounded-lg border border-red-500/25 bg-red-500/10 px-3 py-2 text-sm text-red-300">
           {error}
         </p>
       )}
@@ -131,7 +127,7 @@ export function ArticlesTable({ articles, compact = false }: ArticlesTableProps)
         <AdminPanelBody className={cn("p-0", compact && "p-0")}>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[760px] text-left text-sm">
-              <thead className="border-b border-neutral-100 bg-neutral-50/80 text-[0.68rem] uppercase tracking-[0.14em] text-neutral-500">
+              <thead className="border-b border-white/[0.06] bg-[#25262c] text-[0.68rem] uppercase tracking-[0.14em] text-[#9CA3AF]">
                 <tr>
                   <th className="px-5 py-3 font-semibold">Article</th>
                   <th className="px-4 py-3 font-semibold">Template</th>
@@ -140,7 +136,7 @@ export function ArticlesTable({ articles, compact = false }: ArticlesTableProps)
                   <th className="px-5 py-3 text-right font-semibold">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-neutral-100">
+              <tbody className="divide-y divide-white/[0.06]">
                 {rows.map((article) => {
                   const template = getCmsTemplate(article.cmsTemplate as CmsTemplateId);
                   const isBusy = busyId === article.id;
@@ -148,15 +144,15 @@ export function ArticlesTable({ articles, compact = false }: ArticlesTableProps)
                   return (
                     <tr
                       key={article.id}
-                      className="transition-colors hover:bg-neutral-50/70"
+                      className="transition-colors hover:bg-white/[0.03]"
                     >
                       <td className="px-5 py-3.5">
-                        <p className="font-medium text-neutral-900">{article.title}</p>
-                        <p className="mt-0.5 font-mono text-xs text-neutral-400">
+                        <p className="font-medium text-white">{article.title}</p>
+                        <p className="mt-0.5 font-mono text-xs text-[#6b7280]">
                           /articles/{article.slug}
                         </p>
                       </td>
-                      <td className="px-4 py-3.5 text-neutral-600">
+                      <td className="px-4 py-3.5 text-[#9CA3AF]">
                         {template?.label ?? article.cmsTemplate}
                       </td>
                       <td className="px-4 py-3.5">
@@ -166,7 +162,7 @@ export function ArticlesTable({ articles, compact = false }: ArticlesTableProps)
                           {article.status}
                         </AdminStatusPill>
                       </td>
-                      <td className="px-4 py-3.5 tabular-nums text-neutral-500">
+                      <td className="px-4 py-3.5 tabular-nums text-[#9CA3AF]">
                         {new Date(article.updatedAt ?? article.publishedAt).toLocaleDateString(
                           undefined,
                           { month: "short", day: "numeric", year: "numeric" }
@@ -175,48 +171,39 @@ export function ArticlesTable({ articles, compact = false }: ArticlesTableProps)
                       <td className="px-5 py-3.5">
                         <div className="flex items-center justify-end gap-0.5">
                           {article.status === "draft" && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="h-8 gap-1.5 rounded-lg border-neutral-200 text-xs"
+                            <button
+                              type="button"
+                              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#3B82F6]/40 bg-[#3B82F6]/10 px-3 text-xs font-medium text-blue-300 transition-colors hover:bg-[#3B82F6]/20 disabled:opacity-50"
                               disabled={isBusy}
                               onClick={() => handlePublish(article)}
                             >
                               <Send className="size-3.5" />
                               Publish
-                            </Button>
+                            </button>
                           )}
                           {article.status === "published" && (
-                            <Button
-                              asChild
-                              variant="ghost"
-                              size="icon-sm"
-                              className="rounded-lg text-neutral-500"
+                            <Link
+                              href={`/articles/${article.slug}`}
+                              target="_blank"
+                              className="inline-flex size-9 items-center justify-center rounded-lg text-[#9CA3AF] transition-colors hover:bg-white/[0.05] hover:text-white"
                             >
-                              <Link href={`/articles/${article.slug}`} target="_blank">
-                                <ExternalLink className="size-4" />
-                              </Link>
-                            </Button>
-                          )}
-                          <Button
-                            asChild
-                            variant="ghost"
-                            size="icon-sm"
-                            className="rounded-lg text-neutral-500"
-                          >
-                            <Link href={`/admin/articles/${article.id}/edit`}>
-                              <Pencil className="size-4" />
+                              <ExternalLink className="size-4" />
                             </Link>
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon-sm"
-                            className="rounded-lg text-neutral-500 hover:text-red-600"
+                          )}
+                          <Link
+                            href={`/admin/articles/${article.id}/edit`}
+                            className="inline-flex size-9 items-center justify-center rounded-lg text-[#9CA3AF] transition-colors hover:bg-white/[0.05] hover:text-white"
+                          >
+                            <Pencil className="size-4" />
+                          </Link>
+                          <button
+                            type="button"
+                            className="inline-flex size-9 items-center justify-center rounded-lg text-[#9CA3AF] transition-colors hover:bg-red-500/10 hover:text-red-400 disabled:opacity-50"
                             disabled={isBusy}
                             onClick={() => handleDelete(article)}
                           >
                             <Trash2 className="size-4" />
-                          </Button>
+                          </button>
                         </div>
                       </td>
                     </tr>

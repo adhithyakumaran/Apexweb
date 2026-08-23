@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Plus } from "lucide-react";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { ArticlesTable } from "@/components/admin/articles-table";
-import { Button } from "@/components/ui/button";
+import { AdminPrimaryButton } from "@/components/admin/admin-ui";
 import { listCmsArticles } from "@/lib/cms/articles-repository";
 
 export const metadata: Metadata = {
@@ -19,12 +18,10 @@ export default async function AdminArticlesPage() {
       title="Articles"
       description="Manage your knowledge hub content. Drafts remain private until published."
       actions={
-        <Button asChild className="rounded-lg shadow-sm">
-          <Link href="/admin/articles/new" className="gap-2">
-            <Plus className="size-4" />
-            New article
-          </Link>
-        </Button>
+        <AdminPrimaryButton href="/admin/articles/new">
+          <Plus className="size-4" />
+          New article
+        </AdminPrimaryButton>
       }
     >
       <ArticlesTable

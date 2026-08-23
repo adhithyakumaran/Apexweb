@@ -32,7 +32,7 @@ export default async function AdminLogsPage() {
         <AdminStatusPill tone={isDatabaseConfigured() ? "success" : "warning"}>
           {isDatabaseConfigured() ? "Persistent logs" : "Local file logs"}
         </AdminStatusPill>
-        <span className="ml-auto hidden text-xs text-neutral-500 sm:inline">
+        <span className="ml-auto hidden text-xs text-[#9CA3AF] sm:inline">
           Retains the latest 500 events
         </span>
       </AdminStatusStrip>
