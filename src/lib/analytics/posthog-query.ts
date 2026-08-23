@@ -91,27 +91,27 @@ function buildAnalyticsQuery(days: number) {
   return `
 SELECT row_type, label, toFloat(value) AS value
 FROM (
-  SELECT 'kpi' AS row_type, 'pageviews_period' AS label, count() AS value
+  SELECT 'kpi' AS row_type, 'pageviews_period' AS label, toFloat(count()) AS value
   FROM events
   WHERE event = '$pageview' AND timestamp >= now() - INTERVAL ${days} DAY
 
   UNION ALL
-  SELECT 'kpi', 'pageviews_24h', count()
+  SELECT 'kpi', 'pageviews_24h', toFloat(count())
   FROM events
   WHERE event = '$pageview' AND timestamp >= now() - INTERVAL 1 DAY
 
   UNION ALL
-  SELECT 'kpi', 'visitors_period', uniqExact(distinct_id)
+  SELECT 'kpi', 'visitors_period', toFloat(uniqExact(distinct_id))
   FROM events
   WHERE timestamp >= now() - INTERVAL ${days} DAY
 
   UNION ALL
-  SELECT 'kpi', 'visitors_24h', uniqExact(distinct_id)
+  SELECT 'kpi', 'visitors_24h', toFloat(uniqExact(distinct_id))
   FROM events
   WHERE timestamp >= now() - INTERVAL 1 DAY
 
   UNION ALL
-  SELECT 'kpi', 'sessions_period', uniqExact(properties.$session_id)
+  SELECT 'kpi', 'sessions_period', toFloat(uniqExact(properties.$session_id))
   FROM events
   WHERE timestamp >= now() - INTERVAL ${days} DAY AND properties.$session_id IS NOT NULL
 
@@ -128,7 +128,7 @@ FROM (
   WHERE timestamp >= now() - INTERVAL ${days} DAY
 
   UNION ALL
-  SELECT 'trend', toString(day), views FROM (
+  SELECT 'trend', toString(day), toFloat(views) FROM (
     SELECT toDate(timestamp) AS day, count() AS views
     FROM events
     WHERE event = '$pageview' AND timestamp >= now() - INTERVAL ${days} DAY
@@ -136,63 +136,51 @@ FROM (
   )
 
   UNION ALL
-  SELECT 'page', label, value FROM (
+  SELECT 'page', label, toFloat(value) FROM (
     SELECT ifNull(nullIf(properties.$pathname, ''), '/') AS label, count() AS value
     FROM events
     WHERE event = '$pageview' AND timestamp >= now() - INTERVAL ${days} DAY
     GROUP BY label
-    ORDER BY value DESC
-    LIMIT 8
   )
 
   UNION ALL
-  SELECT 'referrer', label, value FROM (
+  SELECT 'referrer', label, toFloat(value) FROM (
     SELECT ifNull(nullIf(properties.$referring_domain, ''), 'Direct') AS label, count() AS value
     FROM events
     WHERE event = '$pageview' AND timestamp >= now() - INTERVAL ${days} DAY
     GROUP BY label
-    ORDER BY value DESC
-    LIMIT 8
   )
 
   UNION ALL
-  SELECT 'country', label, value FROM (
+  SELECT 'country', label, toFloat(value) FROM (
     SELECT ifNull(nullIf(properties.$geoip_country_code, ''), 'Unknown') AS label, count() AS value
     FROM events
     WHERE event = '$pageview' AND timestamp >= now() - INTERVAL ${days} DAY
     GROUP BY label
-    ORDER BY value DESC
-    LIMIT 8
   )
 
   UNION ALL
-  SELECT 'device', label, value FROM (
+  SELECT 'device', label, toFloat(value) FROM (
     SELECT ifNull(nullIf(properties.$device_type, ''), 'Unknown') AS label, count() AS value
     FROM events
     WHERE event = '$pageview' AND timestamp >= now() - INTERVAL ${days} DAY
     GROUP BY label
-    ORDER BY value DESC
-    LIMIT 5
   )
 
   UNION ALL
-  SELECT 'browser', label, value FROM (
+  SELECT 'browser', label, toFloat(value) FROM (
     SELECT ifNull(nullIf(properties.$browser, ''), 'Unknown') AS label, count() AS value
     FROM events
     WHERE event = '$pageview' AND timestamp >= now() - INTERVAL ${days} DAY
     GROUP BY label
-    ORDER BY value DESC
-    LIMIT 5
   )
 
   UNION ALL
-  SELECT 'exit', label, value FROM (
+  SELECT 'exit', label, toFloat(value) FROM (
     SELECT ifNull(nullIf(properties.$pathname, ''), '/') AS label, count() AS value
     FROM events
     WHERE event = '$pageleave' AND timestamp >= now() - INTERVAL ${days} DAY
     GROUP BY label
-    ORDER BY value DESC
-    LIMIT 8
   )
 
   UNION ALL
@@ -220,7 +208,7 @@ FROM (
   WHERE timestamp >= now() - INTERVAL ${days} DAY
 
   UNION ALL
-  SELECT 'vital', 'samples', count()
+  SELECT 'vital', 'samples', toFloat(count())
   FROM events
   WHERE event = '$web_vitals' AND timestamp >= now() - INTERVAL ${days} DAY
 )
@@ -243,7 +231,7 @@ async function runHogQLQuery(days: number): Promise<HogQLResponse> {
         kind: "HogQLQuery",
         query: buildAnalyticsQuery(days),
       },
-      refresh: "force_cache",
+      refresh: "blocking",
     }),
     cache: "no-store",
   });
@@ -350,16 +338,18 @@ function parseHogQLResults(
     }));
 
   const pageTotal = pages.reduce((sum, row) => sum + row.value, 0);
+  const topN = (rows: { label: string; value: number }[], n: number) =>
+    [...rows].sort((a, b) => b.value - a.value).slice(0, n);
 
   return {
     kpis,
     trend,
-    topPages: toRanked(pages, pageTotal),
-    topReferrers: toRanked(referrers, kpis.pageviewsPeriod),
-    topCountries: toRanked(countries, kpis.pageviewsPeriod),
-    devices: toRanked(devices, kpis.pageviewsPeriod),
-    browsers: toRanked(browsers, kpis.pageviewsPeriod),
-    exitPages: toRanked(exits, exits.reduce((sum, row) => sum + row.value, 0)),
+    topPages: toRanked(topN(pages, 8), pageTotal),
+    topReferrers: toRanked(topN(referrers, 8), kpis.pageviewsPeriod),
+    topCountries: toRanked(topN(countries, 8), kpis.pageviewsPeriod),
+    devices: toRanked(topN(devices, 5), kpis.pageviewsPeriod),
+    browsers: toRanked(topN(browsers, 5), kpis.pageviewsPeriod),
+    exitPages: toRanked(topN(exits, 8), exits.reduce((sum, row) => sum + row.value, 0)),
     webVitals: vitals,
     lastSyncedAt: new Date().toISOString(),
   };
@@ -443,8 +433,26 @@ const getCachedVisitorAnalyticsMonth = unstable_cache(
   { revalidate: 45 * 60 }
 );
 
-export async function getVisitorAnalytics(period: AnalyticsPeriod = "week"): Promise<VisitorAnalyticsData> {
-  return period === "month" ? getCachedVisitorAnalyticsMonth() : getCachedVisitorAnalyticsWeek();
+export async function getVisitorAnalytics(
+  period: AnalyticsPeriod = "week",
+  options?: { fresh?: boolean }
+): Promise<VisitorAnalyticsData> {
+  if (options?.fresh) {
+    return fetchVisitorAnalyticsUncached(period);
+  }
+
+  const cached =
+    period === "month" ? await getCachedVisitorAnalyticsMonth() : await getCachedVisitorAnalyticsWeek();
+
+  const queryFailed =
+    cached.setupMessage?.includes("PostHog query failed") ||
+    cached.setupMessage?.includes("hogql");
+
+  if (queryFailed) {
+    return fetchVisitorAnalyticsUncached(period);
+  }
+
+  return cached;
 }
 
 export function analyticsToCsv(data: VisitorAnalyticsData): string {

@@ -9,13 +9,13 @@ export const metadata: Metadata = {
 };
 
 type AdminAnalyticsPageProps = {
-  searchParams: Promise<{ period?: string }>;
+  searchParams: Promise<{ period?: string; refresh?: string }>;
 };
 
 export default async function AdminAnalyticsPage({ searchParams }: AdminAnalyticsPageProps) {
-  const { period: rawPeriod } = await searchParams;
+  const { period: rawPeriod, refresh } = await searchParams;
   const period: AnalyticsPeriod = rawPeriod === "month" ? "month" : "week";
-  const data = await getVisitorAnalytics(period);
+  const data = await getVisitorAnalytics(period, { fresh: refresh === "1" });
 
   return (
     <AdminShell title="Analytics">

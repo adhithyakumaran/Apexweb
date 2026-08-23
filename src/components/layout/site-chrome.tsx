@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { Footer } from "@/components/layout/footer";
 import { LoadingScreen } from "@/components/layout/loading-screen";
+import { ChatWidget } from "@/components/chat/chat-widget";
 import { Navbar } from "@/components/navigation/navbar";
 
 type SiteChromeProps = {
@@ -20,6 +21,7 @@ export function SiteChrome({ children }: SiteChromeProps) {
       {!isAdmin && <Navbar />}
       {children}
       {!isAdmin && <Footer />}
+      {!isAdmin && <ChatWidget />}
     </ThemeProvider>
   );
 }

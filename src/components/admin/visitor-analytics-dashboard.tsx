@@ -21,7 +21,7 @@ import {
   AdminStatusStrip,
 } from "@/components/admin/admin-ui";
 import { adminClasses } from "@/components/admin/admin-theme";
-import { Download, FileSpreadsheet, Printer } from "lucide-react";
+import { Download, FileSpreadsheet, Printer, RefreshCw } from "lucide-react";
 
 type VisitorAnalyticsDashboardProps = {
   data: VisitorAnalyticsData;
@@ -110,6 +110,11 @@ export function VisitorAnalyticsDashboard({ data }: VisitorAnalyticsDashboardPro
     router.push(`/admin/analytics?period=${next}`);
   }
 
+  function refreshData() {
+    router.push(`/admin/analytics?period=${period}&refresh=1`);
+    router.refresh();
+  }
+
   function exportCsv() {
     setExporting(true);
     try {
@@ -155,6 +160,10 @@ export function VisitorAnalyticsDashboard({ data }: VisitorAnalyticsDashboardPro
           ))}
         </div>
         <div className="ml-auto flex items-center gap-2">
+          <AdminSecondaryButton onClick={refreshData}>
+            <RefreshCw className="size-3.5" />
+            Refresh
+          </AdminSecondaryButton>
           <AdminSecondaryButton onClick={exportCsv} className={exporting ? "opacity-60" : ""}>
             <FileSpreadsheet className="size-3.5" />
             Export CSV

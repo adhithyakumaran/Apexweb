@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Loader2, Plus, RefreshCw, Trash2, Upload } from "lucide-react";
 import {
   AdminAlert,
@@ -36,6 +36,12 @@ export function ChatbotAdmin({ initialSettings, initialMemory }: ChatbotAdminPro
   const [memoryText, setMemoryText] = useState("");
   const [memoryUrl, setMemoryUrl] = useState("");
   const [skillInput, setSkillInput] = useState("");
+
+  useEffect(() => {
+    if (!initialSettings.crawlBaseUrl && typeof window !== "undefined") {
+      setSettings((s) => ({ ...s, crawlBaseUrl: window.location.origin }));
+    }
+  }, [initialSettings.crawlBaseUrl]);
 
   async function saveSettings() {
     setSaving(true);
@@ -154,10 +160,24 @@ export function ChatbotAdmin({ initialSettings, initialMemory }: ChatbotAdminPro
     setMessage("");
 
     try {
-      const response = await fetch("/api/cms/chatbot/crawl", { method: "POST" });
+      const saveRes = await fetch("/api/cms/chatbot/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ crawlBaseUrl: settings.crawlBaseUrl, crawlEnabled: settings.crawlEnabled }),
+      });
+      if (!saveRes.ok) {
+        const saveData = (await saveRes.json()) as { error?: string };
+        throw new Error(saveData.error ?? "Save crawl URL before crawling");
+      }
+
+      const response = await fetch("/api/cms/chatbot/crawl", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ crawlBaseUrl: settings.crawlBaseUrl }),
+      });
       const data = (await response.json()) as { ok?: boolean; message?: string };
       if (!response.ok) throw new Error(data.message ?? "Crawl failed");
-      setMessage(data.message ?? "Crawl queued.");
+      setMessage(data.message ?? "Crawl complete.");
       const memRes = await fetch("/api/cms/chatbot/memory");
       const memData = (await memRes.json()) as { memory?: ChatbotMemoryItem[] };
       if (memData.memory) setMemory(memData.memory);

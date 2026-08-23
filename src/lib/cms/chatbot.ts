@@ -1,6 +1,8 @@
 import { promises as fs } from "fs";
 import path from "path";
 import { desc, eq } from "drizzle-orm";
+import { crawlPublicSite } from "@/lib/chatbot/crawl";
+import { getSiteBaseUrl } from "@/lib/site-url";
 import { canUseLocalFileStore } from "@/lib/cms/storage";
 import {
   CHATBOT_SKILL_SUGGESTIONS,
@@ -36,7 +38,7 @@ function defaultFileStore(): FileStore {
   return {
     settings: {
       ...DEFAULT_CHATBOT_SETTINGS,
-      crawlBaseUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "",
+      crawlBaseUrl: getSiteBaseUrl(),
       lastCrawledAt: null,
       updatedAt: null,
     },
@@ -106,7 +108,7 @@ export async function getChatbotSettings(): Promise<ChatbotSettings> {
           .insert(cmsChatbotSettings)
           .values({
             ...DEFAULT_CHATBOT_SETTINGS,
-            crawlBaseUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "",
+            crawlBaseUrl: getSiteBaseUrl(),
           })
           .returning();
         return rowToSettings(created);
@@ -155,7 +157,7 @@ export async function updateChatbotSettings(input: ChatbotSettingsInput): Promis
           .values({
             ...DEFAULT_CHATBOT_SETTINGS,
             ...input,
-            crawlBaseUrl: input.crawlBaseUrl ?? process.env.NEXT_PUBLIC_SITE_URL ?? "",
+            crawlBaseUrl: input.crawlBaseUrl ?? getSiteBaseUrl(),
             updatedAt,
           })
           .returning();
@@ -267,27 +269,42 @@ export async function deleteChatbotMemory(id: number): Promise<boolean> {
   return store.memory.length < before;
 }
 
-export async function triggerChatbotCrawl(): Promise<{ ok: boolean; message: string }> {
+export async function triggerChatbotCrawl(
+  crawlBaseUrl?: string
+): Promise<{ ok: boolean; message: string; pagesIndexed?: number }> {
   const settings = await getChatbotSettings();
-  const baseUrl = settings.crawlBaseUrl?.trim() || process.env.NEXT_PUBLIC_SITE_URL || "";
+  const baseUrl = (crawlBaseUrl ?? settings.crawlBaseUrl)?.trim() || getSiteBaseUrl();
 
-  if (!baseUrl) {
-    return { ok: false, message: "Set a crawl base URL first (e.g. your site URL)." };
+  if (!baseUrl || baseUrl.includes("example.com")) {
+    return {
+      ok: false,
+      message: "Set a crawl base URL (e.g. https://apexweb-three.vercel.app) and save, or add NEXT_PUBLIC_SITE_URL in Vercel.",
+    };
   }
 
-  const crawledAt = new Date().toISOString();
-  await updateChatbotSettings({ lastCrawledAt: crawledAt });
+  await updateChatbotSettings({ crawlBaseUrl: baseUrl, lastCrawledAt: new Date().toISOString() });
 
-  await addChatbotMemory({
-    name: `Site crawl · ${new Date().toLocaleDateString()}`,
-    type: "crawl",
-    sourceUrl: baseUrl,
-    content: `Queued crawl for ${baseUrl}. Full site indexing will run when the public chatbot is connected.`,
-  });
+  const pages = await crawlPublicSite(baseUrl);
+  if (!pages.length) {
+    return {
+      ok: false,
+      message: `Could not fetch pages from ${baseUrl}. Check the URL is public and reachable.`,
+    };
+  }
+
+  for (const page of pages) {
+    await addChatbotMemory({
+      name: `Crawl · ${page.path}`,
+      type: "crawl",
+      sourceUrl: page.url,
+      content: page.text,
+    });
+  }
 
   return {
     ok: true,
-    message: `Crawl queued for ${baseUrl}. Memory entry created — indexing runs when the widget is live.`,
+    message: `Indexed ${pages.length} pages from ${baseUrl}.`,
+    pagesIndexed: pages.length,
   };
 }
 

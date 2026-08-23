@@ -59,6 +59,6 @@ export const DEFAULT_CHATBOT_SETTINGS: Omit<ChatbotSettings, "groqConfigured" | 
   skills: ["Answer product questions", "Summarize articles"],
   crawlEnabled: true,
   crawlBaseUrl: "",
-  enabled: false,
+  enabled: true,
   welcomeMessage: "Hi — how can I help you today?",
 };
