@@ -1,24 +1,13 @@
 "use client";
 
-import Image from "next/image";
 import type { ReactNode } from "react";
 import { motion, useReducedMotion } from "motion/react";
-import { partners, PARTNER_CYCLE_S, PARTNER_STAGGER_S } from "@/config/partners";
-import { GeethamLogo } from "@/components/sections/geetham-logo";
+import { partners, PARTNER_CYCLE_S } from "@/config/partners";
+import { PartnerWordmark } from "@/components/sections/partner-wordmark";
 import { smoothEase } from "@/components/animations/motion-presets";
 
-const HOLD_END = (partners.length * PARTNER_STAGGER_S + 1.6) / PARTNER_CYCLE_S;
-
-function PartnerCell({
-  index,
-  children,
-}: {
-  index: number;
-  children: ReactNode;
-}) {
+function PartnerCell({ children }: { children: ReactNode }) {
   const prefersReducedMotion = useReducedMotion();
-  const enterAt = (index * PARTNER_STAGGER_S) / PARTNER_CYCLE_S;
-  const peakAt = (index * PARTNER_STAGGER_S + 0.4) / PARTNER_CYCLE_S;
 
   if (prefersReducedMotion) {
     return (
@@ -31,12 +20,13 @@ function PartnerCell({
       <motion.div
         className="flex w-full items-center justify-center"
         animate={{
-          y: ["100%", "100%", "0%", "0%", "100%"],
-          opacity: [0, 0, 1, 1, 0],
+          y: [18, 0, 0, 18],
+          opacity: [0, 1, 1, 0],
+          scale: [0.94, 1, 1, 0.94],
         }}
         transition={{
           duration: PARTNER_CYCLE_S,
-          times: [0, enterAt, peakAt, HOLD_END, 1],
+          times: [0, 0.18, 0.72, 1],
           repeat: Infinity,
           ease: smoothEase,
         }}
@@ -75,19 +65,9 @@ export function TrustedPartners() {
           transition={{ duration: 0.7, delay: 0.1, ease: smoothEase }}
         >
           <div className="grid grid-cols-2 divide-x divide-y divide-border md:grid-cols-3">
-            {partners.map((partner, index) => (
-              <PartnerCell key={partner.name} index={index}>
-                {partner.type === "text" ? (
-                  <GeethamLogo />
-                ) : (
-                  <Image
-                    src={partner.logo}
-                    alt={partner.name}
-                    width={partner.width ?? 140}
-                    height={partner.height ?? 40}
-                    className="max-h-10 w-auto object-contain sm:max-h-12"
-                  />
-                )}
+            {partners.map((partner) => (
+              <PartnerCell key={partner.id}>
+                <PartnerWordmark id={partner.id} />
               </PartnerCell>
             ))}
           </div>
