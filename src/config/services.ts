@@ -161,3 +161,9 @@ export const serviceQuickLinks = [
   { label: "Azure & Microsoft Partnership", href: "/what-we-do#partnerships" },
   { label: "Explore Unicus AI & elsai", href: "/what-we-do#unicus-ai" },
 ];
+
+export const agentQuickLinks = [
+  { label: "Meet all testing agents", href: "/agents" },
+  { label: "Book a demo", href: "/book-demo" },
+  { label: "Quality assurance services", href: "/what-we-do#qa-testing" },
+];

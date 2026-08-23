@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Menu, Phone, MessageCircle, ChevronDown, ArrowUpRight } from "lucide-react";
+import { Menu, Phone, MessageCircle, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -16,6 +16,7 @@ import { mainNav, tryItCta, whatsappCta } from "@/config/navigation";
 import { getWhatsAppLink } from "@/lib/utils/whatsapp";
 import { siteConfig } from "@/config/site";
 import {
+  agentQuickLinks,
   aiPlatforms,
   coreServices,
   industryAgents,
@@ -47,6 +48,7 @@ function MobileServiceItem({ item, onNavigate }: { item: ServiceItem; onNavigate
 export function MobileNav() {
   const [open, setOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
+  const [agentsOpen, setAgentsOpen] = useState(false);
   const whatsappHref = getWhatsAppLink();
   const phoneHref = `tel:${siteConfig.whatsapp.number}`;
 
@@ -99,6 +101,30 @@ export function MobileNav() {
                           <MobileServiceItem key={s.title} item={s} onNavigate={close} />
                         ))}
                       </div>
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
+            if (item.label === "Agents") {
+              return (
+                <div key={item.href} className="rounded-lg">
+                  <button
+                    type="button"
+                    onClick={() => setAgentsOpen((v) => !v)}
+                    className="flex w-full items-center justify-between rounded-md px-3 py-3 text-base font-medium text-foreground transition-colors hover:bg-muted"
+                  >
+                    Agents
+                    <ChevronDown
+                      className={cn(
+                        "size-4 transition-transform duration-200",
+                        agentsOpen && "rotate-180"
+                      )}
+                    />
+                  </button>
+                  {agentsOpen && (
+                    <div className="mb-2 ml-1 space-y-4 border-l border-border pl-3">
                       <div>
                         <p className="px-2 text-[0.65rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
                           Industry Agents
@@ -129,15 +155,22 @@ export function MobileNav() {
                 className="flex items-center gap-1 rounded-md px-3 py-3 text-base font-medium text-foreground transition-colors hover:bg-muted"
               >
                 {item.label}
-                {item.label === "Articles" && (
-                  <ArrowUpRight className="size-3.5 opacity-60" />
-                )}
               </Link>
             );
           })}
 
           <div className="mt-2 space-y-1 border-t border-border pt-3">
             {serviceQuickLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={close}
+                className="block px-3 py-2 text-sm font-medium text-primary"
+              >
+                {link.label}
+              </Link>
+            ))}
+            {agentQuickLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
