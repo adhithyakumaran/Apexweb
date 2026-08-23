@@ -1,25 +1,26 @@
 import { getPipelineLogs } from "@/lib/monitoring/pipeline-logs";
-import { getUptimeStats, listUptimeChecksWithLatest } from "@/lib/uptime/checks";
+import { getUptimeRobotSnapshot } from "@/lib/monitoring/uptimerobot-query";
 import { dispatchAlert } from "@/lib/alerts/dispatch";
 import { getAlertSettings } from "@/lib/alerts/settings";
 import { siteConfig } from "@/config/site";
 import { getSiteBaseUrl } from "@/lib/site-url";
 
 export async function buildWeeklyDigestContent() {
-  const [stats, checks, pipeline] = await Promise.all([
-    getUptimeStats(),
-    listUptimeChecksWithLatest(),
+  const [uptime, pipeline] = await Promise.all([
+    getUptimeRobotSnapshot(),
     getPipelineLogs("week"),
   ]);
 
-  const downChecks = checks.filter((c) => c.latest && !c.latest.ok);
   const lines = [
     `Weekly digest — ${siteConfig.name}`,
     `Period: last 7 days`,
     ``,
-    `Uptime: ${stats.uptimePercent7d.toFixed(1)}% across ${stats.enabledChecks} endpoints`,
-    `Currently up: ${stats.upNow}/${stats.enabledChecks}`,
-    `Avg response: ${stats.avgResponseMs != null ? `${stats.avgResponseMs}ms` : "—"}`,
+    `UptimeRobot:`,
+    `  Monitors up: ${uptime.upCount}`,
+    `  Monitors down: ${uptime.downCount}`,
+    `  Avg response: ${uptime.avgResponseMs != null ? `${uptime.avgResponseMs}ms` : "—"}`,
+    ``,
+    ...uptime.monitors.map((m) => `  • ${m.name}: ${m.statusLabel}${m.uptimeRatio != null ? ` (${m.uptimeRatio}%)` : ""}`),
     ``,
     `Pipeline (7d):`,
     `  Errors (24h): ${pipeline.kpis.errors24h}`,
@@ -27,24 +28,26 @@ export async function buildWeeklyDigestContent() {
     `  Commits: ${pipeline.kpis.commitsWeek}`,
     `  CMS events today: ${pipeline.kpis.cmsEventsToday}`,
     ``,
-    `Endpoints:`,
-    ...checks.map((c) => {
-      const status = !c.latest ? "no data" : c.latest.ok ? `OK ${c.latest.responseMs}ms` : `DOWN ${c.latest.error ?? c.latest.statusCode}`;
-      return `  • ${c.name}: ${status}`;
-    }),
+    `Dashboard: ${getSiteBaseUrl()}/admin/uptime`,
   ];
 
-  if (downChecks.length > 0) {
-    lines.push("", "⚠ Currently failing:", ...downChecks.map((c) => `  • ${c.name} — ${c.url}`));
+  if (uptime.downCount > 0) {
+    lines.push(
+      "",
+      "⚠ Monitors down:",
+      ...uptime.monitors.filter((m) => m.status === "down").map((m) => `  • ${m.name} — ${m.url}`)
+    );
   }
 
-  lines.push("", `Dashboard: ${getSiteBaseUrl()}/admin/uptime`);
+  const uptimeLabel = uptime.monitors.length
+    ? `${Math.round((uptime.upCount / uptime.monitors.length) * 100)}% up`
+    : "no monitors";
 
   return {
-    subject: `${siteConfig.shortName} weekly digest — ${stats.uptimePercent7d.toFixed(0)}% uptime`,
+    subject: `${siteConfig.shortName} weekly digest — ${uptimeLabel}`,
     text: lines.join("\n"),
     html: lines.map((l) => `<p>${l.replace(/</g, "&lt;")}</p>`).join(""),
-    stats,
+    downCount: uptime.downCount,
   };
 }
 
@@ -59,7 +62,7 @@ export async function sendWeeklyDigest() {
   return dispatchAlert({
     title: digest.subject,
     message: digest.text,
-    severity: digest.stats.downNow > 0 ? "warning" : "info",
+    severity: digest.downCount > 0 ? "warning" : "info",
     link: `${getSiteBaseUrl()}/admin/uptime`,
     channels: ["email"],
   });

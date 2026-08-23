@@ -52,7 +52,7 @@ const navSections: NavSection[] = [
   {
     items: [
       { href: "/admin/logs", label: "Logs", icon: ScrollText },
-      { href: "/admin/uptime", label: "Uptime", icon: Activity },
+      { href: "/admin/uptime", label: "UptimeRobot", icon: Activity },
       { href: "/admin/alerts", label: "Alerts", icon: Bell },
       { href: "/admin/chatbot", label: "Chat Bot", icon: Bot },
     ],

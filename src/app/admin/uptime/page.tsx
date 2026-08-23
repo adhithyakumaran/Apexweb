@@ -1,22 +1,27 @@
 import type { Metadata } from "next";
 import { AdminShell } from "@/components/admin/admin-shell";
-import { UptimeAdmin } from "@/components/admin/uptime-admin";
-import { getUptimeStats, listUptimeChecksWithLatest } from "@/lib/uptime/checks";
+import { UptimeRobotPanel } from "@/components/admin/uptimerobot-panel";
+import { getUptimeRobotSnapshot } from "@/lib/monitoring/uptimerobot-query";
 
 export const metadata: Metadata = {
-  title: "Uptime Monitor",
+  title: "UptimeRobot",
   robots: { index: false, follow: false },
 };
 
-export default async function AdminUptimePage() {
-  const [checks, stats] = await Promise.all([listUptimeChecksWithLatest(), getUptimeStats()]);
+type AdminUptimePageProps = {
+  searchParams: Promise<{ refresh?: string }>;
+};
+
+export default async function AdminUptimePage({ searchParams }: AdminUptimePageProps) {
+  const { refresh } = await searchParams;
+  const data = await getUptimeRobotSnapshot({ fresh: refresh === "1" });
 
   return (
     <AdminShell
-      title="Uptime Monitor"
-      description="Synthetic checks across your site and APIs — daily cron on Hobby; run manually anytime from here."
+      title="UptimeRobot"
+      description="External uptime monitoring — dashboards, status page, and live monitor health."
     >
-      <UptimeAdmin checks={checks} stats={stats} />
+      <UptimeRobotPanel data={data} />
     </AdminShell>
   );
 }

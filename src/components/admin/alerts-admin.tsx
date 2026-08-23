@@ -205,16 +205,8 @@ export function AlertsAdmin({ settings: initial, resendConfigured, twilioConfigu
       </div>
 
       <AdminPanel>
-        <AdminPanelHeader title="Trigger rules" description="When to fire instant alerts (digest is separate)." />
+        <AdminPanelHeader title="Trigger rules" description="Instant alerts for pipeline events. Downtime alerts are handled by UptimeRobot." />
         <AdminPanelBody className="flex flex-wrap gap-6">
-          <label className="flex items-center gap-2 text-[13px]">
-            <input
-              type="checkbox"
-              checked={settings.alertOnUptimeFailure}
-              onChange={(e) => setSettings({ ...settings, alertOnUptimeFailure: e.target.checked })}
-            />
-            Uptime check failures
-          </label>
           <label className="flex items-center gap-2 text-[13px]">
             <input
               type="checkbox"

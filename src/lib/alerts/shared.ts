@@ -26,7 +26,7 @@ export const DEFAULT_ALERT_SETTINGS: AlertSettings = {
   digestEnabled: false,
   digestDay: "monday",
   digestHourUtc: 6,
-  alertOnUptimeFailure: true,
+  alertOnUptimeFailure: false,
   alertOnDeploy: false,
   alertOnError: true,
   updatedAt: null,
