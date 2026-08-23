@@ -20,6 +20,11 @@ Copy `.env.example` to `.env.local`:
 | `DATABASE_URI` | Neon PostgreSQL connection string (optional; uses local JSON file store if unset) |
 | `PAYLOAD_SECRET` | HMAC secret for CMS session cookies |
 | `CMS_ADMIN_PASSWORD` | Password for `/admin/login` (default: `apex-admin`) |
+| `R2_ACCOUNT_ID` | Cloudflare account ID (for CMS uploads) |
+| `R2_ACCESS_KEY_ID` | R2 API token access key |
+| `R2_SECRET_ACCESS_KEY` | R2 API token secret |
+| `R2_BUCKET_NAME` | R2 bucket name |
+| `R2_PUBLIC_URL` | Public URL for uploaded files (R2 dev subdomain or custom domain) |
 
 ### Neon database setup
 
@@ -49,15 +54,28 @@ The CMS is **not public** — `/admin` is protected by middleware, excluded from
   - Case study (metrics)
   - Insight brief (takeaways)
 
-Uploaded files are stored in **Vercel Blob** on production (or `public/uploads/cms/` locally).
+Uploaded files are stored in **Cloudflare R2** on production (or `public/uploads/cms/` locally).
 
-### Vercel Blob (required for image uploads on Vercel)
+### Cloudflare R2 (required for image uploads on Vercel)
 
-1. In your Vercel project → **Storage** → **Create Database** → choose **Blob**
-2. Connect it to your project — Vercel auto-adds `BLOB_READ_WRITE_TOKEN`
-3. Redeploy
+1. In **Cloudflare Dashboard** → **R2** → **Create bucket** (e.g. `apexweb-cms`)
+2. Enable **Public access** for the bucket (R2.dev subdomain or connect a custom domain)
+3. **R2** → **Manage R2 API Tokens** → Create token with **Object Read & Write** for your bucket
+4. Add these to Vercel **Environment Variables**:
 
-Without Blob, article text still saves to Neon, but image/file uploads will fail on Vercel.
+```env
+R2_ACCOUNT_ID=your_cloudflare_account_id
+R2_ACCESS_KEY_ID=your_r2_access_key
+R2_SECRET_ACCESS_KEY=your_r2_secret_key
+R2_BUCKET_NAME=apexweb-cms
+R2_PUBLIC_URL=https://pub-xxxx.r2.dev
+```
+
+`R2_PUBLIC_URL` is the public base URL where files are served (from R2 bucket settings → Public access, or your custom domain). Do not include a trailing slash.
+
+5. Redeploy
+
+Without R2 configured, article text still saves to Neon, but image/file uploads will fail on Vercel.
 
 ## Scripts
 

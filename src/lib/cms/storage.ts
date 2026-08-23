@@ -1,6 +1,6 @@
 import { promises as fs } from "fs";
 import path from "path";
-import { put } from "@vercel/blob";
+import { isR2Configured, uploadToR2 } from "@/lib/cms/r2";
 
 export function isVercelRuntime() {
   return process.env.VERCEL === "1";
@@ -10,27 +10,18 @@ export function canUseLocalFileStore() {
   return !isVercelRuntime();
 }
 
-export function isBlobStorageConfigured() {
-  return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
-}
-
 export async function uploadCmsFile(
   filename: string,
   buffer: Buffer,
   contentType: string
 ): Promise<{ url: string }> {
-  if (isBlobStorageConfigured()) {
-    const blob = await put(`cms/${filename}`, buffer, {
-      access: "public",
-      contentType,
-      addRandomSuffix: false,
-    });
-    return { url: blob.url };
+  if (isR2Configured()) {
+    return uploadToR2(filename, buffer, contentType);
   }
 
   if (isVercelRuntime()) {
     throw new Error(
-      "File uploads require Vercel Blob. In your Vercel project go to Storage → Create Blob Store, then redeploy."
+      "File uploads require Cloudflare R2. Set R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, and R2_PUBLIC_URL in Vercel environment variables."
     );
   }
 
