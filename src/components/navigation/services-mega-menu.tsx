@@ -20,6 +20,7 @@ export function ServicesMegaMenu() {
       open={open}
       onEnter={handleEnter}
       onLeave={handleLeave}
+      fullHeight
       footer={
         <MegaMenuFooter>
           {serviceQuickLinks.map((link) => (

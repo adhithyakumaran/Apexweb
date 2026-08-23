@@ -45,6 +45,7 @@ type MegaMenuShellProps = {
   onLeave: () => void;
   children: ReactNode;
   footer?: ReactNode;
+  fullHeight?: boolean;
 };
 
 export function MegaMenuShell({
@@ -55,6 +56,7 @@ export function MegaMenuShell({
   onLeave,
   children,
   footer,
+  fullHeight = false,
 }: MegaMenuShellProps) {
   return (
     <div className="relative" onMouseEnter={onEnter} onMouseLeave={onLeave}>
@@ -94,7 +96,12 @@ export function MegaMenuShell({
             />
 
             <motion.div
-              className="fixed inset-x-0 top-16 z-50 max-h-[calc(100vh-4rem)] overflow-y-auto overscroll-contain"
+              className={cn(
+                "fixed inset-x-0 top-16 z-50",
+                fullHeight
+                  ? "bottom-0 overflow-y-auto"
+                  : "max-h-[calc(100vh-4rem)] overflow-y-auto overscroll-contain"
+              )}
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
@@ -102,8 +109,13 @@ export function MegaMenuShell({
               onMouseEnter={onEnter}
               onMouseLeave={onLeave}
             >
-              <div className="border-t border-border bg-background shadow-[0_24px_80px_rgba(0,0,0,0.18)]">
-                {children}
+              <div
+                className={cn(
+                  "border-t border-border bg-background shadow-[0_24px_80px_rgba(0,0,0,0.18)]",
+                  fullHeight && "flex min-h-full flex-col"
+                )}
+              >
+                {fullHeight ? <div className="flex-1">{children}</div> : children}
                 {footer}
               </div>
             </motion.div>
