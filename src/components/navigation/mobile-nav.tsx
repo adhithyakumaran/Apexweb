@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Menu, Phone, MessageCircle, ChevronDown } from "lucide-react";
+import { Menu, Phone, MessageCircle, ChevronDown, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -33,7 +33,7 @@ function MobileServiceItem({ item, onNavigate }: { item: ServiceItem; onNavigate
       onClick={onNavigate}
       className="flex items-start gap-2.5 rounded-lg px-2 py-2 transition-colors hover:bg-muted"
     >
-      <Icon className="mt-0.5 size-4 shrink-0 text-primary" />
+      <Icon className="mt-0.5 size-3.5 shrink-0 text-foreground" strokeWidth={1.75} />
       <span>
         <span className="block text-sm font-medium text-foreground">{item.title}</span>
         <span className="mt-0.5 block text-xs text-muted-foreground line-clamp-2">
@@ -126,9 +126,12 @@ export function MobileNav() {
                 key={item.href}
                 href={item.href}
                 onClick={close}
-                className="rounded-md px-3 py-3 text-base font-medium text-foreground transition-colors hover:bg-muted"
+                className="flex items-center gap-1 rounded-md px-3 py-3 text-base font-medium text-foreground transition-colors hover:bg-muted"
               >
                 {item.label}
+                {item.label === "Articles" && (
+                  <ArrowUpRight className="size-3.5 opacity-60" />
+                )}
               </Link>
             );
           })}

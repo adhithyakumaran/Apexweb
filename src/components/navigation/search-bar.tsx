@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Search, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 export function SearchBar() {
   const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
 
   return (
     <div className="flex items-center">
@@ -14,48 +14,49 @@ export function SearchBar() {
         {open ? (
           <motion.form
             key="search-input"
-            initial={{ width: 40, opacity: 0 }}
-            animate={{ width: 240, opacity: 1 }}
-            exit={{ width: 40, opacity: 0 }}
-            transition={{ duration: 0.22, ease: "easeInOut" }}
+            initial={{ width: 36, opacity: 0 }}
+            animate={{ width: 260, opacity: 1 }}
+            exit={{ width: 36, opacity: 0 }}
+            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
             className="overflow-hidden"
             onSubmit={(e) => e.preventDefault()}
           >
-            <div className="flex items-center gap-2 rounded-full border border-border bg-background px-3 py-2">
+            <div className="flex h-10 items-center gap-2 rounded-full border border-border/80 bg-surface/90 px-3.5 shadow-sm backdrop-blur-sm">
               <Search className="size-4 shrink-0 text-muted-foreground" />
               <input
                 autoFocus
                 type="text"
-                placeholder="Search anything..."
-                className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
-                onBlur={() => setOpen(false)}
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search site..."
+                className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground/80"
               />
               <button
                 type="button"
                 aria-label="Close search"
-                onClick={() => setOpen(false)}
-                className="shrink-0 text-muted-foreground hover:text-foreground"
+                onClick={() => {
+                  setOpen(false);
+                  setQuery("");
+                }}
+                className="flex size-6 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               >
-                <X className="size-4" />
+                <X className="size-3.5" />
               </button>
             </div>
           </motion.form>
         ) : (
-          <motion.div
+          <motion.button
             key="search-icon"
+            type="button"
+            aria-label="Open search"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            onClick={() => setOpen(true)}
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-border/70 bg-surface/80 text-muted-foreground shadow-sm transition-all duration-200 hover:border-border hover:bg-muted hover:text-foreground"
           >
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label="Open search"
-              onClick={() => setOpen(true)}
-            >
-              <Search className="size-4" />
-            </Button>
-          </motion.div>
+            <Search className="size-4" />
+          </motion.button>
         )}
       </AnimatePresence>
     </div>

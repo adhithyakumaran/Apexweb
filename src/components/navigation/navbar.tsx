@@ -10,14 +10,14 @@ import Link from "next/link";
 
 export function Navbar() {
   return (
-    <header className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-md transition-colors duration-300">
+    <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/90 backdrop-blur-lg">
       <div className="relative mx-auto flex h-16 max-w-350 items-center px-4 lg:px-8">
-        <div className="flex items-center gap-10">
+        <div className="flex items-center gap-5 lg:gap-6">
           <Logo />
           <DesktopNavLinks />
         </div>
 
-        <div className="ml-auto hidden items-center gap-4 md:flex">
+        <div className="ml-auto hidden items-center gap-3 md:flex">
           <SearchBar />
           <Button asChild variant="default" size="lg">
             <Link href={tryItCta.href}>{tryItCta.label}</Link>
