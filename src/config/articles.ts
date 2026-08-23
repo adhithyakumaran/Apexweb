@@ -37,6 +37,7 @@ export type ArticleContent = {
 export type Article = {
   slug: string;
   title: string;
+  hook: string;
   excerpt: string;
   template: ArticleTemplate;
   category: ArticleCategory;
@@ -71,6 +72,7 @@ export const articles: Article[] = [
   {
     slug: "fintech-regression-testing-testbuddy",
     title: "How a fintech team cut regression cycles by 60% with TestBuddy",
+    hook: "36-hour suites → 14 hours. Twice the ships.",
     excerpt:
       "A payments platform replaced brittle nightly suites with agentic end-to-end coverage — shipping twice as often with fewer escaped defects.",
     template: "case-study",
@@ -119,6 +121,7 @@ export const articles: Article[] = [
   {
     slug: "enterprise-playbook-agentic-qa",
     title: "The enterprise playbook for agentic QA automation",
+    hook: "Three phases. Zero chaos.",
     excerpt:
       "A practical framework for moving from fragmented test tooling to governed, agent-driven quality across large engineering orgs.",
     template: "standard",
@@ -162,6 +165,7 @@ export const articles: Article[] = [
   {
     slug: "sentinel-ci-pipeline-security",
     title: "Why Sentinel belongs in your CI pipeline",
+    hook: "Security on every commit — not every quarter.",
     excerpt:
       "Continuous security probing catches vulnerability classes that quarterly pen tests miss — without slowing developers down.",
     template: "agent-spotlight",
@@ -204,6 +208,7 @@ export const articles: Article[] = [
   {
     slug: "healthcare-compliance-ai-agents",
     title: "Healthcare platform achieves compliance-ready testing with AI agents",
+    hook: "HIPAA workflows. Audit-ready from day one.",
     excerpt:
       "A clinical data platform automated HIPAA-sensitive workflow validation while maintaining full audit trails for regulatory review.",
     template: "case-study",
@@ -250,6 +255,7 @@ export const articles: Article[] = [
   {
     slug: "five-signals-ready-for-atlas",
     title: "Five signals your QA stack is ready for Atlas",
+    hook: "If you can't map it, you can't test it.",
     excerpt:
       "Short checklist for engineering leaders evaluating architecture-aware test planning and coverage mapping.",
     template: "insight",

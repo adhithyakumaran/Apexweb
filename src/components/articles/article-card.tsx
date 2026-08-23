@@ -2,88 +2,97 @@
 
 import Link from "next/link";
 import { motion, useReducedMotion } from "motion/react";
-import { ArrowRight, Clock } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import type { Article } from "@/config/articles";
 import { articleTemplateLabels } from "@/config/articles";
-import { formatArticleDate } from "@/lib/articles";
+import { formatArticleDate, getBentoSpan } from "@/lib/articles";
 import { smoothEase } from "@/components/animations/motion-presets";
 import { cn } from "@/lib/utils";
 
 type ArticleCardProps = {
   article: Article;
-  variant?: "default" | "featured" | "compact";
+  variant?: "featured" | "bento" | "compact";
   index?: number;
 };
 
-export function ArticleCard({ article, variant = "default", index = 0 }: ArticleCardProps) {
+export function ArticleCard({ article, variant = "bento", index = 0 }: ArticleCardProps) {
   const prefersReducedMotion = useReducedMotion();
   const isFeatured = variant === "featured";
   const isCompact = variant === "compact";
+  const metric = article.content.results?.[0];
+  const takeaways = article.content.keyTakeaways;
 
   return (
     <motion.article
-      initial={prefersReducedMotion ? false : { opacity: 0, y: 24 }}
-      whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.2 }}
-      transition={{ duration: 0.65, delay: index * 0.06, ease: smoothEase }}
-      whileHover={
-        prefersReducedMotion
-          ? undefined
-          : { y: -4, transition: { duration: 0.3, ease: smoothEase } }
-      }
-      className="h-full"
+      initial={prefersReducedMotion ? false : { opacity: 0, y: 28, scale: 0.98 }}
+      whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0, scale: 1 }}
+      viewport={{ once: true, amount: 0.15 }}
+      transition={{ duration: 0.55, delay: index * 0.05, ease: smoothEase }}
+      className={cn("h-full", variant === "bento" && getBentoSpan(article.template, index))}
     >
       <Link
         href={`/articles/${article.slug}`}
         className={cn(
-          "group relative flex h-full flex-col overflow-hidden rounded-[1.35rem] border border-border/80 bg-card transition-all duration-500 hover:border-brand-orange/30 hover:shadow-[0_20px_50px_rgba(15,23,42,0.1)]",
-          isFeatured && "lg:flex-row"
+          "group relative flex h-full min-h-[220px] flex-col justify-between overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition-all duration-500 hover:border-brand-orange/50 hover:bg-white/[0.06] sm:p-7",
+          isFeatured && "min-h-[320px] rounded-[1.75rem] p-8 sm:min-h-[380px] sm:p-10 lg:min-h-[420px]",
+          isCompact && "min-h-[200px] p-5"
         )}
       >
         <div
           className={cn(
-            "relative overflow-hidden bg-linear-to-br",
-            article.cover.accent,
-            isFeatured ? "min-h-56 lg:min-h-0 lg:w-[42%] lg:shrink-0" : isCompact ? "h-36" : "h-44 sm:h-48"
+            "pointer-events-none absolute inset-0 bg-linear-to-br opacity-50 transition-opacity duration-500 group-hover:opacity-80",
+            article.cover.accent
           )}
-        >
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.35),transparent_55%)]" />
-          <div className="absolute left-5 top-5">
-            <span className="rounded-full border border-foreground/10 bg-background/80 px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-foreground backdrop-blur-sm">
-              {articleTemplateLabels[article.template]}
-            </span>
-          </div>
-          {article.template === "case-study" && article.content.results?.[0] && (
-            <div className="absolute bottom-5 left-5 rounded-2xl border border-foreground/10 bg-background/90 px-4 py-3 backdrop-blur-sm">
-              <p className="text-2xl font-semibold tracking-tight text-foreground">
-                {article.content.results[0].value}
-              </p>
-              <p className="text-xs text-muted-foreground">{article.content.results[0].label}</p>
-            </div>
-          )}
-        </div>
-
+        />
         <div
           className={cn(
-            "flex flex-1 flex-col p-6 sm:p-7",
-            isFeatured && "lg:justify-center lg:p-10"
+            "pointer-events-none absolute -right-8 -top-8 size-40 rounded-full bg-brand-orange/10 blur-3xl transition-all duration-500 group-hover:bg-brand-orange/20",
+            isFeatured && "size-56"
           )}
-        >
-          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-            <span className="font-medium text-brand-orange">{article.topic}</span>
-            <span aria-hidden>·</span>
-            <span className="inline-flex items-center gap-1">
-              <Clock className="size-3.5" />
-              {article.readTime} min read
+        />
+
+        <div className="relative">
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-brand-orange">
+              {articleTemplateLabels[article.template]}
             </span>
-            <span aria-hidden>·</span>
-            <span>{formatArticleDate(article.publishedAt)}</span>
+            <span className="text-[0.65rem] font-medium uppercase tracking-[0.14em] text-white/40">
+              {article.readTime} min
+            </span>
           </div>
+
+          {isFeatured && metric && (
+            <p className="mt-6 text-6xl font-semibold tracking-tighter text-brand-orange sm:text-7xl lg:text-8xl">
+              {metric.value}
+            </p>
+          )}
+
+          {!isFeatured && article.template === "case-study" && metric && (
+            <p className="mt-4 text-4xl font-semibold tracking-tight text-brand-orange sm:text-5xl">
+              {metric.value}
+            </p>
+          )}
+
+          {!isFeatured && article.template === "agent-spotlight" && (
+            <p className="mt-4 font-mono text-3xl font-semibold uppercase tracking-tight text-white/90 sm:text-4xl">
+              {article.topic}
+            </p>
+          )}
+
+          {!isFeatured && article.template === "insight" && takeaways?.[0] && (
+            <p className="mt-4 line-clamp-2 text-sm leading-relaxed text-white/50">
+              01 — {takeaways[0]}
+            </p>
+          )}
 
           <h3
             className={cn(
-              "mt-3 font-semibold tracking-tight text-foreground transition-colors group-hover:text-brand-orange",
-              isFeatured ? "text-2xl sm:text-3xl lg:text-4xl" : isCompact ? "text-lg" : "text-xl sm:text-2xl"
+              "font-semibold tracking-tight text-white transition-colors duration-300 group-hover:text-brand-orange",
+              isFeatured
+                ? "mt-4 max-w-3xl text-3xl sm:text-4xl lg:text-5xl lg:leading-[1.1]"
+                : isCompact
+                  ? "mt-3 text-lg leading-snug"
+                  : "mt-4 text-xl leading-snug sm:text-2xl"
             )}
           >
             {article.title}
@@ -91,29 +100,19 @@ export function ArticleCard({ article, variant = "default", index = 0 }: Article
 
           <p
             className={cn(
-              "mt-3 leading-relaxed text-muted-foreground",
-              isCompact ? "line-clamp-2 text-sm" : "line-clamp-3 text-sm sm:text-base"
+              "mt-3 font-medium text-brand-orange/90",
+              isFeatured ? "text-lg sm:text-xl" : "text-sm sm:text-base"
             )}
           >
-            {article.excerpt}
+            {article.hook}
           </p>
+        </div>
 
-          <div className="mt-auto flex items-center justify-between pt-6">
-            <div className="flex flex-wrap gap-2">
-              {article.tags.slice(0, 2).map((tag) => (
-                <span
-                  key={tag}
-                  className="rounded-full bg-muted px-2.5 py-1 text-[0.7rem] font-medium text-muted-foreground"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-            <span className="inline-flex items-center gap-1 text-sm font-medium text-foreground transition-all group-hover:gap-2 group-hover:text-brand-orange">
-              Read
-              <ArrowRight className="size-4" />
-            </span>
-          </div>
+        <div className="relative mt-8 flex items-end justify-between gap-4">
+          <span className="text-xs text-white/35">{formatArticleDate(article.publishedAt)}</span>
+          <span className="flex size-10 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white transition-all duration-300 group-hover:border-brand-orange group-hover:bg-brand-orange group-hover:text-black">
+            <ArrowUpRight className="size-4 transition-transform duration-300 group-hover:rotate-12" />
+          </span>
         </div>
       </Link>
     </motion.article>

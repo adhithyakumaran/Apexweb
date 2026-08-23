@@ -50,7 +50,6 @@ type MegaMenuShellProps = {
 
 export function MegaMenuShell({
   label,
-  href,
   open,
   onEnter,
   onLeave,
@@ -60,8 +59,10 @@ export function MegaMenuShell({
 }: MegaMenuShellProps) {
   return (
     <div className="relative" onMouseEnter={onEnter} onMouseLeave={onLeave}>
-      <Link
-        href={href}
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-haspopup="true"
         className={cn(
           "relative group flex items-center gap-1 text-[0.95rem] font-medium transition-colors duration-200",
           open ? "text-foreground" : "text-foreground/80 hover:text-foreground"
@@ -80,7 +81,7 @@ export function MegaMenuShell({
             open && "scale-x-100"
           )}
         />
-      </Link>
+      </button>
 
       <AnimatePresence>
         {open && (
