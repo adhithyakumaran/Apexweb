@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { AdminShell } from "@/components/admin/admin-shell";
-import { AnalyticsDashboard } from "@/components/admin/analytics-dashboard";
-import { getAnalyticsDashboardData } from "@/lib/analytics/dashboard";
+import { VisitorAnalyticsDashboard } from "@/components/admin/visitor-analytics-dashboard";
+import { getVisitorAnalytics } from "@/lib/analytics/posthog-query";
 
 export const metadata: Metadata = {
   title: "Analytics",
@@ -9,14 +9,14 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminAnalyticsPage() {
-  const data = await getAnalyticsDashboardData();
+  const data = await getVisitorAnalytics();
 
   return (
     <AdminShell
-      title="Analytics"
-      description="Content performance, publishing trends, and CMS activity across your knowledge hub."
+      title="Website analytics"
+      description="Visitor behavior, traffic sources, engagement, and real-user performance from PostHog."
     >
-      <AnalyticsDashboard data={data} />
+      <VisitorAnalyticsDashboard data={data} />
     </AdminShell>
   );
 }

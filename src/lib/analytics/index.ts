@@ -1,6 +1,17 @@
-export { getAnalyticsDashboardData } from "@/lib/analytics/dashboard";
-export type { AnalyticsDashboardData } from "@/lib/analytics/dashboard";
+export {
+  getPostHogHost,
+  getPostHogPersonalApiKey,
+  getPostHogProjectId,
+  getPostHogProjectToken,
+  isPostHogCaptureConfigured,
+  isPostHogQueryConfigured,
+} from "@/lib/analytics/posthog-config";
 
-export function isPostHogConfigured() {
-  return Boolean(process.env.NEXT_PUBLIC_POSTHOG_KEY?.trim());
-}
+export { getVisitorAnalytics } from "@/lib/analytics/posthog-query";
+export type {
+  VisitorAnalyticsData,
+  VisitorKpis,
+  RankedRow,
+  TrendPoint,
+  WebVitals,
+} from "@/lib/analytics/posthog-query";

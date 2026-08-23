@@ -50,7 +50,7 @@ The CMS is **not public** — `/admin` is protected by middleware, excluded from
 - **Login:** `/admin/login`
 - **Dashboard:** `/admin`
 - **Articles:** create, edit, publish, delete with 5 templates:
-- **Analytics:** `/admin/analytics` — publishing trends, template mix, CMS activity charts
+- **Analytics:** `/admin/analytics` — PostHog visitor traffic, engagement, sources, and Web Vitals
 - **Logs:** `/admin/logs` — audit trail for sign-ins, publishes, uploads, and edits
   - Text only
   - Image + text
@@ -80,6 +80,22 @@ R2_PUBLIC_URL=https://pub-xxxx.r2.dev
 5. Redeploy
 
 Without R2 configured, article text still saves to Neon, but image/file uploads will fail on Vercel.
+
+### PostHog analytics (visitor tracking)
+
+1. Create a PostHog project and copy your **project token** and **host**
+2. Add to Vercel:
+
+```env
+NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN=phc_...
+NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
+```
+
+3. For the `/admin/analytics` dashboard (reads data from PostHog), also add:
+   - `POSTHOG_PERSONAL_API_KEY` — personal API key with **Query Read** scope ([PostHog user settings](https://us.posthog.com/settings/user-api-keys))
+   - `POSTHOG_PROJECT_ID` — numeric project ID from PostHog project settings
+
+The dashboard uses **one HogQL query per sync**, cached for 45 minutes, to stay within PostHog API limits. Public `/admin` routes are excluded from tracking.
 
 ## Scripts
 
