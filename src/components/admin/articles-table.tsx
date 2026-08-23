@@ -218,13 +218,6 @@ export function ArticlesTable({ articles, compact = false }: ArticlesTableProps)
                   >
                     <Trash2 className="size-3.5" />
                   </button>
-                  <button
-                    type="button"
-                    className="inline-flex size-7 items-center justify-center rounded text-[#a1a1a1] hover:bg-[#111] hover:text-white"
-                    title="More"
-                  >
-                    <MoreHorizontal className="size-3.5" />
-                  </button>
                 </div>
               </div>
             </div>
