@@ -32,31 +32,32 @@ export function ArticlesHub({ articles }: ArticlesHubProps) {
   const gridArticles = filtered.filter((article) => article.slug !== featured?.slug);
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-black text-white">
-      <section className="relative overflow-hidden px-4 pb-8 pt-20 sm:px-6 lg:px-10 lg:pt-28">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_20%_0%,color-mix(in_oklab,var(--brand-orange)_22%,transparent),transparent_55%)]" />
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_80%_20%,color-mix(in_oklab,var(--primary)_12%,transparent),transparent_50%)]" />
-
-        <div className="relative mx-auto max-w-350">
+    <main className="min-h-screen bg-background">
+      <section className="border-b border-border/70 bg-surface/40 px-4 py-14 sm:px-6 lg:px-10 lg:py-16">
+        <div className="mx-auto max-w-350">
           <motion.div
-            initial={prefersReducedMotion ? false : { opacity: 0, y: 32 }}
+            initial={prefersReducedMotion ? false : { opacity: 0, y: 16 }}
             animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-            transition={{ duration: 0.85, ease: smoothEase }}
+            transition={{ duration: 0.6, ease: smoothEase }}
+            className="max-w-2xl"
           >
-            <p className="text-[0.7rem] font-bold uppercase tracking-[0.28em] text-brand-orange">
+            <p className="text-xs font-medium uppercase tracking-[0.18em] text-brand-orange">
               Knowledge Hub
             </p>
-            <h1 className="mt-5 max-w-4xl text-[clamp(2.5rem,7vw,5.5rem)] font-semibold leading-[0.95] tracking-tight">
-              Stories that{" "}
-              <span className="text-brand-orange">ship</span> faster.
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+              Articles & case studies
             </h1>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
+              Practical notes on QA automation, agents, and enterprise quality — each piece on its
+              own page for easy reading and sharing.
+            </p>
           </motion.div>
 
           <motion.div
             initial={prefersReducedMotion ? false : { opacity: 0 }}
             animate={prefersReducedMotion ? undefined : { opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.15, ease: smoothEase }}
-            className="mt-10 flex flex-wrap gap-2 border-b border-white/10 pb-8"
+            transition={{ duration: 0.5, delay: 0.1, ease: smoothEase }}
+            className="mt-8 flex flex-wrap gap-2"
           >
             {filters.map((filter) => {
               const active = activeFilter === filter.id;
@@ -66,18 +67,13 @@ export function ArticlesHub({ articles }: ArticlesHubProps) {
                   type="button"
                   onClick={() => setActiveFilter(filter.id)}
                   className={cn(
-                    "relative px-4 py-2 text-sm font-medium transition-colors duration-300",
-                    active ? "text-brand-orange" : "text-white/50 hover:text-white/80"
+                    "rounded-full border px-3.5 py-1.5 text-sm transition-all duration-200",
+                    active
+                      ? "border-brand-orange/40 bg-brand-orange/10 text-foreground"
+                      : "border-border bg-card text-muted-foreground hover:border-border hover:text-foreground"
                   )}
                 >
                   {filter.id === "all" ? filter.label : articleCategoryLabels[filter.id]}
-                  {active && (
-                    <motion.span
-                      layoutId="article-filter"
-                      className="absolute inset-x-2 -bottom-8 h-0.5 bg-brand-orange"
-                      transition={{ duration: 0.35, ease: smoothEase }}
-                    />
-                  )}
                 </button>
               );
             })}
@@ -85,31 +81,30 @@ export function ArticlesHub({ articles }: ArticlesHubProps) {
         </div>
       </section>
 
-      <section className="px-4 pb-24 sm:px-6 lg:px-10">
+      <section className="px-4 py-12 sm:px-6 lg:px-10 lg:py-16">
         <div className="mx-auto max-w-350">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeFilter}
-              initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
-              animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-              exit={prefersReducedMotion ? undefined : { opacity: 0, y: -8 }}
-              transition={{ duration: 0.35, ease: smoothEase }}
+              initial={prefersReducedMotion ? false : { opacity: 0 }}
+              animate={prefersReducedMotion ? undefined : { opacity: 1 }}
+              exit={prefersReducedMotion ? undefined : { opacity: 0 }}
+              transition={{ duration: 0.25, ease: smoothEase }}
+              className="space-y-8"
             >
               {activeFilter === "all" && featured && (
-                <div className="mb-6">
-                  <ArticleCard article={featured} variant="featured" />
-                </div>
+                <ArticleCard article={featured} variant="featured" />
               )}
 
               {gridArticles.length > 0 ? (
-                <div className="grid grid-cols-12 gap-4 lg:gap-5">
+                <div className="grid gap-4 sm:grid-cols-2">
                   {gridArticles.map((article, index) => (
                     <ArticleCard key={article.slug} article={article} index={index} />
                   ))}
                 </div>
               ) : (
-                <div className="rounded-2xl border border-dashed border-white/15 px-6 py-20 text-center">
-                  <p className="text-lg font-medium text-white/80">Nothing here yet.</p>
+                <div className="rounded-xl border border-dashed border-border px-6 py-14 text-center">
+                  <p className="text-sm text-muted-foreground">No articles in this category yet.</p>
                 </div>
               )}
             </motion.div>

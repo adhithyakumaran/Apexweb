@@ -37,17 +37,6 @@ export function getArticlesByTemplate(template: ArticleTemplate): Article[] {
   return getAllArticles().filter((article) => article.template === template);
 }
 
-export function getBentoSpan(template: Article["template"], index: number): string {
-  const patterns: Record<Article["template"], string[]> = {
-    "case-study": ["col-span-12 lg:col-span-7", "col-span-12 md:col-span-6 lg:col-span-5"],
-    "agent-spotlight": ["col-span-12 md:col-span-6 lg:col-span-5", "col-span-12 lg:col-span-7"],
-    insight: ["col-span-12 sm:col-span-6 lg:col-span-4", "col-span-12 sm:col-span-6 lg:col-span-4"],
-    standard: ["col-span-12 md:col-span-6 lg:col-span-5", "col-span-12 md:col-span-6 lg:col-span-7"],
-  };
-  const options = patterns[template];
-  return options[index % options.length];
-}
-
 export function formatArticleDate(date: string): string {
   return new Intl.DateTimeFormat("en-US", {
     month: "long",

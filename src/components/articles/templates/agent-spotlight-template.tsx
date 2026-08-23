@@ -15,7 +15,7 @@ export function AgentSpotlightTemplate({ article }: ArticleBodyProps) {
     <div>
       {agent && (
         <div
-          className={`mb-10 flex flex-col gap-4 rounded-[1.25rem] border-2 border-foreground p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8 ${agent.bg}`}
+          className={`mb-8 flex flex-col gap-4 rounded-xl border border-border bg-surface/50 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6 ${agent.bg}`}
         >
           <div>
             <p className={`text-xs font-semibold uppercase tracking-[0.15em] ${agent.accent} opacity-70`}>
@@ -30,7 +30,7 @@ export function AgentSpotlightTemplate({ article }: ArticleBodyProps) {
           </div>
           <Link
             href={`/agents/${agent.slug}`}
-            className={`inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-sm font-medium text-background transition-opacity hover:opacity-90`}
+            className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-brand-orange/40 hover:text-brand-orange"
           >
             Meet {agent.codename}
             <ArrowRight className="size-4" />

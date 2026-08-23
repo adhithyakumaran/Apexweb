@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ArticleDetail } from "@/components/articles/article-detail";
 import { articles } from "@/config/articles";
 import { getArticleBySlug, getRelatedArticles } from "@/lib/articles";
+import { articleJsonLd, buildArticleMetadata } from "@/lib/articles/seo";
 
 type ArticlePageProps = {
   params: Promise<{ slug: string }>;
@@ -20,10 +21,7 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
     return { title: "Article not found" };
   }
 
-  return {
-    title: article.title,
-    description: article.excerpt,
-  };
+  return buildArticleMetadata(article);
 }
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
@@ -35,6 +33,15 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   }
 
   const related = getRelatedArticles(article);
+  const jsonLd = articleJsonLd(article);
 
-  return <ArticleDetail article={article} related={related} />;
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <ArticleDetail article={article} related={related} />
+    </>
+  );
 }
