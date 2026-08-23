@@ -86,7 +86,7 @@ export function MegaMenuShell({
         {open && (
           <>
             <motion.div
-              className="fixed inset-0 top-16 z-40 bg-foreground/65"
+              className="fixed inset-0 top-16 z-[55] bg-foreground/65"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -97,9 +97,9 @@ export function MegaMenuShell({
 
             <motion.div
               className={cn(
-                "fixed inset-x-0 top-16 z-50",
+                "fixed inset-x-0 top-16 z-[60]",
                 fullHeight
-                  ? "bottom-0 overflow-y-auto"
+                  ? "min-h-[calc(100vh-4rem)]"
                   : "max-h-[calc(100vh-4rem)] overflow-y-auto overscroll-contain"
               )}
               initial={{ opacity: 0, y: -8 }}
@@ -112,7 +112,9 @@ export function MegaMenuShell({
               <div
                 className={cn(
                   "border-t border-border bg-background shadow-[0_24px_80px_rgba(0,0,0,0.18)]",
-                  fullHeight && "flex min-h-full flex-col"
+                  fullHeight
+                    ? "flex min-h-[calc(100vh-4rem)] flex-col"
+                    : undefined
                 )}
               >
                 {fullHeight ? <div className="flex-1">{children}</div> : children}
