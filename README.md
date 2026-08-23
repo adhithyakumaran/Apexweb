@@ -23,10 +23,18 @@ Copy `.env.example` to `.env.local`:
 
 ### Neon database setup
 
+**Option A — automatic (recommended on Vercel):**  
+`npm run build` runs `drizzle-kit push` first and creates the `cms_articles` table using `DATABASE_URI`.
+
+**Option B — run locally once:**
+
 ```bash
-# After setting DATABASE_URI
+# With DATABASE_URI in .env.local
 npm run db:push
 ```
+
+**Option C — run SQL in Neon console:**  
+Open Neon → SQL Editor → paste and run `drizzle/0000_init_cms_articles.sql`.
 
 ## Private CMS
 

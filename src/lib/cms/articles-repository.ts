@@ -116,12 +116,34 @@ function mapDisplayToCmsTemplate(template: Article["template"]): CmsTemplateId {
   }
 }
 
-export async function listCmsArticles(includeDrafts = false) {
-  if (isDatabaseConfigured()) {
-    const db = getDb();
-    if (!db) return [];
+function isMissingTableError(error: unknown) {
+  const code =
+    (error as { code?: string })?.code ??
+    (error as { cause?: { code?: string } })?.cause?.code;
+  return code === "42P01";
+}
+
+async function queryCmsArticlesFromDb(includeDrafts: boolean) {
+  const db = getDb();
+  if (!db) return [];
+
+  try {
     const rows = await db.select().from(cmsArticles).orderBy(desc(cmsArticles.updatedAt));
     return includeDrafts ? rows : rows.filter((row) => row.status === "published");
+  } catch (error) {
+    if (isMissingTableError(error)) {
+      console.warn(
+        "[cms] Table cms_articles does not exist yet. Run: npm run db:push (or execute drizzle/0000_init_cms_articles.sql in Neon)"
+      );
+      return [];
+    }
+    throw error;
+  }
+}
+
+export async function listCmsArticles(includeDrafts = false) {
+  if (isDatabaseConfigured()) {
+    return queryCmsArticlesFromDb(includeDrafts);
   }
 
   const items = await seedFileStoreIfEmpty();
@@ -147,8 +169,13 @@ export async function getCmsArticleById(id: number) {
   if (isDatabaseConfigured()) {
     const db = getDb();
     if (!db) return null;
-    const rows = await db.select().from(cmsArticles).where(eq(cmsArticles.id, id)).limit(1);
-    return rows[0] ?? null;
+    try {
+      const rows = await db.select().from(cmsArticles).where(eq(cmsArticles.id, id)).limit(1);
+      return rows[0] ?? null;
+    } catch (error) {
+      if (isMissingTableError(error)) return null;
+      throw error;
+    }
   }
 
   const items = await seedFileStoreIfEmpty();
