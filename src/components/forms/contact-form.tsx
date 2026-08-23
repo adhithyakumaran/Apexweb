@@ -65,7 +65,7 @@ export function ContactForm({
   const inputClass = cn(
     "w-full text-sm outline-none transition-colors duration-200",
     isPanel
-      ? "border-0 border-b border-foreground/25 bg-transparent px-0 py-3 text-foreground placeholder:text-foreground/55 focus:border-foreground"
+      ? "border-0 border-b border-foreground/30 bg-transparent px-0 py-3.5 text-foreground placeholder:text-foreground/50 focus:border-foreground"
       : cn(
           "rounded-xl border border-border/80 bg-surface/50 px-4 py-3 pl-11 text-foreground",
           "placeholder:text-muted-foreground/70 focus:border-brand-orange/50 focus:bg-background focus:ring-2 focus:ring-brand-orange/15"
@@ -80,12 +80,15 @@ export function ContactForm({
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
       {isPanel && (
-        <div className="mb-2">
-          <h3 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+        <div className="mb-1">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-foreground/70">
+            Project inquiry
+          </p>
+          <h3 className="mt-2 text-2xl font-semibold tracking-tight text-foreground sm:text-[1.75rem] lg:text-3xl">
             Got ideas? We&apos;ve got the skills.
           </h3>
           <p className="mt-2 text-sm leading-relaxed text-foreground/80 sm:text-base">
-            Tell us more about yourself and what you have in mind.
+            Tell us about your stack, release cadence, and where quality is slowing you down.
           </p>
         </div>
       )}
@@ -142,22 +145,26 @@ export function ContactForm({
 
       {showHelpOptions && (
         <div>
-          <p className="text-sm font-medium text-foreground">How can we help?</p>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            {helpOptions.map((option) => (
-              <label
-                key={option}
-                className="flex cursor-pointer items-center gap-2.5 text-sm text-foreground/90"
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedHelp.includes(option)}
-                  onChange={() => toggleHelp(option)}
-                  className="size-4 rounded border-foreground/30 accent-foreground"
-                />
-                {option}
-              </label>
-            ))}
+          <p className="text-sm font-semibold text-foreground">How can we help?</p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {helpOptions.map((option) => {
+              const active = selectedHelp.includes(option);
+              return (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => toggleHelp(option)}
+                  className={cn(
+                    "rounded-full border px-3.5 py-2 text-xs font-medium transition-all duration-200",
+                    active
+                      ? "border-foreground bg-foreground text-background"
+                      : "border-foreground/25 bg-foreground/5 text-foreground/90 hover:border-foreground/45 hover:bg-foreground/10"
+                  )}
+                >
+                  {option}
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
@@ -195,7 +202,7 @@ export function ContactForm({
           className={cn(
             "gap-2",
             isPanel
-              ? "w-full bg-foreground text-background hover:bg-foreground/90"
+              ? "w-full rounded-xl bg-foreground py-6 text-background shadow-[0_12px_30px_rgba(0,0,0,0.22)] hover:bg-foreground/92"
               : "bg-foreground text-background hover:bg-foreground/90"
           )}
         >

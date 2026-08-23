@@ -14,7 +14,7 @@ export function MegaMenuLink({ item }: { item: ServiceItem }) {
   return (
     <Link
       href={item.href}
-      className="group flex items-start gap-3 rounded-xl px-3 py-3 transition-colors duration-200 hover:bg-muted/60"
+      className="group flex items-start gap-3 rounded-xl px-3 py-3 transition-colors duration-200 hover:bg-muted"
     >
       <Icon className="mt-1 size-3.5 shrink-0 text-foreground" strokeWidth={1.75} />
       <span className="min-w-0">
@@ -84,7 +84,7 @@ export function MegaMenuShell({
         {open && (
           <>
             <motion.div
-              className="fixed inset-0 top-16 z-40 bg-foreground/40 backdrop-blur-sm"
+              className="fixed inset-0 top-16 z-40 bg-foreground/65"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -102,7 +102,7 @@ export function MegaMenuShell({
               onMouseEnter={onEnter}
               onMouseLeave={onLeave}
             >
-              <div className="min-h-[calc(100vh-4rem)] border-t border-border/60 bg-background shadow-2xl">
+              <div className="min-h-[calc(100vh-4rem)] border-t border-border bg-background shadow-[0_24px_80px_rgba(0,0,0,0.18)]">
                 {children}
                 {footer}
               </div>
@@ -116,7 +116,7 @@ export function MegaMenuShell({
 
 export function MegaMenuFooter({ children }: { children: ReactNode }) {
   return (
-    <div className="border-t border-border/60 bg-muted/70 px-8 py-5 lg:px-14">
+    <div className="border-t border-border bg-muted px-8 py-5 lg:px-14">
       <div className="mx-auto flex max-w-350 flex-wrap items-center gap-x-8 gap-y-2">
         {children}
       </div>
