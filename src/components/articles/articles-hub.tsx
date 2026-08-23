@@ -24,7 +24,7 @@ type ArticlesHubProps = {
 export function ArticlesHub({ articles }: ArticlesHubProps) {
   const [activeFilter, setActiveFilter] = useState<HubFilter>("all");
   const prefersReducedMotion = useReducedMotion();
-  const featured = getFeaturedArticle();
+  const featured = getFeaturedArticle(articles);
   const filtered = useMemo(
     () => filterArticles(articles, activeFilter),
     [articles, activeFilter]

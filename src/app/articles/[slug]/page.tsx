@@ -1,21 +1,24 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ArticleDetail } from "@/components/articles/article-detail";
-import { articles } from "@/config/articles";
-import { getArticleBySlug, getRelatedArticles } from "@/lib/articles";
+import { getRelatedArticles } from "@/lib/articles";
+import { getAllArticles, getArticleBySlug } from "@/lib/articles/server";
 import { articleJsonLd, buildArticleMetadata } from "@/lib/articles/seo";
+
+export const revalidate = 60;
 
 type ArticlePageProps = {
   params: Promise<{ slug: string }>;
 };
 
-export function generateStaticParams() {
+export async function generateStaticParams() {
+  const articles = await getAllArticles();
   return articles.map((article) => ({ slug: article.slug }));
 }
 
 export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
   const { slug } = await params;
-  const article = getArticleBySlug(slug);
+  const article = await getArticleBySlug(slug);
 
   if (!article) {
     return { title: "Article not found" };
@@ -26,13 +29,14 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug } = await params;
-  const article = getArticleBySlug(slug);
+  const article = await getArticleBySlug(slug);
 
   if (!article) {
     notFound();
   }
 
-  const related = getRelatedArticles(article);
+  const allArticles = await getAllArticles();
+  const related = getRelatedArticles(article, allArticles);
   const jsonLd = articleJsonLd(article);
 
   return (

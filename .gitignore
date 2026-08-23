@@ -42,3 +42,4 @@ yarn-error.log*
 next-env.d.ts
 apexweb-temp/
 uploads/
+data/cms-articles.json

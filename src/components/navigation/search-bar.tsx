@@ -3,9 +3,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
-import { Search, X } from "lucide-react";
+import { ArrowRight, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { searchSite, type SearchResult, type SearchResultCategory } from "@/lib/search";
+import type { SearchResult, SearchResultCategory } from "@/lib/search";
+import { cn } from "@/lib/utils";
 
 const categoryOrder: SearchResultCategory[] = [
   "Pages",
@@ -14,6 +15,14 @@ const categoryOrder: SearchResultCategory[] = [
   "Articles",
   "Contact",
 ];
+
+const categoryAccent: Record<SearchResultCategory, string> = {
+  Pages: "bg-primary/10 text-primary",
+  Services: "bg-brand-orange/10 text-brand-orange",
+  Agents: "bg-violet-500/10 text-violet-600 dark:text-violet-400",
+  Articles: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+  Contact: "bg-sky-500/10 text-sky-600 dark:text-sky-400",
+};
 
 function groupResults(results: SearchResult[]) {
   const groups = new Map<SearchResultCategory, SearchResult[]>();
@@ -30,17 +39,51 @@ function groupResults(results: SearchResult[]) {
 export function SearchBar() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [activeIndex, setActiveIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
-  const results = useMemo(() => searchSite(query), [query]);
+  const [results, setResults] = useState<SearchResult[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const q = query.trim();
+    if (q.length < 2) {
+      setResults([]);
+      setLoading(false);
+      return;
+    }
+
+    const timer = window.setTimeout(async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+        const data = (await response.json()) as { results?: SearchResult[] };
+        setResults(data.results ?? []);
+      } catch {
+        setResults([]);
+      } finally {
+        setLoading(false);
+      }
+    }, 180);
+
+    return () => window.clearTimeout(timer);
+  }, [query]);
+
   const grouped = useMemo(() => groupResults(results), [results]);
+  const flatResults = useMemo(() => grouped.flatMap((g) => g.items), [grouped]);
   const showResults = open && query.trim().length >= 2;
 
   const close = useCallback(() => {
     setOpen(false);
     setQuery("");
+    setActiveIndex(0);
   }, []);
+
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [query]);
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -48,6 +91,7 @@ export function SearchBar() {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
         setOpen(true);
+        requestAnimationFrame(() => inputRef.current?.focus());
       }
     }
     window.addEventListener("keydown", onKeyDown);
@@ -75,6 +119,20 @@ export function SearchBar() {
     router.push(href);
   }
 
+  function handleFormKeyDown(e: React.KeyboardEvent) {
+    if (!showResults || flatResults.length === 0) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setActiveIndex((i) => (i + 1) % flatResults.length);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActiveIndex((i) => (i - 1 + flatResults.length) % flatResults.length);
+    } else if (e.key === "Enter" && flatResults[activeIndex]) {
+      e.preventDefault();
+      handleSelect(flatResults[activeIndex].href);
+    }
+  }
+
   return (
     <div ref={containerRef} className="relative flex items-center">
       <AnimatePresence initial={false} mode="wait">
@@ -82,79 +140,158 @@ export function SearchBar() {
           <motion.div
             key="search-input"
             initial={{ width: 0, opacity: 0 }}
-            animate={{ width: 280, opacity: 1 }}
+            animate={{ width: 300, opacity: 1 }}
             exit={{ width: 0, opacity: 0 }}
-            transition={{ duration: 0.25, ease: "easeInOut" }}
+            transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
             className="relative overflow-visible"
           >
             <form
-              className="flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1.5"
+              className="flex h-10 items-center gap-2 rounded-full border border-border/80 bg-card px-3 shadow-sm ring-1 ring-black/[0.03] dark:ring-white/[0.04]"
               onSubmit={(e) => {
                 e.preventDefault();
-                if (results[0]) handleSelect(results[0].href);
+                const target = flatResults[activeIndex] ?? results[0];
+                if (target) handleSelect(target.href);
               }}
+              onKeyDown={handleFormKeyDown}
             >
-              <Search className="size-4 shrink-0 text-muted-foreground" />
+              <Search className="size-4 shrink-0 text-muted-foreground" aria-hidden />
               <input
+                ref={inputRef}
                 autoFocus
-                type="search"
+                type="text"
+                inputMode="search"
+                enterKeyHint="search"
+                autoComplete="off"
+                autoCorrect="off"
+                spellCheck={false}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search services, agents, articles..."
-                className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                placeholder="Search services, agents, articles…"
+                className="min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
                 aria-label="Search site"
                 aria-expanded={showResults}
                 aria-autocomplete="list"
+                role="combobox"
               />
+              {query.length > 0 && (
+                <button
+                  type="button"
+                  aria-label="Clear search"
+                  onClick={() => {
+                    setQuery("");
+                    inputRef.current?.focus();
+                  }}
+                  className="flex size-6 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                >
+                  <X className="size-3.5" />
+                </button>
+              )}
               <button
                 type="button"
                 aria-label="Close search"
                 onClick={close}
-                className="shrink-0 text-muted-foreground hover:text-foreground"
+                className="flex size-6 shrink-0 items-center justify-center rounded-full border border-border/70 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               >
-                <X className="size-4" />
+                <span className="text-[10px] font-semibold tracking-tight">Esc</span>
               </button>
             </form>
 
             <AnimatePresence>
               {showResults && (
                 <motion.div
-                  initial={{ opacity: 0, y: 4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 4 }}
-                  transition={{ duration: 0.15 }}
-                  className="absolute right-0 top-full z-[70] mt-2 max-h-[min(70vh,420px)] w-[min(100vw-2rem,360px)] overflow-y-auto rounded-xl border border-border bg-card shadow-xl"
+                  initial={{ opacity: 0, y: 6, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 4, scale: 0.98 }}
+                  transition={{ duration: 0.16, ease: "easeOut" }}
+                  className="absolute right-0 top-[calc(100%+0.5rem)] z-[70] w-[min(100vw-2rem,380px)] overflow-hidden rounded-2xl border border-border/80 bg-card shadow-2xl ring-1 ring-black/[0.04] dark:ring-white/[0.06]"
+                  role="listbox"
                 >
-                  {grouped.length === 0 ? (
-                    <p className="px-4 py-6 text-center text-sm text-muted-foreground">
-                      No results for &ldquo;{query}&rdquo;
+                  <div className="border-b border-border/60 bg-surface/50 px-4 py-2.5">
+                    <p className="text-[0.65rem] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+                      {loading
+                        ? "Searching…"
+                        : results.length > 0
+                          ? `${results.length} result${results.length === 1 ? "" : "s"}`
+                          : "No matches"}
                     </p>
-                  ) : (
-                    grouped.map(({ category, items }) => (
-                      <div key={category} className="border-b border-border/60 last:border-0">
-                        <p className="px-4 pb-1 pt-3 text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                          {category}
+                  </div>
+
+                  <div className="max-h-[min(68vh,400px)] overflow-y-auto overscroll-contain">
+                    {grouped.length === 0 ? (
+                      <div className="px-4 py-10 text-center">
+                        <p className="text-sm font-medium text-foreground">Nothing found</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Try services, agents, or article topics
                         </p>
-                        <ul>
-                          {items.map((result) => (
-                            <li key={result.id}>
-                              <button
-                                type="button"
-                                onClick={() => handleSelect(result.href)}
-                                className="flex w-full flex-col gap-0.5 px-4 py-2.5 text-left transition-colors hover:bg-muted/60"
-                              >
-                                <span className="text-sm font-medium text-foreground">
-                                  {result.title}
-                                </span>
-                                <span className="line-clamp-1 text-xs text-muted-foreground">
-                                  {result.description}
-                                </span>
-                              </button>
-                            </li>
-                          ))}
-                        </ul>
                       </div>
-                    ))
+                    ) : (
+                      grouped.map(({ category, items }) => (
+                        <div key={category} className="border-b border-border/50 last:border-0">
+                          <p className="sticky top-0 z-10 bg-card/95 px-4 pb-1.5 pt-3 text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground backdrop-blur-sm">
+                            {category}
+                          </p>
+                          <ul>
+                            {items.map((result) => {
+                              const index = flatResults.indexOf(result);
+                              const isActive = index === activeIndex;
+                              return (
+                                <li key={result.id}>
+                                  <button
+                                    type="button"
+                                    role="option"
+                                    aria-selected={isActive}
+                                    onClick={() => handleSelect(result.href)}
+                                    onMouseEnter={() => setActiveIndex(index)}
+                                    className={cn(
+                                      "group flex w-full items-start gap-3 px-4 py-2.5 text-left transition-colors",
+                                      isActive ? "bg-muted/70" : "hover:bg-muted/50"
+                                    )}
+                                  >
+                                    <span
+                                      className={cn(
+                                        "mt-0.5 shrink-0 rounded-md px-1.5 py-0.5 text-[0.6rem] font-semibold uppercase tracking-wide",
+                                        categoryAccent[category]
+                                      )}
+                                    >
+                                      {category.slice(0, 3)}
+                                    </span>
+                                    <span className="min-w-0 flex-1">
+                                      <span className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+                                        {result.title}
+                                        <ArrowRight
+                                          className={cn(
+                                            "size-3 shrink-0 text-muted-foreground transition-all",
+                                            isActive
+                                              ? "translate-x-0 opacity-100"
+                                              : "-translate-x-1 opacity-0 group-hover:translate-x-0 group-hover:opacity-60"
+                                          )}
+                                        />
+                                      </span>
+                                      <span className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
+                                        {result.description}
+                                      </span>
+                                    </span>
+                                  </button>
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  {flatResults.length > 0 && (
+                    <div className="border-t border-border/60 bg-surface/40 px-4 py-2 text-[0.65rem] text-muted-foreground">
+                      <kbd className="rounded border border-border bg-background px-1 py-0.5 font-mono text-[0.6rem]">
+                        ↑↓
+                      </kbd>{" "}
+                      navigate ·{" "}
+                      <kbd className="rounded border border-border bg-background px-1 py-0.5 font-mono text-[0.6rem]">
+                        ↵
+                      </kbd>{" "}
+                      open
+                    </div>
                   )}
                 </motion.div>
               )}
@@ -170,8 +307,9 @@ export function SearchBar() {
             <Button
               variant="ghost"
               size="icon"
-              aria-label="Open search"
+              aria-label="Open search (Ctrl+K)"
               onClick={() => setOpen(true)}
+              className="relative"
             >
               <Search className="size-4" />
             </Button>

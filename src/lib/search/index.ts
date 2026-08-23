@@ -1,4 +1,4 @@
-import { articles } from "@/config/articles";
+import { articles as seedArticles, type Article } from "@/config/articles";
 import { agents } from "@/config/agents";
 import { contactMethods, officeAddress } from "@/config/contact";
 import { mainNav, tryItCta } from "@/config/navigation";
@@ -10,6 +10,7 @@ import {
   serviceQuickLinks,
   agentQuickLinks,
 } from "@/config/services";
+import { getPublishedArticlesMerged } from "@/lib/cms/articles-repository";
 import { getWhatsAppLink } from "@/lib/utils/whatsapp";
 
 export type SearchResultCategory =
@@ -39,7 +40,7 @@ function item(
   return { id, title, description, href, category, keywords };
 }
 
-export function buildSearchIndex(): SearchResult[] {
+export function buildSearchIndex(articleList: Article[] = seedArticles): SearchResult[] {
   const results: SearchResult[] = [];
 
   for (const nav of mainNav) {
@@ -99,7 +100,7 @@ export function buildSearchIndex(): SearchResult[] {
     )
   );
 
-  for (const article of articles) {
+  for (const article of articleList) {
     results.push(
       item(
         `article-${article.slug}`,
@@ -203,16 +204,25 @@ function scoreResult(result: SearchResult, query: string): number {
   return score;
 }
 
-export function searchSite(query: string, limit = 12): SearchResult[] {
+function rankResults(index: SearchResult[], query: string, limit: number) {
   const q = query.trim().toLowerCase();
   if (!q || q.length < 2) return [];
 
-  return buildSearchIndex()
+  return index
     .map((result) => ({ result, score: scoreResult(result, q) }))
     .filter(({ score }) => score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, limit)
     .map(({ result }) => result);
+}
+
+export function searchSite(query: string, limit = 12): SearchResult[] {
+  return rankResults(buildSearchIndex(), query, limit);
+}
+
+export async function searchSiteAsync(query: string, limit = 12): Promise<SearchResult[]> {
+  const articles = await getPublishedArticlesMerged();
+  return rankResults(buildSearchIndex(articles), query, limit);
 }
 
 export const searchIndex = buildSearchIndex();
