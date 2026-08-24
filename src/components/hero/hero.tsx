@@ -40,8 +40,7 @@ export function Hero() {
         />
 
         <div className="absolute inset-0 bg-linear-to-t from-black/35 via-black/5 to-black/25" />
-        <div className="absolute inset-x-0 bottom-0 h-28 bg-linear-to-b from-transparent to-black/50 sm:h-32" />
-        <div className="pointer-events-none absolute inset-x-3 bottom-3 h-14 rounded-b-2xl bg-linear-to-t from-black/25 to-transparent backdrop-blur-md sm:inset-x-4 sm:bottom-4 sm:h-16 sm:rounded-b-3xl" />
+        <div className="absolute inset-x-0 bottom-0 h-32 bg-linear-to-b from-transparent to-black/45" />
 
         <div className="relative z-10 mx-auto flex w-full max-w-4xl flex-col items-center gap-4 px-4 text-center sm:gap-6 sm:px-6">
           <motion.h1
