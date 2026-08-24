@@ -189,6 +189,25 @@ body {
   padding-right: env(safe-area-inset-right, 0px);
 }
 
+@keyframes moat-orbit {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@utility animate-moat-orbit {
+  animation: moat-orbit 12s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-moat-orbit {
+    animation: none;
+  }
+}
+
 @keyframes heartbeat {
   0%,
   100% {
