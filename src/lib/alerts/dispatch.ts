@@ -1,3 +1,11 @@
+/**
+ * Multi-channel alert dispatcher.
+ *
+ * Sends alerts via Resend (email), Microsoft Teams webhook, or Twilio SMS.
+ * Called from CMS test buttons and future automated triggers (uptime, deploy, errors).
+ *
+ * Channel availability is gated by env vars — see lib/alerts/settings.ts.
+ */
 import { getAlertSettings, isResendConfigured, isTwilioConfigured } from "@/lib/alerts/settings";
 import type { AlertChannel, AlertPayload } from "@/lib/alerts/shared";
 import { siteConfig } from "@/config/site";

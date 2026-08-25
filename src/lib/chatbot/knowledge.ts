@@ -1,3 +1,14 @@
+/**
+ * Chatbot knowledge context builder.
+ *
+ * Assembles the system prompt knowledge block from:
+ * - Static company copy (config + crawl.ts)
+ * - Five marketing agents (one-line summaries)
+ * - Published CMS articles (up to 12)
+ * - Chatbot memory entries (crawled pages + uploads)
+ *
+ * CHAT_SYSTEM_RULES enforces short, crisp replies — keep answers to 1–2 sentences.
+ */
 import { agents } from "@/config/agents";
 import { officeAddress, officeHours, helpOptions } from "@/config/contact";
 import { siteConfig } from "@/config/site";

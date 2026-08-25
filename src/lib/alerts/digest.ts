@@ -1,3 +1,10 @@
+/**
+ * Weekly digest email builder and sender.
+ *
+ * Aggregates uptime snapshot + pipeline log KPIs into a summary,
+ * then dispatches via enabled alert channels (email, Teams, SMS).
+ * Called by /api/cron/digest on the Vercel cron schedule.
+ */
 import { getPipelineLogs } from "@/lib/monitoring/pipeline-logs";
 import { getUptimeRobotSnapshot } from "@/lib/monitoring/uptimerobot-query";
 import { dispatchAlert } from "@/lib/alerts/dispatch";

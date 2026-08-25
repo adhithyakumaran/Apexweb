@@ -1,3 +1,12 @@
+/**
+ * UptimeRobot API client for /admin/uptime.
+ *
+ * Fetches monitor status from the UptimeRobot REST API and maps
+ * status codes (2=up, 8/9=down, 0=paused). Results are cached
+ * to avoid hitting API rate limits on every page load.
+ *
+ * Requires UPTIMEROBOT_API_KEY. Status page URL is display-only.
+ */
 import { unstable_cache } from "next/cache";
 import {
   getUptimeRobotApiKey,

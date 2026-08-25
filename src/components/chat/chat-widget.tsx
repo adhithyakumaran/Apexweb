@@ -1,5 +1,12 @@
 "use client";
 
+/**
+ * Floating live-chat widget (public site only).
+ *
+ * Loads config from GET /api/chat/config, sends messages to POST /api/chat.
+ * Long URLs are wrapped with break-words to prevent bubble overflow.
+ * Position respects iOS safe-area insets via .safe-bottom utility.
+ */
 import { useEffect, useRef, useState } from "react";
 import { Send, X } from "lucide-react";
 import { siteConfig } from "@/config/site";

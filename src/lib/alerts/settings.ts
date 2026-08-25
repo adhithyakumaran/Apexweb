@@ -1,3 +1,10 @@
+/**
+ * Alert settings persistence — Neon singleton or local JSON fallback.
+ *
+ * Stores email recipients, Teams webhook URL, SMS number, digest schedule,
+ * and per-event toggles (uptime failure, deploy, error). Same dual-store
+ * pattern as articles-repository.ts.
+ */
 import { promises as fs } from "fs";
 import path from "path";
 import { eq } from "drizzle-orm";

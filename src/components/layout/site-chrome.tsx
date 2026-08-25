@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * Public site shell — wraps every page with theme, navbar, footer, and chat.
+ *
+ * Admin routes (`/admin/*`) skip the marketing chrome (navbar, footer, chat,
+ * loading screen) so the CMS has its own layout via AdminShell.
+ */
 import { usePathname } from "next/navigation";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { Footer } from "@/components/layout/footer";

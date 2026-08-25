@@ -1,3 +1,10 @@
+/**
+ * Groq chat completions client.
+ *
+ * Default model: qwen/qwen3.6-27b (works on most free Groq projects).
+ * Retired model IDs are auto-mapped via RETIRED_MODEL_MAP.
+ * chatWithGroq() retries with a fallback model list on 403 errors.
+ */
 const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
 /** Qwen is usually enabled on free Groq projects; GPT-OSS may need admin enablement. */

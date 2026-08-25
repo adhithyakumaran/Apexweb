@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * CMS admin layout shell — sidebar navigation, header, and content area.
+ *
+ * Nav sections and routes are defined in `navSections` below.
+ * Add new CMS pages here when creating admin features.
+ */
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {

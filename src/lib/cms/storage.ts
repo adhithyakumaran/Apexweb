@@ -1,3 +1,9 @@
+/**
+ * CMS file upload routing.
+ *
+ * Production (Vercel): uploads go to Cloudflare R2 — local disk is read-only.
+ * Local dev: files save to public/uploads/cms/ when R2 is not configured.
+ */
 import { promises as fs } from "fs";
 import path from "path";
 import { isR2Configured, uploadToR2 } from "@/lib/cms/r2";

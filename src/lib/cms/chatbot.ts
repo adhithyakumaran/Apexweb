@@ -1,3 +1,10 @@
+/**
+ * Chatbot CMS persistence — settings singleton + memory entries.
+ *
+ * Settings (model, prompt, tone, crawl config) live in cms_chatbot_settings.
+ * Memory (crawled pages, uploads) lives in cms_chatbot_memory.
+ * Falls back to data/cms-chatbot.json locally when DATABASE_URI is unset.
+ */
 import { promises as fs } from "fs";
 import path from "path";
 import { desc, eq } from "drizzle-orm";

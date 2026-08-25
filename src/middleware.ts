@@ -1,3 +1,12 @@
+/**
+ * CMS route protection middleware.
+ *
+ * Guards all `/admin/*` pages and `/api/cms/*` routes. Unauthenticated
+ * browser requests redirect to `/admin/login`; API requests return 401.
+ *
+ * Session verification uses edge-compatible HMAC checks in auth-edge.ts.
+ * Login and logout routes are explicitly excluded from the guard.
+ */
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { COOKIE_NAME, verifyCmsTokenAsync } from "@/lib/cms/auth-edge";

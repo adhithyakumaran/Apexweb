@@ -1,3 +1,15 @@
+/**
+ * Drizzle ORM schema for all CMS-backed tables.
+ *
+ * Tables:
+ * - cms_articles        — marketing articles (draft + published)
+ * - cms_activity_logs   — audit trail for CMS actions
+ * - cms_chatbot_settings — singleton chatbot configuration
+ * - cms_chatbot_memory  — crawled pages and uploaded knowledge for chat
+ * - cms_alert_settings  — singleton alert channel configuration
+ *
+ * Run `npm run db:push` after schema changes. Migrations live in drizzle/.
+ */
 import { pgTable, serial, text, varchar, boolean, integer, timestamp, jsonb } from "drizzle-orm/pg-core";
 import type { ArticleContent } from "@/config/articles";
 

@@ -1,3 +1,11 @@
+/**
+ * CMS session authentication (Node.js runtime).
+ *
+ * Password login sets an HMAC-signed httpOnly cookie (8-hour TTL).
+ * Edge middleware uses auth-edge.ts for the same verification logic.
+ *
+ * Set PAYLOAD_SECRET in production — never rely on the dev fallback.
+ */
 import { createHmac, timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
 

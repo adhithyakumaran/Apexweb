@@ -1,3 +1,9 @@
+/**
+ * Edge-compatible CMS session verification for middleware.
+ *
+ * Mirrors the HMAC logic in auth.ts but uses Web Crypto API so it
+ * runs in the Next.js Edge runtime. Keep both files in sync.
+ */
 const COOKIE_NAME = "apex_cms_session";
 
 function getSecret() {

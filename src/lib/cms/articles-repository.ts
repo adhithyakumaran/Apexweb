@@ -1,3 +1,11 @@
+/**
+ * Article persistence layer — Neon PostgreSQL with local JSON fallback.
+ *
+ * When DATABASE_URI is unset (local dev), articles read/write from
+ * data/cms-articles.json. On Vercel, Neon is required.
+ *
+ * Seed articles from config/articles.ts are merged on first load.
+ */
 import { promises as fs } from "fs";
 import path from "path";
 import { eq, desc } from "drizzle-orm";

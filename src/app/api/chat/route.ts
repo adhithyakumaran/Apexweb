@@ -1,3 +1,10 @@
+/**
+ * Public chat API — POST /api/chat
+ *
+ * Accepts up to 10 recent messages, builds a knowledge context from CMS
+ * settings + memory + published articles, and returns a short Groq reply.
+ * Returns 503 when GROQ_API_KEY is missing or chatbot is disabled in CMS.
+ */
 import { NextResponse } from "next/server";
 import { getChatbotSettings } from "@/lib/cms/chatbot";
 import { chatWithGroq, isGroqConfigured, parseHumanHandoff } from "@/lib/chatbot/groq";

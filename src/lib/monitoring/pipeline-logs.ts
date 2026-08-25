@@ -1,3 +1,15 @@
+/**
+ * Pipeline logs aggregator for /admin/logs.
+ *
+ * Merges multiple operational streams into a unified timeline:
+ * - CMS activity logs (database)
+ * - Sentry issues (optional)
+ * - Vercel deployments (optional)
+ * - GitHub commits (optional)
+ * - HTTP health probe (always)
+ *
+ * Results are cached via unstable_cache. Export helpers live in pipeline-logs-shared.ts.
+ */
 import { unstable_cache } from "next/cache";
 import { getVisitorAnalytics } from "@/lib/analytics/posthog-query";
 import { isPostHogQueryConfigured } from "@/lib/analytics/posthog-config";
