@@ -1,49 +1,123 @@
 "use client";
 
-import { ContactForm } from "@/components/forms/contact-form";
-import { ContactInfoColumn } from "@/components/contact/contact-info-column";
-import { ContactShell } from "@/components/contact/contact-shell";
-import { CardReveal } from "@/components/animations/scroll-reveal";
+import Link from "next/link";
 import { motion, useReducedMotion } from "motion/react";
+import { ArrowRight, Mail, Phone, MessageCircle, Sparkles } from "lucide-react";
+import { siteConfig } from "@/config/site";
+import { getWhatsAppLink } from "@/lib/utils/whatsapp";
+import {
+  StaggerItem,
+  StaggerReveal,
+} from "@/components/animations/scroll-reveal";
 import { smoothEase } from "@/components/animations/motion-presets";
+import { Button } from "@/components/ui/button";
+import { tryItCta } from "@/config/navigation";
+import { useAiAssistantOptional } from "@/components/ai/ai-context";
+import { AiAnswerEngineCard } from "@/components/sections/ai-answer-engine";
+
+const methods = [
+  {
+    label: "Email",
+    value: siteConfig.contact.email,
+    href: `mailto:${siteConfig.contact.email}`,
+    icon: Mail,
+  },
+  {
+    label: "Phone",
+    value: siteConfig.contact.phone,
+    href: `tel:${siteConfig.contact.phone.replace(/\s+/g, "")}`,
+    icon: Phone,
+  },
+  {
+    label: "WhatsApp",
+    value: "Message us",
+    href: getWhatsAppLink(),
+    icon: MessageCircle,
+  },
+];
 
 export function Contact() {
   const prefersReducedMotion = useReducedMotion();
+  const ai = useAiAssistantOptional();
 
   return (
     <section
       id="contact"
-      className="relative w-full overflow-x-clip bg-surface px-3 py-16 sm:px-6 sm:py-24 lg:px-10"
+      className="relative w-full overflow-hidden px-4 py-24 sm:px-6 lg:px-10"
     >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,color-mix(in_oklab,var(--brand-orange)_14%,transparent),transparent_42%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,transparent,rgba(255,255,255,0.35))] dark:bg-[linear-gradient(to_bottom,transparent,rgba(10,14,23,0.35))]" />
-
       <div className="relative mx-auto max-w-350">
         <motion.div
-          initial={prefersReducedMotion ? false : { opacity: 0, y: 28 }}
+          className="mx-auto max-w-3xl text-center"
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 24 }}
           whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.4 }}
-          transition={{ duration: 0.75, ease: smoothEase }}
-          className="max-w-2xl"
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.65, ease: smoothEase }}
         >
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-orange">
-            Get in touch
-          </p>
-          <h2 className="mt-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+          <h2 className="text-3xl font-normal tracking-tight text-foreground sm:text-4xl lg:text-5xl">
             Ship faster with a QA partner that moves at your pace
           </h2>
           <p className="mt-4 text-base leading-relaxed text-muted-foreground sm:text-lg">
-            From agentic test coverage to enterprise rollout — tell us where you are today and
-            we&apos;ll map the shortest path to reliable releases.
+            Let&apos;s discuss your QA workflow, current testing stack, and where
+            agentic automation can help.
           </p>
         </motion.div>
 
-        <CardReveal delay={0.25} className="mt-14">
-          <ContactShell
-            info={<ContactInfoColumn />}
-            form={<ContactForm variant="panel" />}
-          />
-        </CardReveal>
+        <div className="mt-14 grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-12">
+          <StaggerReveal className="flex flex-col gap-4" stagger={0.08}>
+            {methods.map((m) => {
+              const Icon = m.icon;
+              const isExternal = m.href.startsWith("http");
+              return (
+                <StaggerItem key={m.label}>
+                  <a
+                    href={m.href}
+                    target={isExternal ? "_blank" : undefined}
+                    rel={isExternal ? "noopener noreferrer" : undefined}
+                    className="group flex items-center gap-4 rounded-2xl border border-border bg-card/80 p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-md"
+                  >
+                    <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                      <Icon className="size-5" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-foreground">{m.label}</p>
+                      <p className="truncate text-sm text-muted-foreground">{m.value}</p>
+                    </div>
+                    <ArrowRight className="size-4 shrink-0 text-primary opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" />
+                  </a>
+                </StaggerItem>
+              );
+            })}
+
+            <StaggerItem>
+              <div className="flex flex-wrap gap-3 pt-2">
+                <Button asChild size="lg">
+                  <Link href={tryItCta.href}>Talk to Apex Node</Link>
+                </Button>
+                {ai && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="lg"
+                    className="gap-2"
+                    onClick={() => ai.openPanel()}
+                  >
+                    <Sparkles className="size-4" />
+                    Ask AI
+                  </Button>
+                )}
+              </div>
+            </StaggerItem>
+          </StaggerReveal>
+
+          <motion.div
+            initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
+            whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.25 }}
+            transition={{ duration: 0.65, ease: smoothEase }}
+          >
+            <AiAnswerEngineCard compact />
+          </motion.div>
+        </div>
       </div>
     </section>
   );

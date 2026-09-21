@@ -1,57 +1,94 @@
 "use client";
 
 import { motion, useReducedMotion } from "motion/react";
-import { partners } from "@/config/partners";
-import { PartnerWordmark } from "@/components/sections/partner-wordmark";
-import { SectionHeader } from "@/components/animations/section-header";
 import { smoothEase } from "@/components/animations/motion-presets";
+import { cn } from "@/lib/utils";
+
+const partners = [
+  "Geetham Enterprises",
+  "SwayUp Software Agency",
+  "Prowess IQ Pvt Ltd",
+  "BorrowBox",
+  "Grewbie Technologies",
+];
+
+const rowOne = [...partners, ...partners];
+const rowTwo = [...partners.slice().reverse(), ...partners.slice().reverse()];
+
+function MarqueeRow({
+  items,
+  direction,
+  className,
+}: {
+  items: string[];
+  direction: "left" | "right";
+  className?: string;
+}) {
+  const prefersReducedMotion = useReducedMotion();
+
+  return (
+    <div
+      className={cn("relative w-full overflow-hidden", className)}
+      aria-hidden="true"
+    >
+      <div
+        className={cn(
+          "flex w-max items-center gap-12 sm:gap-16",
+          !prefersReducedMotion &&
+            (direction === "left" ? "animate-marquee-left" : "animate-marquee-right"),
+          "motion-reduce:transform-none"
+        )}
+      >
+        {items.map((name, i) => (
+          <span
+            key={`${name}-${i}`}
+            className="shrink-0 text-xl font-semibold tracking-tight text-foreground/65 sm:text-2xl"
+          >
+            {name}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export function TrustedPartners() {
   const prefersReducedMotion = useReducedMotion();
 
   return (
-    <section className="relative w-full bg-background px-4 py-24 sm:px-6 lg:px-10">
-      <div className="relative mx-auto max-w-350">
-        <SectionHeader
-          delay={0.2}
-          title={
-            <>
-              Built for modern, client-obsessed,{" "}
-              <br className="hidden sm:block" />
-              revenue-responsible delivery teams
-            </>
-          }
-        />
-
-        <motion.div
-          className="mt-16"
-          initial={prefersReducedMotion ? false : { opacity: 0, y: 36 }}
+    <section className="w-full overflow-hidden pb-28 pt-20" aria-labelledby="partners-heading">
+      <div className="mx-auto max-w-350 px-4 text-center sm:px-6 lg:px-10">
+        <motion.p
+          id="partners-heading"
+          className="mx-auto max-w-2xl text-2xl font-normal leading-snug tracking-tight text-foreground sm:text-3xl lg:text-4xl"
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 28 }}
           whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.85, delay: 0.45, ease: smoothEase }}
+          viewport={{ once: true, amount: 0.5 }}
+          transition={{ duration: 0.7, ease: smoothEase }}
         >
-          <div className="overflow-hidden rounded-2xl border border-border/70 bg-surface/40">
-            <div className="grid grid-cols-2 divide-x divide-y divide-border/70 md:grid-cols-3">
-              {partners.map((partner, index) => (
-                <motion.div
-                  key={partner.id}
-                  className="group flex h-36 items-center justify-center bg-background px-5 transition-colors duration-500 hover:bg-surface sm:h-40"
-                  initial={prefersReducedMotion ? false : { opacity: 0, y: 24 }}
-                  whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.2 }}
-                  transition={{
-                    duration: 0.75,
-                    delay: 0.55 + index * 0.1,
-                    ease: smoothEase,
-                  }}
-                >
-                  <PartnerWordmark id={partner.id} />
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </motion.div>
+          Built for modern, client-obsessed, <br className="hidden sm:block" />
+          revenue-responsible delivery teams
+        </motion.p>
+        <p className="sr-only">
+          Partner organizations: {partners.join(", ")}
+        </p>
       </div>
+
+      <motion.div
+        className="group relative mt-16 space-y-6"
+        initial={prefersReducedMotion ? false : { opacity: 0 }}
+        whileInView={prefersReducedMotion ? undefined : { opacity: 1 }}
+        viewport={{ once: true, amount: 0.3 }}
+        transition={{ duration: 0.8, delay: 0.1, ease: smoothEase }}
+      >
+        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-linear-to-r from-background to-transparent sm:w-24" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-linear-to-l from-background to-transparent sm:w-24" />
+
+        <div className="transition-[filter] duration-300 group-hover:[&_.animate-marquee-left]:[animation-play-state:paused] group-hover:[&_.animate-marquee-right]:[animation-play-state:paused]">
+          <MarqueeRow items={rowOne} direction="left" />
+          <MarqueeRow items={rowTwo} direction="right" className="mt-4 opacity-80" />
+        </div>
+      </motion.div>
     </section>
   );
 }

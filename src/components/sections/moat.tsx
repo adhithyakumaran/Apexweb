@@ -1,23 +1,23 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import {
   motion,
-  useScroll,
-  useTransform,
-  useSpring,
   useMotionValue,
+  useTransform,
+  animate,
+  useInView,
   useReducedMotion,
   type MotionValue,
 } from "motion/react";
 import { moatPillars } from "@/config/moat";
-import { SectionHeader } from "@/components/animations/section-header";
 
 const CENTER = 50;
 const OUTER_RADIUS = 44;
 const INNER_RADIUS = 16;
-const SPIRAL_DEG = 48;
-const STAGGER = 0.11;
+const SPIRAL_DEG = 55;
+const STAGGER = 0.09;
+const BRAND_ORANGE = "#f97316";
 
 function toRad(deg: number) {
   return (deg * Math.PI) / 180;
@@ -38,7 +38,9 @@ function hexPoints(cx: number, cy: number, r: number) {
 }
 
 function useStaggeredT(lock: MotionValue<number>, index: number) {
-  return useTransform(lock, (t) => clamp01((t - index * STAGGER) / (1 - index * STAGGER)));
+  return useTransform(lock, (t) =>
+    clamp01((t - index * STAGGER) / (1 - index * STAGGER))
+  );
 }
 
 function useNodePosition(baseAngle: number, localT: MotionValue<number>) {
@@ -63,8 +65,8 @@ function ConnectingLine({
   localT: MotionValue<number>;
 }) {
   const { x, y } = useNodePosition(angle, localT);
-  const pathLength = useTransform(localT, [0, 0.4], [0, 1], { clamp: true });
-  const opacity = useTransform(localT, [0, 0.1, 1], [0, 0.5, 0.8]);
+  const pathLength = useTransform(localT, [0, 0.35], [0, 1], { clamp: true });
+  const opacity = useTransform(localT, [0, 0.08, 1], [0, 0.45, 0.65]);
 
   return (
     <motion.line
@@ -83,45 +85,44 @@ function ConnectingLine({
 function Node({
   pillar,
   localT,
-  lock,
 }: {
   pillar: (typeof moatPillars)[number];
   localT: MotionValue<number>;
-  lock: MotionValue<number>;
 }) {
   const { x, y } = useNodePosition(pillar.angle, localT);
   const Icon = pillar.icon;
   const left = useTransform(x, (v) => `${v}%`);
   const top = useTransform(y, (v) => `${v}%`);
-  const labelOpacity = useTransform(localT, [0, 0.25, 1], [0.3, 0.75, 1]);
-
-  const ringGlow = useTransform(localT, [0.6, 0.95], [0, 1]);
-  const lockFlash = useTransform(localT, [0.88, 1], [0, 1]);
-  const boxShadow = useTransform([ringGlow, lockFlash] as MotionValue<number>[], ([g, f]: number[]) => {
-    const blue = `0 0 ${6 + g * 16}px ${g * 2}px color-mix(in oklab, var(--primary) 50%, transparent)`;
-    const orange = `0 0 ${f * 22}px ${f * 4}px color-mix(in oklab, var(--brand-orange) 65%, transparent)`;
-    return `${blue}, ${orange}`;
-  });
-  const borderColor = useTransform(lockFlash, (f) =>
-    `color-mix(in oklab, var(--brand-orange) ${f * 75}%, var(--primary))`
+  const labelOpacity = useTransform(localT, [0, 0.2, 1], [0.5, 0.85, 1]);
+  const ringGlow = useTransform(localT, [0.65, 0.9], [0, 1]);
+  const lockFlash = useTransform(localT, [0.9, 1], [0, 1]);
+  const boxShadow = useTransform(
+    [ringGlow, lockFlash] as MotionValue<number>[],
+    ([g, f]: number[]) => {
+      const blue = `0 0 ${8 + g * 14}px ${g * 2}px color-mix(in oklab, var(--primary) 45%, transparent)`;
+      const orange = `0 0 ${f * 22}px ${f * 4}px color-mix(in oklab, ${BRAND_ORANGE} 55%, transparent)`;
+      return `${blue}, ${orange}`;
+    }
   );
-  const scale = useTransform(localT, [0, 0.2, 0.85, 1], [0.8, 1.04, 1, 1.06]);
-  const floatY = useTransform(lock, [0.95, 1], [0, -4]);
+  const borderColor = useTransform(lockFlash, (f) =>
+    `color-mix(in oklab, ${BRAND_ORANGE} ${f * 70}%, var(--primary))`
+  );
+  const scale = useTransform(localT, [0, 0.15, 0.9, 1], [0.85, 1.04, 1, 1.05]);
 
   return (
     <motion.div
-      style={{ left, top, scale, y: floatY }}
+      style={{ left, top, scale }}
       className="absolute z-10 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-2"
     >
       <motion.div
         style={{ boxShadow, borderColor }}
-        className="flex size-14 items-center justify-center rounded-full border bg-linear-to-b from-secondary to-footer text-primary sm:size-16"
+        className="flex size-14 items-center justify-center rounded-full border border-border bg-card text-primary shadow-sm sm:size-16"
       >
         <Icon className="size-6 sm:size-7" />
       </motion.div>
       <motion.p
         style={{ opacity: labelOpacity }}
-        className="max-w-[8rem] text-center text-xs font-semibold leading-tight text-footer-muted sm:text-sm"
+        className="max-w-[8.5rem] text-center text-xs font-semibold leading-tight text-foreground sm:text-sm"
       >
         {pillar.label}
       </motion.p>
@@ -129,87 +130,118 @@ function Node({
   );
 }
 
-function RadarPulses({ lock }: { lock: MotionValue<number> }) {
-  const opacity = useTransform(lock, [0.88, 1], [0, 1]);
-  return (
-    <motion.div
-      style={{ opacity }}
-      className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-    >
-      {[0, 0.6, 1.2].map((delay) => (
-        <span
-          key={delay}
-          style={{ animationDelay: `${delay}s` }}
-          className="absolute left-1/2 top-1/2 size-16 -translate-x-1/2 -translate-y-1/2 animate-ping rounded-full border-2 border-brand-orange opacity-50 sm:size-20"
-        />
-      ))}
-    </motion.div>
-  );
+function MoatLineLayer({
+  lock,
+  index,
+  pillar,
+}: {
+  lock: MotionValue<number>;
+  index: number;
+  pillar: (typeof moatPillars)[number];
+}) {
+  const localT = useStaggeredT(lock, index);
+  return <ConnectingLine angle={pillar.angle} localT={localT} />;
+}
+
+function MoatNodeLayer({
+  lock,
+  index,
+  pillar,
+}: {
+  lock: MotionValue<number>;
+  index: number;
+  pillar: (typeof moatPillars)[number];
+}) {
+  const localT = useStaggeredT(lock, index);
+  return <Node pillar={pillar} localT={localT} />;
 }
 
 export function Moat() {
   const sectionRef = useRef<HTMLElement>(null);
   const prefersReducedMotion = useReducedMotion();
+  const inView = useInView(sectionRef, { once: true, amount: 0.35 });
+  const lock = useMotionValue(0);
+  const hasPlayed = useRef(false);
 
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start 0.9", "end 0.4"],
-  });
+  useEffect(() => {
+    if (!inView) return;
+    if (hasPlayed.current) return;
+    hasPlayed.current = true;
+    if (prefersReducedMotion) {
+      lock.set(1);
+      return;
+    }
+    void animate(lock, 1, { duration: 2.8, ease: [0.22, 1, 0.36, 1] });
+  }, [inView, lock, prefersReducedMotion]);
 
-  const rawLock = useTransform(scrollYProgress, [0, 1], [0, 1], { clamp: true });
-  const smoothLock = useSpring(rawLock, { stiffness: 80, damping: 22, mass: 0.8 });
-  const staticLock = useMotionValue(1);
-  const lock = prefersReducedMotion ? staticLock : smoothLock;
-
-  const gridTilt = useTransform(lock, [0, 1], [6, 0]);
-  const gridOpacity = useTransform(lock, [0, 1], [0.1, 0.24]);
-  const sealScale = useTransform(lock, [0.45, 0.8, 1], [0.35, 0.92, 1]);
-  const sealOpacity = useTransform(lock, [0.35, 0.7, 1], [0, 0.55, 1]);
+  const sealScale = useTransform(lock, [0.5, 0.85, 1], [0.4, 0.92, 1]);
+  const sealOpacity = useTransform(lock, [0.4, 0.75, 1], [0, 0.55, 1]);
   const sealRotate = useTransform(lock, [0, 1], [-24, 0]);
-  const glowOpacity = useTransform(lock, [0.7, 1], [0, 0.75]);
-  const glowColor = useTransform(lock, [0.7, 1], ["var(--primary)", "var(--brand-orange)"]);
-  const captionOpacity = useTransform(lock, [0.9, 1], [0, 1]);
-  const captionY = useTransform(lock, [0.9, 1], [10, 0]);
-  const ringRotate = useTransform(lock, [0, 1], [0, 120]);
+  const innerFill = useTransform(lock, [0.75, 1], [0.08, 0.2]);
+  const glowOpacity = useTransform(lock, [0.75, 1], [0, 0.5]);
+  const captionOpacity = useTransform(lock, [0.92, 1], [0, 1]);
+  const captionY = useTransform(lock, [0.92, 1], [8, 0]);
+  const gridOpacity = useTransform(lock, [0, 1], [0.08, 0.22]);
 
   return (
     <section
       ref={sectionRef}
-      className="dark relative w-full overflow-hidden bg-footer py-16 sm:py-28 lg:py-36"
+      className="relative w-full overflow-hidden py-24 sm:py-32"
     >
-      <div className="pointer-events-none absolute left-1/2 top-1/3 h-[min(100vw,600px)] w-[min(100vw,600px)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/8 blur-[140px]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,color-mix(in_oklab,var(--primary)_8%,transparent),transparent_55%)]" />
 
-      <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-10">
-        <SectionHeader
-          variant="dark"
-          eyebrow="The Apex Moat"
-          title="Four defenses. One core."
-          description="Every layer of Apex Node closes a different gap in enterprise QA — and they only work because they work together."
-          delay={0.2}
-        />
-
-        <motion.div
-          style={{ rotateX: gridTilt, perspective: 1000 }}
-          className="relative mx-auto mt-12 w-full max-w-[min(100%,600px)] aspect-square sm:mt-20"
-        >
-          <motion.div
-            style={{ rotate: ringRotate }}
-            className="absolute inset-0 rounded-full border border-dashed border-primary/20"
+      <div className="relative mx-auto max-w-6xl px-6 lg:px-10">
+        <div className="mx-auto max-w-2xl text-center">
+          <p
+            className="text-sm font-medium uppercase tracking-[0.2em]"
+            style={{ color: BRAND_ORANGE }}
           >
-            <span className="absolute left-1/2 top-0 size-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand-orange shadow-[0_0_10px_2px_var(--brand-orange)]" />
-          </motion.div>
+            The Apex Moat
+          </p>
+          <h2 className="mt-4 text-3xl font-normal tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+            Four defenses. One core.
+          </h2>
+          <p className="mt-4 text-base leading-relaxed text-muted-foreground">
+            Every layer of Apex Node closes a different gap in enterprise QA —
+            and they only work because they work together.
+          </p>
+        </div>
+
+        <div className="relative mx-auto mt-16 aspect-square w-full max-w-[600px]">
+          <div
+            className="pointer-events-none absolute inset-0 animate-[spin_40s_linear_infinite] motion-reduce:animate-none"
+            aria-hidden="true"
+          >
+            <div className="absolute inset-0 rounded-full border border-dashed border-primary/20" />
+            <span
+              style={{
+                background: BRAND_ORANGE,
+                boxShadow: `0 0 12px 3px color-mix(in oklab, ${BRAND_ORANGE} 65%, transparent)`,
+              }}
+              className="absolute left-1/2 top-0 size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full"
+            />
+          </div>
 
           <motion.div
             style={{ opacity: gridOpacity }}
-            className="absolute inset-0 rounded-full [background-image:linear-gradient(to_right,color-mix(in_oklab,var(--border)_60%,transparent)_1px,transparent_1px),linear-gradient(to_bottom,color-mix(in_oklab,var(--border)_60%,transparent)_1px,transparent_1px)] [background-size:12%_12%]"
+            className="absolute inset-[8%] rounded-full [background-image:linear-gradient(to_right,color-mix(in_oklab,var(--border)_80%,transparent)_1px,transparent_1px),linear-gradient(to_bottom,color-mix(in_oklab,var(--border)_80%,transparent)_1px,transparent_1px)] [background-size:14%_14%]"
           />
 
-          <svg viewBox="0 0 100 100" className="absolute inset-0 h-full w-full overflow-visible">
-            {moatPillars.map((pillar, i) => {
-              const localT = useStaggeredT(lock, i);
-              return <ConnectingLine key={pillar.id} angle={pillar.angle} localT={localT} />;
-            })}
-            <motion.g style={{ scale: sealScale, opacity: sealOpacity, rotate: sealRotate }}>
+          <svg
+            viewBox="0 0 100 100"
+            className="absolute inset-[8%] left-[8%] h-[84%] w-[84%] overflow-visible"
+          >
+            {moatPillars.map((pillar, i) => (
+              <MoatLineLayer
+                key={pillar.id}
+                lock={lock}
+                index={i}
+                pillar={pillar}
+              />
+            ))}
+            <motion.g
+              style={{ scale: sealScale, opacity: sealOpacity, rotate: sealRotate }}
+            >
               <polygon
                 points={hexPoints(CENTER, CENTER, 11)}
                 fill="none"
@@ -218,30 +250,34 @@ export function Moat() {
               />
               <motion.polygon
                 points={hexPoints(CENTER, CENTER, 7)}
-                fill="var(--brand-orange)"
-                style={{ fillOpacity: useTransform(lock, [0.7, 1], [0.05, 0.2]) }}
-                stroke="var(--brand-orange)"
+                fill={BRAND_ORANGE}
+                style={{ fillOpacity: innerFill }}
+                stroke={BRAND_ORANGE}
                 strokeWidth={0.45}
               />
             </motion.g>
           </svg>
 
           <motion.div
-            style={{ opacity: glowOpacity, background: glowColor }}
-            className="absolute left-1/2 top-1/2 h-44 w-44 -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl"
+            style={{ opacity: glowOpacity }}
+            className="pointer-events-none absolute left-1/2 top-1/2 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/25 blur-3xl"
           />
 
-          <RadarPulses lock={lock} />
-
-          {moatPillars.map((pillar, i) => {
-            const localT = useStaggeredT(lock, i);
-            return <Node key={pillar.id} pillar={pillar} localT={localT} lock={lock} />;
-          })}
-        </motion.div>
+          <div className="absolute inset-[8%]">
+            {moatPillars.map((pillar, i) => (
+              <MoatNodeLayer
+                key={`node-${pillar.id}`}
+                lock={lock}
+                index={i}
+                pillar={pillar}
+              />
+            ))}
+          </div>
+        </div>
 
         <motion.p
-          style={{ opacity: captionOpacity, y: captionY }}
-          className="mt-10 text-center text-sm font-medium uppercase tracking-[0.2em] text-brand-orange"
+          style={{ opacity: captionOpacity, y: captionY, color: BRAND_ORANGE }}
+          className="mt-10 text-center text-sm font-medium uppercase tracking-[0.2em]"
         >
           One integrated defense system
         </motion.p>
