@@ -5,6 +5,7 @@ import { Footer } from "@/components/layout/footer";
 import { LoadingScreen } from "@/components/layout/loading-screen";
 
 import { Navbar } from "@/components/navigation/navbar";
+import { AiShell } from "@/components/layout/ai-shell";
 import "./globals.css";
 
 const jakarta = Plus_Jakarta_Sans({
@@ -32,14 +33,16 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col font-sans" suppressHydrationWarning>
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="light"
           enableSystem
           disableTransitionOnChange
         >
           <LoadingScreen />
-          <Navbar />
-          {children}
-          <Footer />
+          <AiShell>
+            <Navbar />
+            {children}
+            <Footer />
+          </AiShell>
         </ThemeProvider>
       </body>
     </html>

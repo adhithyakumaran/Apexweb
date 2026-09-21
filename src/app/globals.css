@@ -5,8 +5,8 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  /* Base surfaces */
-  --background: #ffffff;
+  /* Base surfaces — subtle cool lavender (enterprise light) */
+  --background: #f7f7fc;
   --foreground: #0a0e17;
 
   /* Brand */
@@ -16,12 +16,12 @@
   --secondary-foreground: #ffffff;
 
   /* Surfaces & muted tones */
-  --surface: #f8fafc;
-  --muted: #f1f5f9;
-  --muted-foreground: #64748b;
+  --surface: #f3f3f9;
+  --muted: #ececf5;
+  --muted-foreground: #5c6478;
 
   /* Structure */
-  --border: #e2e8f0;
+  --border: #e4e4ef;
   --accent: #dbeafe;
   --accent-foreground: #1e3a8a;
 
@@ -42,9 +42,9 @@
   --error: #dc2626;
 
   /* shadcn component tokens (card, popover, forms) */
-  --card: #ffffff;
+  --card: #fcfcff;
   --card-foreground: #0a0e17;
-  --popover: #ffffff;
+  --popover: #fcfcff;
   --popover-foreground: #0a0e17;
   --destructive: #dc2626;
   --input: #e2e8f0;
@@ -181,4 +181,37 @@ body {
 
 @utility animate-heartbeat {
   animation: heartbeat 1.4s ease-in-out infinite;
+}
+
+@keyframes marquee-left {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes marquee-right {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@utility animate-marquee-left {
+  animation: marquee-left 45s linear infinite;
+}
+
+@utility animate-marquee-right {
+  animation: marquee-right 50s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee-left,
+  .animate-marquee-right {
+    animation: none;
+  }
 }

@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { motion, useReducedMotion } from "motion/react";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { AgentCursor } from "@/components/hero/agent-cursor";
+import { AiAnswerEngineCard } from "@/components/sections/ai-answer-engine";
 import { tryItCta, whatsappCta } from "@/config/navigation";
 import { getWhatsAppLink } from "@/lib/utils/whatsapp";
 import { smoothEase } from "@/components/animations/motion-presets";
@@ -18,76 +17,66 @@ export function Hero() {
     prefersReducedMotion
       ? {}
       : {
-          initial: { opacity: 0, y: 36 },
+          initial: { opacity: 0, y: 28 },
           animate: { opacity: 1, y: 0 },
-          transition: { duration: 0.75, delay, ease: smoothEase },
+          transition: { duration: 0.7, delay, ease: smoothEase },
         };
 
   return (
-    <section className="w-full px-4 pt-2 sm:px-6 sm:pt-3 lg:px-10 lg:pt-4">
-      <motion.div
-        className="relative flex h-[85vh] min-h-140 w-full cursor-none items-center justify-center overflow-hidden rounded-3xl bg-secondary"
-        initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.98 }}
-        animate={prefersReducedMotion ? undefined : { opacity: 1, scale: 1 }}
-        transition={{ duration: 0.9, ease: smoothEase }}
-      >
-        <AgentCursor />
-
-        <Image
-          src="/images/hero/hero-new-bg.png"
-          alt=""
-          fill
-          priority
-          className="object-cover transition-transform duration-[1200ms] ease-out hover:scale-105"
-        />
-
-        <div className="absolute inset-0 bg-linear-to-t from-black/35 via-black/5 to-black/25" />
-        <div className="absolute inset-x-0 bottom-0 h-32 bg-linear-to-b from-transparent to-black/45" />
-
-        <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center gap-6 px-6 text-center">
-          <motion.h1
-            {...fadeUp(0.15)}
-            className="text-4xl font-semibold leading-[1.15] tracking-tight text-white [text-shadow:0_2px_20px_rgba(0,0,0,0.35)] sm:text-5xl lg:text-6xl"
+    <section className="w-full px-4 pt-6 sm:px-6 lg:px-10 lg:pt-10">
+      <div className="mx-auto grid max-w-350 grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-14">
+        <motion.div
+          className="flex flex-col gap-6"
+          initial={prefersReducedMotion ? false : { opacity: 0 }}
+          animate={prefersReducedMotion ? undefined : { opacity: 1 }}
+          transition={{ duration: 0.6, ease: smoothEase }}
+        >
+          <motion.p
+            {...fadeUp(0.05)}
+            className="text-sm font-medium uppercase tracking-[0.2em] text-muted-foreground"
           >
-            Accelerate Software Quality with AI-Powered Testing Agents.
+            Enterprise agentic QA
+          </motion.p>
+          <motion.h1
+            {...fadeUp(0.12)}
+            className="text-4xl font-semibold leading-[1.12] tracking-tight text-foreground sm:text-5xl lg:text-[3.25rem]"
+          >
+            Accelerate software quality with AI-powered testing agents.
           </motion.h1>
 
           <motion.p
-            {...fadeUp(0.3)}
-            className="max-w-2xl text-lg text-white/90 [text-shadow:0_1px_12px_rgba(0,0,0,0.35)]"
+            {...fadeUp(0.22)}
+            className="max-w-xl text-lg leading-relaxed text-muted-foreground"
           >
-            Autonomous testing agents that turn complex QA workflows into
-            faster, smarter, and more reliable validation.
+            Autonomous testing agents that turn complex QA workflows into faster,
+            smarter, and more reliable validation—built for modern delivery teams.
           </motion.p>
 
           <motion.div
-            {...fadeUp(0.45)}
-            className="mt-2 flex flex-wrap items-center justify-center gap-4"
+            {...fadeUp(0.32)}
+            className="flex flex-wrap items-center gap-4"
           >
-            <Button
-              asChild
-              size="xl"
-              className="border-2 border-white bg-transparent text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/10"
-            >
+            <Button asChild size="xl">
+              <Link href={tryItCta.href}>
+                Book a demo
+                <ArrowRight className="size-4" />
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="xl">
               <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
                 {whatsappCta.label}
               </a>
             </Button>
-            <Button
-              asChild
-              size="xl"
-              className="gap-3 border-0 bg-white pr-2 text-black transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/90"
-            >
-              <Link href={tryItCta.href}>
-                Book a demo
-                <span className="flex size-8 items-center justify-center rounded-full bg-primary text-white transition-transform duration-300 group-hover/button:translate-x-0.5">
-                  <ArrowRight className="size-4" />
-                </span>
-              </Link>
-            </Button>
           </motion.div>
-        </div>
-      </motion.div>
+        </motion.div>
+
+        <motion.div
+          {...fadeUp(0.2)}
+          className="w-full lg:max-w-lg lg:justify-self-end"
+        >
+          <AiAnswerEngineCard />
+        </motion.div>
+      </div>
     </section>
   );
 }
