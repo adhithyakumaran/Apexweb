@@ -5,11 +5,13 @@ import { Moat } from "@/components/sections/moat";
 import { Testimonials } from "@/components/sections/testimonials";
 import { ScrollReveal } from "@/components/animations/scroll-reveal";
 import { Contact } from "@/components/sections/contact";
+import { FloatingAiTrigger } from "@/components/ai/floating-ai-trigger";
 
 export default function Home() {
   return (
     <main className="overflow-x-hidden">
       <Hero />
+      <FloatingAiTrigger />
       <ScrollReveal delay={0.05}>
         <TrustedPartners />
       </ScrollReveal>

@@ -1,46 +1,46 @@
+"use client";
+
 import Link from "next/link";
-import { ChevronDown } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { MobileNav } from "@/components/navigation/mobile-nav";
-import { SearchBar } from "@/components/navigation/search-bar";
+import { DesktopMegaNav } from "@/components/navigation/mega-menu";
 import { Logo } from "@/components/navigation/logo";
-import { mainNav, tryItCta, whatsappCta } from "@/config/navigation";
+import { tryItCta, whatsappCta } from "@/config/navigation";
 import { getWhatsAppLink } from "@/lib/utils/whatsapp";
-
-const dropdownItems = new Set(["Pricing", "Services"]);
+import { useAiAssistantOptional } from "@/components/ai/ai-context";
 
 export function Navbar() {
   const whatsappHref = getWhatsAppLink();
+  const ai = useAiAssistantOptional();
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-md transition-colors duration-300">
-      <div className="mx-auto flex h-16 max-w-350 items-center px-4 lg:px-8">
-        <div className="flex items-center gap-10">
-          <Logo />
+    <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/90 backdrop-blur-md transition-colors duration-300">
+      <div className="mx-auto flex h-16 max-w-350 items-center gap-4 px-4 lg:px-8">
+        <Logo />
 
-          <nav className="hidden items-center gap-8 md:flex">
-            {mainNav.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="group flex items-center gap-1 text-base font-medium text-foreground/80 transition-colors duration-200 hover:text-foreground"
-              >
-                {item.label}
-                {dropdownItems.has(item.label) && (
-                  <ChevronDown className="size-4 opacity-70 transition-transform duration-200 group-hover:rotate-180" />
-                )}
-              </Link>
-            ))}
-          </nav>
+        <div className="hidden flex-1 justify-center md:flex">
+          <DesktopMegaNav />
         </div>
 
-        <div className="ml-auto hidden items-center gap-4 md:flex">
-          <SearchBar />
+        <div className="ml-auto hidden items-center gap-3 md:flex">
+          {ai && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="gap-2 text-muted-foreground"
+              onClick={() => ai.openPanel()}
+            >
+              <Sparkles className="size-4 text-primary" />
+              <span className="hidden lg:inline">Ask AI</span>
+            </Button>
+          )}
           <Button asChild variant="default" size="lg">
             <Link href={tryItCta.href}>{tryItCta.label}</Link>
           </Button>
-          <Button asChild variant="invert" size="lg">
+          <Button asChild variant="outline" size="lg">
             <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
               {whatsappCta.label}
             </a>

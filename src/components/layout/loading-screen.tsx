@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Logo } from "@/components/navigation/logo";
 import { smoothEase } from "@/components/animations/motion-presets";
@@ -16,18 +16,23 @@ const LOADING_MESSAGES = [
 const SESSION_KEY = "apex-splash-seen";
 const MIN_DURATION_MS = 2400;
 
+function readSplashSeen() {
+  return sessionStorage.getItem(SESSION_KEY) === "true";
+}
+
 export function LoadingScreen() {
-  const [visible, setVisible] = useState(true);
+  const splashSeen = useSyncExternalStore(
+    () => () => {},
+    readSplashSeen,
+    () => false
+  );
+  const [visible, setVisible] = useState(() => !splashSeen);
   const [progress, setProgress] = useState(0);
   const [messageIndex, setMessageIndex] = useState(0);
   const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
-    const seen = sessionStorage.getItem(SESSION_KEY);
-    if (seen === "true") {
-      setVisible(false);
-      return;
-    }
+    if (splashSeen) return;
     const start = performance.now();
     let raf = 0;
 
@@ -47,7 +52,7 @@ export function LoadingScreen() {
 
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, []);
+  }, [splashSeen]);
 
   useEffect(() => {
     if (!visible || prefersReducedMotion) return;
@@ -58,6 +63,10 @@ export function LoadingScreen() {
 
     return () => window.clearInterval(interval);
   }, [visible, prefersReducedMotion]);
+
+  if (splashSeen) {
+    return null;
+  }
 
   return (
     <AnimatePresence>
