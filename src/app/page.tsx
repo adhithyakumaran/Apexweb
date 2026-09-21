@@ -3,25 +3,16 @@ import { TrustedPartners } from "@/components/sections/trusted-partners";
 import { Agents } from "@/components/sections/agents";
 import { Moat } from "@/components/sections/moat";
 import { Testimonials } from "@/components/sections/testimonials";
-import { ScrollReveal } from "@/components/animations/scroll-reveal";
 import { Contact } from "@/components/sections/contact";
-import { FloatingAiTrigger } from "@/components/ai/floating-ai-trigger";
 
 export default function Home() {
   return (
-    <main className="overflow-x-hidden">
+    <main className="min-w-0 overflow-x-clip">
       <Hero />
-      <FloatingAiTrigger />
-      <ScrollReveal delay={0.05}>
-        <TrustedPartners />
-      </ScrollReveal>
-      <ScrollReveal delay={0.08}>
-        <Agents />
-      </ScrollReveal>
+      <TrustedPartners />
+      <Agents />
       <Moat />
-      <ScrollReveal delay={0.06}>
-        <Testimonials />
-      </ScrollReveal>
+      <Testimonials />
       <Contact />
     </main>
   );
