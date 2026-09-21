@@ -1,11 +1,6 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
-import { ThemeProvider } from "@/components/theme/theme-provider";
-import { Footer } from "@/components/layout/footer";
-import { LoadingScreen } from "@/components/layout/loading-screen";
-
-import { Navbar } from "@/components/navigation/navbar";
-import { AiShell } from "@/components/layout/ai-shell";
+import { SiteChrome } from "@/components/layout/site-chrome";
 import "./globals.css";
 
 const jakarta = Plus_Jakarta_Sans({
@@ -27,23 +22,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${jakarta.variable} h-full antialiased`}
+      className={`${jakarta.variable} light h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col font-sans" suppressHydrationWarning>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <LoadingScreen />
-          <AiShell>
-            <Navbar />
-            {children}
-            <Footer />
-          </AiShell>
-        </ThemeProvider>
+      <body className="flex min-h-dvh min-w-0 flex-col overflow-x-clip font-sans antialiased" suppressHydrationWarning>
+        <SiteChrome>{children}</SiteChrome>
       </body>
     </html>
   );

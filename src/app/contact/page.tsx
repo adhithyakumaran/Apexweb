@@ -1,14 +1,12 @@
 import type { Metadata } from "next";
-import { Contact } from "@/components/sections/contact";
+import { ContactPageContent } from "@/components/contact/contact-page-content";
 
 export const metadata: Metadata = {
   title: "Contact",
+  description:
+    "Get in touch with Apex Node Technologies. Email, phone, WhatsApp, and our Chennai office — we're here to help with enterprise QA automation.",
 };
 
 export default function ContactPage() {
-  return (
-    <main>
-      <Contact />
-    </main>
-  );
+  return <ContactPageContent />;
 }

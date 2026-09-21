@@ -11,8 +11,8 @@ import {
   Phone,
   Sparkles,
 } from "lucide-react";
+import { ContactForm } from "@/components/forms/contact-form";
 import { ContactInfoColumn } from "@/components/contact/contact-info-column";
-import { AiAnswerEngineCard } from "@/components/sections/ai-answer-engine";
 import { ContactMap } from "@/components/contact/contact-map";
 import { ContactShell } from "@/components/contact/contact-shell";
 import { CardReveal, StaggerItem, StaggerReveal } from "@/components/animations/scroll-reveal";
@@ -156,25 +156,15 @@ export function ContactPageContent() {
               Tell us about your quality goals
             </h2>
             <p className="mt-3 text-base leading-relaxed text-muted-foreground">
-              Pick a channel on the left or ask our AI answer engine — we&apos;ll route you to the
-              right specialist from day one.
+              Pick a channel on the left or send a message — we&apos;ll route you to the right
+              specialist from day one.
             </p>
           </div>
 
           <CardReveal delay={0.1}>
             <ContactShell
               info={<ContactInfoColumn showBadge={false} />}
-              form={
-                <div className="text-foreground">
-                  <p className="text-lg font-semibold text-white">Questions before you reach out?</p>
-                  <p className="mt-2 text-sm text-white/85">
-                    Use Apex Node AI for instant answers about services, agents, and pricing.
-                  </p>
-                  <div className="mt-6 [&_*]:text-foreground">
-                    <AiAnswerEngineCard compact />
-                  </div>
-                </div>
-              }
+              form={<ContactForm variant="panel" showHelpOptions />}
             />
           </CardReveal>
         </div>
