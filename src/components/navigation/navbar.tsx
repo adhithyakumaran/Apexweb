@@ -12,11 +12,10 @@ export function Navbar() {
   return (
     <header className="safe-top sticky top-0 z-50 w-full min-w-0 border-b border-border/40 bg-background/95 backdrop-blur-lg supports-[backdrop-filter]:bg-background/90">
       <div className="relative mx-auto flex h-14 min-w-0 max-w-350 items-center gap-3 px-4 sm:h-16 lg:px-8">
-        <div className="flex min-w-0 flex-1 items-center gap-3 lg:gap-6">
-          <Logo size="sm" className="shrink-0 sm:hidden" />
-          <Logo className="hidden shrink-0 sm:inline-flex" />
-          <DesktopNavLinks />
-        </div>
+        <Logo size="sm" className="shrink-0 sm:hidden" />
+        <Logo className="hidden shrink-0 sm:inline-flex" />
+
+        <DesktopNavLinks />
 
         <div className="ml-auto hidden shrink-0 items-center gap-2 lg:flex lg:gap-3">
           <SearchBar />
