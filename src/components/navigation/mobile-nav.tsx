@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Menu, Phone, MessageCircle, ChevronDown, ArrowUpRight } from "lucide-react";
+import { Menu, Phone, MessageCircle, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -12,43 +12,18 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { MobileSearch } from "@/components/navigation/mobile-search";
-import { mainNav, tryItCta, whatsappCta } from "@/config/navigation";
+import { tryItCta, whatsappCta } from "@/config/navigation";
+import {
+  primaryNavDirectLinks,
+  primaryNavPanels,
+} from "@/config/mega-navigation";
 import { getWhatsAppLink } from "@/lib/utils/whatsapp";
 import { siteConfig } from "@/config/site";
-import {
-  agentQuickLinks,
-  aiPlatforms,
-  coreServices,
-  industryAgents,
-  serviceQuickLinks,
-  testingAgents,
-  type ServiceItem,
-} from "@/config/services";
 import { cn } from "@/lib/utils";
-
-function MobileServiceItem({ item, onNavigate }: { item: ServiceItem; onNavigate: () => void }) {
-  const Icon = item.icon;
-  return (
-    <Link
-      href={item.href}
-      onClick={onNavigate}
-      className="flex items-start gap-2.5 rounded-lg px-2 py-2 transition-colors hover:bg-muted"
-    >
-      <Icon className="mt-0.5 size-3.5 shrink-0 text-foreground" strokeWidth={1.75} />
-      <span>
-        <span className="block text-sm font-medium text-foreground">{item.title}</span>
-        <span className="mt-0.5 block text-xs text-muted-foreground line-clamp-2">
-          {item.description}
-        </span>
-      </span>
-    </Link>
-  );
-}
 
 export function MobileNav() {
   const [open, setOpen] = useState(false);
-  const [servicesOpen, setServicesOpen] = useState(false);
-  const [agentsOpen, setAgentsOpen] = useState(false);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const whatsappHref = getWhatsAppLink();
   const phoneHref = `tel:${siteConfig.whatsapp.number}`;
 
@@ -69,125 +44,67 @@ export function MobileNav() {
           <SheetTitle>Menu</SheetTitle>
         </SheetHeader>
         <MobileSearch onNavigate={close} />
-        <nav className="flex flex-col gap-1 px-2">
-          {mainNav.map((item) => {
-            if (item.label === "Services") {
-              return (
-                <div key={item.href} className="rounded-lg">
-                  <button
-                    type="button"
-                    onClick={() => setServicesOpen((v) => !v)}
-                    className="flex w-full items-center justify-between rounded-md px-3 py-3 text-base font-medium text-foreground transition-colors hover:bg-muted"
-                  >
-                    Services
-                    <ChevronDown
-                      className={cn(
-                        "size-4 transition-transform duration-200",
-                        servicesOpen && "rotate-180"
-                      )}
-                    />
-                  </button>
-                  {servicesOpen && (
-                    <div className="mb-2 ml-1 space-y-4 border-l border-border pl-3">
-                      <div>
-                        <p className="px-2 text-[0.65rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
-                          Core Services
-                        </p>
-                        {coreServices.map((s) => (
-                          <MobileServiceItem key={s.title} item={s} onNavigate={close} />
-                        ))}
-                      </div>
-                      <div>
-                        <p className="px-2 text-[0.65rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
-                          AI Platforms
-                        </p>
-                        {aiPlatforms.map((s) => (
-                          <MobileServiceItem key={s.title} item={s} onNavigate={close} />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            }
-
-            if (item.label === "Agents") {
-              return (
-                <div key={item.href} className="rounded-lg">
-                  <button
-                    type="button"
-                    onClick={() => setAgentsOpen((v) => !v)}
-                    className="flex w-full items-center justify-between rounded-md px-3 py-3 text-base font-medium text-foreground transition-colors hover:bg-muted"
-                  >
-                    Agents
-                    <ChevronDown
-                      className={cn(
-                        "size-4 transition-transform duration-200",
-                        agentsOpen && "rotate-180"
-                      )}
-                    />
-                  </button>
-                  {agentsOpen && (
-                    <div className="mb-2 ml-1 space-y-4 border-l border-border pl-3">
-                      <div>
-                        <p className="px-2 text-[0.65rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
-                          Industry Agents
-                        </p>
-                        {industryAgents.map((s) => (
-                          <MobileServiceItem key={s.title} item={s} onNavigate={close} />
-                        ))}
-                      </div>
-                      <div>
-                        <p className="px-2 text-[0.65rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
-                          Testing Agents
-                        </p>
-                        {testingAgents.map((s) => (
-                          <MobileServiceItem key={s.title} item={s} onNavigate={close} />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            }
-
+        <nav className="flex flex-col gap-1 px-2" aria-label="Mobile primary">
+          {primaryNavPanels.map((panel) => {
+            const isExp = expandedId === panel.id;
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={close}
-                className="flex items-center gap-1 rounded-md px-3 py-3 text-base font-medium text-foreground transition-colors hover:bg-muted"
-              >
-                {item.label}
-                {item.label === "Articles" && (
-                  <ArrowUpRight className="size-3.5 opacity-60" />
+              <div key={panel.id} className="rounded-lg border border-border/60">
+                <button
+                  type="button"
+                  aria-expanded={isExp}
+                  onClick={() => setExpandedId(isExp ? null : panel.id)}
+                  className="flex w-full items-center justify-between rounded-md px-3 py-3 text-base font-medium text-foreground transition-colors hover:bg-muted"
+                >
+                  {panel.label}
+                  <ChevronDown
+                    className={cn(
+                      "size-4 transition-transform duration-200",
+                      isExp && "rotate-180"
+                    )}
+                  />
+                </button>
+                {isExp && (
+                  <ul className="border-t border-border px-2 pb-2 pt-1">
+                    {panel.columns.flatMap((col) =>
+                      col.links.map((link) => (
+                        <li key={link.href + link.label}>
+                          <Link
+                            href={link.href}
+                            onClick={close}
+                            className="block rounded-md px-2 py-2.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                          >
+                            {link.label}
+                          </Link>
+                        </li>
+                      ))
+                    )}
+                    {panel.context.cta && (
+                      <li>
+                        <Link
+                          href={panel.context.cta.href}
+                          onClick={close}
+                          className="mt-1 block px-2 py-2 text-sm font-medium text-primary"
+                        >
+                          {panel.context.cta.label}
+                        </Link>
+                      </li>
+                    )}
+                  </ul>
                 )}
-              </Link>
+              </div>
             );
           })}
 
-          <div className="mt-2 space-y-1 border-t border-border pt-3">
-            {serviceQuickLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={close}
-                className="block px-3 py-2 text-sm font-medium text-primary"
-              >
-                {link.label}
-              </Link>
-            ))}
-            {agentQuickLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={close}
-                className="block px-3 py-2 text-sm font-medium text-primary"
-              >
-                {link.label}
-              </Link>
-            ))}
-          </div>
+          {primaryNavDirectLinks.map((item) => (
+            <Link
+              key={item.label}
+              href={item.href}
+              onClick={close}
+              className="rounded-md px-3 py-3 text-base font-medium text-foreground transition-colors hover:bg-muted"
+            >
+              {item.label}
+            </Link>
+          ))}
 
           <div className="mt-4 rounded-2xl border border-border bg-surface p-3">
             <p className="px-1 pb-2 text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">

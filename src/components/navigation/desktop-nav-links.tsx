@@ -1,39 +1,48 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronDown, ArrowUpRight } from "lucide-react";
-import { AgentsMegaMenu } from "@/components/navigation/agents-mega-menu";
-import { ServicesMegaMenu } from "@/components/navigation/services-mega-menu";
-import { mainNav } from "@/config/navigation";
+import { useCallback, useState } from "react";
+import { PrimaryMegaMenuItem } from "@/components/navigation/primary-mega-menu-item";
+import {
+  primaryNavDirectLinks,
+  primaryNavPanels,
+} from "@/config/mega-navigation";
 
 export function DesktopNavLinks() {
+  const [activeMegaId, setActiveMegaId] = useState<string | null>(null);
+
+  const openMega = useCallback((id: string) => {
+    setActiveMegaId(id);
+  }, []);
+
+  const closeMega = useCallback(() => {
+    setActiveMegaId(null);
+  }, []);
+
   return (
-    <nav className="hidden items-center gap-5 lg:flex xl:gap-7">
-      {mainNav.map((item) => {
-        if (item.label === "Services") {
-          return <ServicesMegaMenu key={item.href} />;
-        }
+    <nav
+      className="hidden min-w-0 flex-1 items-center justify-center gap-1 lg:flex xl:gap-2"
+      aria-label="Primary"
+    >
+      {primaryNavPanels.map((panel) => (
+        <PrimaryMegaMenuItem
+          key={panel.id}
+          panel={panel}
+          isOpen={activeMegaId === panel.id}
+          onOpen={() => openMega(panel.id)}
+          onClose={closeMega}
+        />
+      ))}
 
-        if (item.label === "Agents") {
-          return <AgentsMegaMenu key={item.href} />;
-        }
-
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            className="group flex items-center gap-1 text-[0.95rem] font-medium text-foreground/80 transition-colors duration-200 hover:text-foreground"
-          >
-            {item.label}
-            {item.label === "Articles" && (
-              <ArrowUpRight className="size-3.5 opacity-60 transition-transform group-hover:-translate-y-px group-hover:translate-x-px group-hover:opacity-100" />
-            )}
-            {item.label === "Pricing" && (
-              <ChevronDown className="size-3.5 opacity-60 transition-transform duration-200 group-hover:rotate-180" />
-            )}
-          </Link>
-        );
-      })}
+      {primaryNavDirectLinks.map((item) => (
+        <Link
+          key={item.label}
+          href={item.href}
+          className="rounded-md px-2 py-1 text-[0.95rem] font-medium text-foreground/80 transition-colors duration-200 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+        >
+          {item.label}
+        </Link>
+      ))}
     </nav>
   );
 }
