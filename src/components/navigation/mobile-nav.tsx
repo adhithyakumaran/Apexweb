@@ -65,8 +65,8 @@ export function MobileNav() {
                 </button>
                 {isExp && (
                   <ul className="border-t border-border px-2 pb-2 pt-1">
-                    {panel.columns.flatMap((col) =>
-                      col.links.map((link) => (
+                    {(panel.categories ?? []).flatMap((cat) =>
+                      cat.links.map((link) => (
                         <li key={link.href + link.label}>
                           <Link
                             href={link.href}

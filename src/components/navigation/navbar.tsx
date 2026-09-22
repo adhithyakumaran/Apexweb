@@ -11,11 +11,12 @@ import Link from "next/link";
 export function Navbar() {
   return (
     <header className="safe-top sticky top-0 z-50 w-full min-w-0 border-b border-border/40 bg-background/95 backdrop-blur-lg supports-[backdrop-filter]:bg-background/90">
-      <div className="relative mx-auto flex h-14 min-w-0 max-w-350 items-center gap-3 px-4 sm:h-16 lg:px-8">
-        <Logo size="sm" className="shrink-0 sm:hidden" />
-        <Logo className="hidden shrink-0 sm:inline-flex" />
-
-        <DesktopNavLinks />
+      <div className="relative mx-auto flex h-14 min-w-0 max-w-350 items-center gap-4 px-4 sm:h-16 lg:gap-6 lg:px-8">
+        <div className="flex min-w-0 shrink-0 items-center gap-4 lg:gap-8">
+          <Logo size="sm" className="shrink-0 sm:hidden" />
+          <Logo className="hidden shrink-0 sm:inline-flex" />
+          <DesktopNavLinks />
+        </div>
 
         <div className="ml-auto hidden shrink-0 items-center gap-2 lg:flex lg:gap-3">
           <SearchBar />

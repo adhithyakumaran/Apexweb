@@ -5,7 +5,6 @@ import Image from "next/image";
 import { motion, useReducedMotion } from "motion/react";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { AgentCursor } from "@/components/hero/agent-cursor";
 import { tryItCta, whatsappCta } from "@/config/navigation";
 import { smoothEase } from "@/components/animations/motion-presets";
 
@@ -24,13 +23,11 @@ export function Hero() {
   return (
     <section className="w-full px-3 pt-2 sm:px-6 sm:pt-3 lg:px-10 lg:pt-4">
       <motion.div
-        className="relative flex min-h-[min(72dvh,40rem)] w-full max-w-full items-center justify-center overflow-hidden rounded-2xl bg-secondary sm:min-h-[min(80dvh,44rem)] sm:rounded-3xl md:cursor-none lg:min-h-[min(85dvh,48rem)]"
+        className="relative flex min-h-[min(72dvh,40rem)] w-full max-w-full items-center justify-center overflow-hidden rounded-2xl bg-secondary sm:min-h-[min(80dvh,44rem)] sm:rounded-3xl lg:min-h-[min(85dvh,48rem)]"
         initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.98 }}
         animate={prefersReducedMotion ? undefined : { opacity: 1, scale: 1 }}
         transition={{ duration: 0.9, ease: smoothEase }}
       >
-        <AgentCursor />
-
         <Image
           src="/images/hero/hero-new-bg.png"
           alt=""

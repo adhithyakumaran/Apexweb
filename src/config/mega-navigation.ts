@@ -1,5 +1,7 @@
 import {
+  aiPlatforms,
   coreServices,
+  industryAgents,
   testingAgents,
   type ServiceItem,
 } from "@/config/services";
@@ -11,6 +13,12 @@ export type MegaNavLink = {
   description?: string;
 };
 
+export type MegaNavCategory = {
+  id: string;
+  label: string;
+  links: MegaNavLink[];
+};
+
 export type MegaNavPanel = {
   id: string;
   label: string;
@@ -19,7 +27,10 @@ export type MegaNavPanel = {
     description: string;
     cta?: { label: string; href: string };
   };
-  columns: { title?: string; links: MegaNavLink[] }[];
+  /** TCS-style vertical tabs + right content */
+  categories?: MegaNavCategory[];
+  /** Simple fallback when categories are not used */
+  columns?: { title?: string; links: MegaNavLink[] }[];
 };
 
 function fromService(item: ServiceItem): MegaNavLink {
@@ -30,34 +41,36 @@ function fromService(item: ServiceItem): MegaNavLink {
   };
 }
 
-/** Desktop/mobile primary navbar (mega menus + direct links). */
 export const primaryNavPanels: MegaNavPanel[] = [
   {
     id: "what-we-do",
     label: "What We Do",
     context: {
-      title: "What We Do",
+      title: "Infrastructure to intelligence",
       description:
-        "Build reliable software quality with intelligent automation—enterprise modernization, QA, and agentic testing from Apex Node.",
+        "Build reliable software quality with intelligent automation—enterprise modernization, agentic QA, and continuous validation from Apex Node.",
       cta: { label: "Explore services", href: "/what-we-do" },
     },
-    columns: [
+    categories: [
       {
-        title: "AI & QA",
-        links: [
-          fromService(coreServices[0]),
-          fromService(coreServices[4]),
-          ...testingAgents.slice(0, 3).map(fromService),
-        ],
+        id: "industries",
+        label: "Industries",
+        links: industryAgents.map(fromService),
       },
       {
-        title: "Engineering & platforms",
-        links: [
-          fromService(coreServices[1]),
-          fromService(coreServices[2]),
-          fromService(coreServices[3]),
-          fromService(coreServices[5]),
-        ],
+        id: "services",
+        label: "Services",
+        links: coreServices.map(fromService),
+      },
+      {
+        id: "platforms",
+        label: "AI Platforms",
+        links: aiPlatforms.map(fromService),
+      },
+      {
+        id: "agents",
+        label: "Testing Agents",
+        links: testingAgents.map(fromService),
       },
     ],
   },
@@ -65,12 +78,14 @@ export const primaryNavPanels: MegaNavPanel[] = [
     id: "who-we-are",
     label: "Who We Are",
     context: {
-      title: "Who We Are",
+      title: "About Apex Node",
       description: siteConfig.description,
       cta: { label: "Meet our agents", href: "/agents" },
     },
-    columns: [
+    categories: [
       {
+        id: "company",
+        label: "Company",
         links: [
           {
             label: "About Apex Node",
@@ -80,13 +95,19 @@ export const primaryNavPanels: MegaNavPanel[] = [
           {
             label: "Our approach",
             href: "/what-we-do",
-            description: "Services spanning modernization, cloud, and quality engineering.",
+            description: "Modernization, cloud, and quality engineering services.",
           },
           {
             label: "Why Apex Node",
             href: "/what-we-do#qa-testing",
-            description: "Continuous agentic coverage and self-healing test intelligence.",
+            description: "Continuous agentic coverage and self-healing tests.",
           },
+        ],
+      },
+      {
+        id: "connect",
+        label: "Connect",
+        links: [
           {
             label: "Testing agents",
             href: "/agents",
@@ -105,13 +126,15 @@ export const primaryNavPanels: MegaNavPanel[] = [
     id: "insights",
     label: "Insights",
     context: {
-      title: "Insights",
+      title: "Ideas for modern QA",
       description:
-        "Articles and perspectives on QA engineering, agentic AI, and enterprise quality from Apex Node.",
+        "Perspectives on QA engineering, agentic AI, and enterprise quality from the Apex Node team.",
       cta: { label: "View articles", href: "/articles" },
     },
-    columns: [
+    categories: [
       {
+        id: "articles",
+        label: "Articles",
         links: [
           {
             label: "All articles",
