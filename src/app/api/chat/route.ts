@@ -8,12 +8,15 @@
 import { NextResponse } from "next/server";
 import { getChatbotSettings } from "@/lib/cms/chatbot";
 import { chatWithGroq, isGroqConfigured, parseHumanHandoff } from "@/lib/chatbot/groq";
+import { ANSWER_ENGINE_RULES, buildAnswerEnvelope } from "@/lib/chatbot/answer-envelope";
 import { buildChatKnowledgeContext, CHAT_SYSTEM_RULES, getToneInstruction } from "@/lib/chatbot/knowledge";
 
 export const dynamic = "force-dynamic";
 
 type ChatRequest = {
   messages?: { role: "user" | "assistant"; content: string }[];
+  structured?: boolean;
+  pageContext?: { pathname?: string };
 };
 
 export async function POST(request: Request) {
@@ -30,6 +33,8 @@ export async function POST(request: Request) {
   }
 
   const body = (await request.json()) as ChatRequest;
+  const structured = body.structured === true;
+  const pagePath = body.pageContext?.pathname?.trim() || "/";
   const history = body.messages?.filter((m) => m.content?.trim()).slice(-10) ?? [];
 
   if (!history.length || history[history.length - 1]?.role !== "user") {
@@ -40,15 +45,29 @@ export async function POST(request: Request) {
     const knowledge = await buildChatKnowledgeContext();
     const toneLine = `${getToneInstruction(settings.tone)} Skills: ${settings.skills.join(", ") || "general assistance"}.`;
 
-    const system = `${CHAT_SYSTEM_RULES}\n\n${toneLine}\n\n${settings.systemPrompt}\n\n--- KNOWLEDGE BASE ---\n${knowledge}`;
+    const pageLine = structured ? `\n\nCURRENT PAGE: ${pagePath}` : "";
+    const rules = structured ? ANSWER_ENGINE_RULES : CHAT_SYSTEM_RULES;
+    const system = `${rules}\n\n${toneLine}\n\n${settings.systemPrompt}${pageLine}\n\n--- KNOWLEDGE BASE ---\n${knowledge}`;
 
     const reply = await chatWithGroq({
       model: settings.model,
       messages: [{ role: "system", content: system }, ...history],
-      maxTokens: 220,
+      maxTokens: structured ? 520 : 220,
     });
 
     const { text, needsHuman } = parseHumanHandoff(reply);
+
+    if (structured) {
+      const userQuestion = history[history.length - 1]?.content ?? "";
+      const envelope = buildAnswerEnvelope(userQuestion, pagePath, text);
+      return NextResponse.json({
+        message: text,
+        needsHuman,
+        relatedQuestions: envelope.relatedQuestions,
+        ctas: envelope.ctas,
+        sources: envelope.sources,
+      });
+    }
 
     return NextResponse.json({
       message: text,
