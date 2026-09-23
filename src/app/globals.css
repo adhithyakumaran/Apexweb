@@ -297,12 +297,43 @@ body {
   }
 }
 
+@keyframes agent-orb-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.75;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes agent-orb-shimmer {
+  0% {
+    transform: translateX(-30%) rotate(0deg);
+  }
+  100% {
+    transform: translateX(30%) rotate(0deg);
+  }
+}
+
 @utility animate-agent-orb-spin {
-  animation: agent-orb-spin 3.5s linear infinite;
+  animation: agent-orb-spin 4s linear infinite;
+}
+
+@utility animate-agent-orb-pulse {
+  animation: agent-orb-pulse 2.8s ease-in-out infinite;
+}
+
+@utility animate-agent-orb-shimmer {
+  animation: agent-orb-shimmer 2.4s ease-in-out infinite alternate;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-agent-orb-spin {
+  .animate-agent-orb-spin,
+  .animate-agent-orb-pulse,
+  .animate-agent-orb-shimmer {
     animation: none;
   }
 }

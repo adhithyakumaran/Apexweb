@@ -21,7 +21,7 @@ export function Hero() {
         };
 
   return (
-    <section className="w-full px-3 pt-2 sm:px-6 sm:pt-3 lg:px-10 lg:pt-4">
+    <section className="relative z-10 w-full px-3 pt-2 pb-0 sm:px-6 sm:pt-3 lg:px-10 lg:pt-4">
       <motion.div
         className="relative flex min-h-[min(72dvh,40rem)] w-full max-w-full items-center justify-center overflow-hidden rounded-2xl bg-secondary sm:min-h-[min(80dvh,44rem)] sm:rounded-3xl lg:min-h-[min(85dvh,48rem)]"
         initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.98 }}
@@ -37,7 +37,7 @@ export function Hero() {
         />
 
         <div className="absolute inset-0 bg-linear-to-t from-black/35 via-black/5 to-black/25" />
-        <div className="absolute inset-x-0 bottom-0 h-32 bg-linear-to-b from-transparent to-black/45" />
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-linear-to-b from-transparent to-black/20 sm:h-28" />
 
         <div className="relative z-10 mx-auto flex w-full max-w-4xl flex-col items-center gap-4 px-4 text-center sm:gap-6 sm:px-6">
           <motion.h1
