@@ -287,3 +287,22 @@ body {
     transform: rotateX(20deg) rotateY(360deg);
   }
 }
+
+@keyframes agent-orb-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@utility animate-agent-orb-spin {
+  animation: agent-orb-spin 3.5s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-agent-orb-spin {
+    animation: none;
+  }
+}
