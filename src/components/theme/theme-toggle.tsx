@@ -26,14 +26,14 @@ export function ThemeToggle() {
     >
       <AnimatePresence mode="wait" initial={false}>
         <motion.span
-          key={isDark ? "moon" : "sun"}
+          key={isDark ? "sun" : "moon"}
           initial={{ opacity: 0, rotate: -90, scale: 0.6 }}
           animate={{ opacity: 1, rotate: 0, scale: 1 }}
           exit={{ opacity: 0, rotate: 90, scale: 0.6 }}
           transition={{ duration: 0.25, ease: "easeInOut" }}
           className="absolute"
         >
-          {isDark ? <Moon size={18} /> : <Sun size={18} />}
+          {isDark ? <Sun size={18} /> : <Moon size={18} />}
         </motion.span>
       </AnimatePresence>
     </button>

@@ -1,54 +1,37 @@
-import Link from "next/link";
-import { ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { MobileNav } from "@/components/navigation/mobile-nav";
 import { SearchBar } from "@/components/navigation/search-bar";
 import { Logo } from "@/components/navigation/logo";
-import { mainNav, tryItCta, whatsappCta } from "@/config/navigation";
-import { getWhatsAppLink } from "@/lib/utils/whatsapp";
-
-const dropdownItems = new Set(["Pricing", "Services"]);
+import { LetsTalkMenu } from "@/components/navigation/lets-talk-menu";
+import { DesktopNavLinks } from "@/components/navigation/desktop-nav-links";
+import { tryItCta } from "@/config/navigation";
+import Link from "next/link";
 
 export function Navbar() {
-  const whatsappHref = getWhatsAppLink();
-
   return (
-    <header className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-md transition-colors duration-300">
-      <div className="mx-auto flex h-16 max-w-350 items-center px-4 lg:px-8">
-        <div className="flex items-center gap-10">
-          <Logo />
-
-          <nav className="hidden items-center gap-8 md:flex">
-            {mainNav.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="group flex items-center gap-1 text-base font-medium text-foreground/80 transition-colors duration-200 hover:text-foreground"
-              >
-                {item.label}
-                {dropdownItems.has(item.label) && (
-                  <ChevronDown className="size-4 opacity-70 transition-transform duration-200 group-hover:rotate-180" />
-                )}
-              </Link>
-            ))}
-          </nav>
+    <header className="safe-top sticky top-0 z-50 w-full min-w-0 border-b border-border/40 bg-background/95 backdrop-blur-lg supports-[backdrop-filter]:bg-background/90">
+      <div className="relative mx-auto flex h-14 min-w-0 max-w-350 items-center gap-4 px-4 sm:h-16 lg:gap-6 lg:px-8">
+        <div className="flex min-w-0 shrink-0 items-center gap-4 lg:gap-8">
+          <Logo size="sm" className="shrink-0 sm:hidden" />
+          <Logo className="hidden shrink-0 sm:inline-flex" />
+          <DesktopNavLinks />
         </div>
 
-        <div className="ml-auto hidden items-center gap-4 md:flex">
+        <div className="ml-auto hidden shrink-0 items-center gap-2 lg:flex lg:gap-3">
           <SearchBar />
-          <Button asChild variant="default" size="lg">
+          <Button asChild variant="default" size="lg" className="hidden xl:inline-flex">
             <Link href={tryItCta.href}>{tryItCta.label}</Link>
           </Button>
-          <Button asChild variant="invert" size="lg">
-            <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
-              {whatsappCta.label}
-            </a>
+          <Button asChild variant="default" size="default" className="xl:hidden">
+            <Link href={tryItCta.href}>Try free</Link>
           </Button>
+          <LetsTalkMenu />
           <ThemeToggle />
         </div>
 
-        <div className="ml-auto flex items-center gap-2 md:hidden">
+        <div className="ml-auto flex shrink-0 items-center gap-1 lg:hidden">
+          <ThemeToggle />
           <MobileNav />
         </div>
       </div>

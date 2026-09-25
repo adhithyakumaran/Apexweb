@@ -3,6 +3,8 @@
 import { motion, useReducedMotion } from "motion/react";
 import type { ReactNode } from "react";
 import {
+  cardReveal,
+  cardTransition,
   defaultTransition,
   defaultViewport,
   fadeUp,
@@ -18,9 +20,9 @@ type ScrollRevealProps = {
 
 export function ScrollReveal({
   children,
-  delay = 0,
+  delay = 0.15,
   className,
-  y = 28,
+  y = 32,
 }: ScrollRevealProps) {
   const prefersReducedMotion = useReducedMotion();
 
@@ -45,12 +47,14 @@ type StaggerRevealProps = {
   children: ReactNode;
   className?: string;
   stagger?: number;
+  delay?: number;
 };
 
 export function StaggerReveal({
   children,
   className,
-  stagger = 0.1,
+  stagger = 0.12,
+  delay = 0.2,
 }: StaggerRevealProps) {
   const prefersReducedMotion = useReducedMotion();
 
@@ -67,7 +71,7 @@ export function StaggerReveal({
       variants={{
         hidden: {},
         visible: {
-          transition: { staggerChildren: stagger, delayChildren: 0.08 },
+          transition: { staggerChildren: stagger, delayChildren: delay },
         },
       }}
     >
@@ -92,8 +96,37 @@ export function StaggerItem({
   return (
     <motion.div
       className={className}
+      variants={cardReveal}
+      transition={cardTransition}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+export function CardReveal({
+  children,
+  className,
+  delay = 0,
+}: {
+  children: ReactNode;
+  className?: string;
+  delay?: number;
+}) {
+  const prefersReducedMotion = useReducedMotion();
+
+  if (prefersReducedMotion) {
+    return <div className={className}>{children}</div>;
+  }
+
+  return (
+    <motion.div
+      className={className}
       variants={fadeUp}
-      transition={defaultTransition}
+      initial="hidden"
+      whileInView="visible"
+      viewport={defaultViewport}
+      transition={{ ...cardTransition, delay }}
     >
       {children}
     </motion.div>

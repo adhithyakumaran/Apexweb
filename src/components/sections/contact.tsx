@@ -2,139 +2,123 @@
 
 import Link from "next/link";
 import { motion, useReducedMotion } from "motion/react";
-import { ArrowRight, Mail, Phone, MessageCircle } from "lucide-react";
-import { siteConfig } from "@/config/site";
-import { getWhatsAppLink } from "@/lib/utils/whatsapp";
-import { ContactForm } from "@/components/forms/contact-form";
-import {
-  StaggerItem,
-  StaggerReveal,
-} from "@/components/animations/scroll-reveal";
-import {
-  defaultTransition,
-  smoothEase,
-} from "@/components/animations/motion-presets";
+import { smoothEase } from "@/components/animations/motion-presets";
 import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
 import { tryItCta } from "@/config/navigation";
-
-const methods = [
-  {
-    label: "Email",
-    value: siteConfig.contact.email,
-    href: `mailto:${siteConfig.contact.email}`,
-    icon: Mail,
-    description: "We reply within one business day",
-  },
-  {
-    label: "Phone",
-    value: siteConfig.contact.phone,
-    href: `tel:${siteConfig.contact.phone.replace(/\s+/g, "")}`,
-    icon: Phone,
-    description: "Talk to our QA specialists",
-  },
-  {
-    label: "WhatsApp",
-    value: "Instant chat",
-    href: getWhatsAppLink(),
-    icon: MessageCircle,
-    description: "Fastest way to reach us",
-  },
-];
+import {
+  contactMethods,
+  officeHours,
+  socialLinks,
+} from "@/config/contact";
+const socialLabels: Record<string, string> = {
+  LinkedIn: "in",
+  X: "X",
+  YouTube: "YT",
+};
 
 export function Contact() {
   const prefersReducedMotion = useReducedMotion();
 
   return (
-    <section className="relative w-full overflow-hidden bg-brand-orange-light px-4 py-24 sm:px-6 lg:px-10">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,color-mix(in_oklab,var(--brand-orange)_18%,transparent),transparent_55%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,color-mix(in_oklab,var(--primary)_10%,transparent),transparent_50%)]" />
+    <section
+      id="contact"
+      className="relative w-full overflow-x-clip px-3 py-16 sm:px-6 sm:py-24 lg:px-10"
+    >
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,color-mix(in_oklab,var(--primary)_8%,transparent),transparent_50%)]" />
 
       <div className="relative mx-auto max-w-350">
         <motion.div
-          className="mx-auto max-w-3xl text-center"
-          initial={prefersReducedMotion ? false : { opacity: 0, y: 24 }}
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 28 }}
           whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.65, ease: smoothEase }}
+          viewport={{ once: true, amount: 0.4 }}
+          transition={{ duration: 0.75, ease: smoothEase }}
+          className="mx-auto max-w-3xl text-center"
         >
-          <span className="inline-flex items-center rounded-full border border-brand-orange/25 bg-card/80 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-brand-orange-foreground backdrop-blur-sm">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-orange">
             Get in touch
-          </span>
-          <h2 className="mt-5 text-3xl font-normal tracking-tight text-foreground sm:text-4xl lg:text-5xl">
-            Ready to automate your QA workflow?
+          </p>
+          <h2 className="mt-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+            Ship faster with a QA partner that moves at your pace
           </h2>
           <p className="mt-4 text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Tell us about your release goals. We&apos;ll help you design an
-            agentic testing strategy that scales with your team.
+            Let&apos;s discuss your QA workflow, current testing stack, and where agentic
+            automation can help.
           </p>
         </motion.div>
 
-        <div className="mt-16 grid grid-cols-1 gap-8 lg:grid-cols-[1fr_1.15fr] lg:gap-10">
-          <motion.div
-            initial={prefersReducedMotion ? false : { opacity: 0, x: -24 }}
-            whileInView={prefersReducedMotion ? undefined : { opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.25 }}
-            transition={{ duration: 0.7, ease: smoothEase }}
-            className="flex flex-col gap-6"
-          >
-            <StaggerReveal className="flex flex-col gap-4" stagger={0.1}>
-              {methods.map((m) => {
-                const Icon = m.icon;
-                const isExternal = m.href.startsWith("http");
-                return (
-                  <StaggerItem key={m.label}>
-                    <a
-                      href={m.href}
-                      target={isExternal ? "_blank" : undefined}
-                      rel={isExternal ? "noopener noreferrer" : undefined}
-                      className="group flex items-center gap-4 rounded-2xl border border-brand-orange/20 bg-card/90 p-5 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-brand-orange/40 hover:shadow-md"
-                    >
-                      <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-brand-orange/15 text-brand-orange transition-transform duration-300 group-hover:scale-105">
-                        <Icon className="size-5" />
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-semibold text-foreground">{m.label}</p>
-                        <p className="truncate text-sm text-foreground/80">{m.value}</p>
-                        <p className="mt-0.5 text-xs text-muted-foreground">{m.description}</p>
-                      </div>
-                      <ArrowRight className="size-4 shrink-0 text-brand-orange opacity-0 transition-all duration-300 group-hover:translate-x-0.5 group-hover:opacity-100" />
-                    </a>
-                  </StaggerItem>
-                );
-              })}
-            </StaggerReveal>
+        <motion.div
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 24 }}
+          whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.25 }}
+          transition={{ duration: 0.7, delay: 0.1, ease: smoothEase }}
+          className="mt-12 rounded-2xl border border-border/80 bg-card/90 p-5 shadow-sm sm:mt-14 sm:p-7 lg:p-8"
+        >
+          <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:gap-6">
+            {contactMethods.map((method) => {
+              const Icon = method.icon;
+              return (
+                <a
+                  key={method.id}
+                  href={method.href}
+                  target={method.external ? "_blank" : undefined}
+                  rel={method.external ? "noopener noreferrer" : undefined}
+                  className="group flex h-full min-h-[8.5rem] flex-col rounded-xl border border-border/70 bg-background/60 p-4 transition-all duration-300 hover:border-primary/25 hover:bg-background hover:shadow-sm sm:p-5"
+                >
+                  <span className="flex size-10 items-center justify-center rounded-lg bg-foreground text-background shadow-sm transition-transform duration-300 group-hover:scale-105">
+                    <Icon className="size-4" strokeWidth={1.75} />
+                  </span>
+                  <span className="mt-3 text-sm font-semibold text-foreground">{method.label}</span>
+                  <span className="mt-1 text-xs leading-relaxed text-muted-foreground sm:text-sm">
+                    {method.headline}
+                  </span>
+                  <span className="mt-auto pt-3 text-sm font-medium leading-snug text-foreground underline-offset-4 transition-colors group-hover:text-brand-orange group-hover:underline">
+                    {method.value}
+                  </span>
+                </a>
+              );
+            })}
+          </div>
 
-            <div className="rounded-2xl border border-brand-orange/20 bg-brand-orange-muted/60 p-6">
-              <p className="text-sm font-medium text-brand-orange-foreground">
-                Prefer a live walkthrough?
+          <div className="mt-6 grid gap-4 border-t border-border/70 pt-6 lg:grid-cols-12 lg:items-center lg:gap-6">
+            <div className="rounded-xl border border-border/70 bg-muted/40 px-4 py-3.5 lg:col-span-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                Response time
               </p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Book a demo and see our agents in action on your use cases.
+              <p className="mt-1 text-sm font-medium text-foreground">
+                Under 24 hours on business days
               </p>
-              <Button asChild size="lg" className="mt-4">
-                <Link href={tryItCta.href}>{tryItCta.label}</Link>
+              <p className="mt-0.5 text-xs text-muted-foreground">{officeHours}</p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 lg:col-span-3">
+              {socialLinks.map((link) => (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex size-10 items-center justify-center rounded-full border border-border bg-background text-xs font-semibold text-muted-foreground transition-all duration-300 hover:border-brand-orange/40 hover:bg-brand-orange/10 hover:text-brand-orange"
+                  aria-label={link.label}
+                >
+                  {socialLabels[link.label] ?? link.label.slice(0, 2)}
+                </Link>
+              ))}
+            </div>
+
+            <div className="flex flex-wrap gap-3 lg:col-span-5 lg:justify-end">
+              <Button asChild size="lg" className="w-full sm:w-auto">
+                <Link href={tryItCta.href}>
+                  Talk to Apex Node
+                  <ArrowRight className="size-4" />
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
+                <Link href="/contact">Send a message</Link>
               </Button>
             </div>
-          </motion.div>
-
-          <motion.div
-            className="rounded-3xl border border-brand-orange/20 bg-card p-8 shadow-lg sm:p-10"
-            initial={prefersReducedMotion ? false : { opacity: 0, y: 32 }}
-            whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.2 }}
-            transition={{ ...defaultTransition, delay: 0.1 }}
-          >
-            <div className="mb-6">
-              <h3 className="text-xl font-semibold tracking-tight text-foreground">
-                Send us a message
-              </h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Share your stack, timeline, and testing challenges.
-              </p>
-            </div>
-            <ContactForm />
-          </motion.div>
-        </div>
+          </div>
+        </motion.div>
       </div>
     </section>
   );

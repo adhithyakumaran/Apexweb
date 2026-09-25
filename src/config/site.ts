@@ -9,10 +9,8 @@ export const siteConfig = {
     // TODO: replace with real social/company links from client
   },
   contact: {
-    // PLACEHOLDER — client has not yet provided a real company email/phone.
-    // Do not publish these as-is; swap before launch (handover Section 15).
-    email: "hello@example.com",
-    phone: "+91 00000 00000",
+    email: "hello@apexnode.com",
+    phone: "+91 99659 85951",
   },
   whatsapp: {
     number: "919965985951",

@@ -1,25 +1,20 @@
 import { Hero } from "@/components/hero/hero";
+import { AiAnswerEntry } from "@/components/sections/ai-answer-entry";
 import { TrustedPartners } from "@/components/sections/trusted-partners";
 import { Agents } from "@/components/sections/agents";
 import { Moat } from "@/components/sections/moat";
 import { Testimonials } from "@/components/sections/testimonials";
-import { ScrollReveal } from "@/components/animations/scroll-reveal";
 import { Contact } from "@/components/sections/contact";
 
 export default function Home() {
   return (
-    <main className="overflow-x-hidden">
+    <main className="min-w-0 overflow-x-clip">
       <Hero />
-      <ScrollReveal delay={0.05}>
-        <TrustedPartners />
-      </ScrollReveal>
-      <ScrollReveal delay={0.08}>
-        <Agents />
-      </ScrollReveal>
+      <AiAnswerEntry />
+      <TrustedPartners />
+      <Agents />
       <Moat />
-      <ScrollReveal delay={0.06}>
-        <Testimonials />
-      </ScrollReveal>
+      <Testimonials />
       <Contact />
     </main>
   );

@@ -1,83 +1,91 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import { motion, useReducedMotion } from "motion/react";
+import { partners, type PartnerWordmark } from "@/config/partners";
+import { PartnerWordmark as PartnerWordmarkVisual } from "@/components/sections/partner-wordmark";
+import { SectionHeader } from "@/components/animations/section-header";
 import { smoothEase } from "@/components/animations/motion-presets";
+import { cn } from "@/lib/utils";
 
-const partners = [
-  "Geetham Enterprises",
-  "SwayUp Software Agency",
-  "Prowess IQ Pvt Ltd",
-  "BorrowBox",
-  "Grewbie Technologies",
-];
-
-const marqueeItems = [...partners, ...partners];
-
-export function TrustedPartners() {
-  const trackRef = useRef<HTMLDivElement>(null);
+function MarqueeRow({
+  items,
+  direction,
+}: {
+  items: PartnerWordmark[];
+  direction: "left" | "right";
+}) {
   const prefersReducedMotion = useReducedMotion();
-
-  useEffect(() => {
-    const track = trackRef.current;
-    if (!track) return;
-
-    if (prefersReducedMotion) return;
-
-    let x = 0;
-    let raf = 0;
-    const speed = 0.5;
-
-    function loop() {
-      const halfWidth = track!.scrollWidth / 2;
-      x -= speed;
-      if (Math.abs(x) >= halfWidth) {
-        x = 0;
-      }
-      track!.style.transform = `translateX(${x}px)`;
-      raf = requestAnimationFrame(loop);
-    }
-
-    raf = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(raf);
-  }, [prefersReducedMotion]);
+  const track = [...items, ...items];
 
   return (
-    <section className="w-full overflow-hidden pb-32 pt-24">
-      <div className="mx-auto max-w-350 px-4 text-center sm:px-6 lg:px-10">
-        <motion.p
-          className="mx-auto max-w-2xl text-2xl font-normal leading-snug tracking-tight text-foreground sm:text-3xl sm:leading-snug lg:text-4xl lg:leading-normal"
+    <div className="relative overflow-hidden" aria-hidden="true">
+      <div
+        className={cn(
+          "flex w-max items-center gap-16 py-2 will-change-transform sm:gap-24 md:gap-28",
+          !prefersReducedMotion &&
+            (direction === "left" ? "animate-partner-marquee-left" : "animate-partner-marquee-right")
+        )}
+      >
+        {track.map((partner, index) => (
+          <div
+            key={`${partner.id}-${index}`}
+            className="flex shrink-0 items-center justify-center px-2 sm:px-4"
+          >
+            <div className="flex min-w-[9rem] flex-col items-center sm:min-w-[11rem]">
+              <PartnerWordmarkVisual id={partner.id} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function TrustedPartners() {
+  const prefersReducedMotion = useReducedMotion();
+  const rowOne = partners;
+  const rowTwo = [...partners].reverse();
+
+  return (
+    <section
+      className="relative w-full overflow-hidden bg-background px-4 py-24 sm:px-6 lg:px-10"
+      aria-labelledby="trusted-partners-heading"
+    >
+      <div className="relative mx-auto max-w-350">
+        <SectionHeader
+          delay={0.2}
+          title={
+            <>
+              <span id="trusted-partners-heading">
+                Built for modern, client-obsessed,{" "}
+                <br className="hidden sm:block" />
+                revenue-responsible delivery teams
+              </span>
+            </>
+          }
+        />
+        <p className="sr-only">
+          Partner brands: {partners.map((p) => p.name).join(", ")}
+        </p>
+
+        <motion.div
+          className="group/marquee relative mt-14 sm:mt-16"
           initial={prefersReducedMotion ? false : { opacity: 0, y: 28 }}
           whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.7, ease: smoothEase }}
+          viewport={{ once: true, amount: 0.25 }}
+          transition={{ duration: 0.75, delay: 0.2, ease: smoothEase }}
         >
-          Built for modern, client-obsessed, <br className="hidden sm:block" />
-          revenue-responsible delivery teams
-        </motion.p>
+          <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-12 bg-linear-to-r from-background to-transparent sm:w-20" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-12 bg-linear-to-l from-background to-transparent sm:w-20" />
+
+          <div
+            className="space-y-12 sm:space-y-16 md:space-y-[4.5rem] motion-reduce:space-y-8 [&_.animate-partner-marquee-left]:group-hover/marquee:[animation-play-state:paused] [&_.animate-partner-marquee-right]:group-hover/marquee:[animation-play-state:paused]"
+          >
+            <MarqueeRow items={rowOne} direction="left" />
+            <MarqueeRow items={rowTwo} direction="right" />
+          </div>
+        </motion.div>
       </div>
-
-      <motion.div
-        className="relative mt-20 w-full overflow-hidden pb-4"
-        initial={prefersReducedMotion ? false : { opacity: 0 }}
-        whileInView={prefersReducedMotion ? undefined : { opacity: 1 }}
-        viewport={{ once: true, amount: 0.3 }}
-        transition={{ duration: 0.8, delay: 0.15, ease: smoothEase }}
-      >
-        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-linear-to-r from-background to-transparent" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-linear-to-l from-background to-transparent" />
-
-        <div ref={trackRef} className="flex w-max items-center gap-16 will-change-transform">
-          {marqueeItems.map((name, i) => (
-            <span
-              key={`${name}-${i}`}
-              className="shrink-0 text-2xl font-semibold tracking-tight text-foreground/70 transition-colors duration-300 hover:text-foreground sm:text-3xl"
-            >
-              {name}
-            </span>
-          ))}
-        </div>
-      </motion.div>
     </section>
   );
 }
