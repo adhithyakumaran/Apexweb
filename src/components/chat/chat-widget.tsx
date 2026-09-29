@@ -37,9 +37,12 @@ function PrismIcon({ className }: { className?: string }) {
   );
 }
 
+const TEASER_MESSAGE = "Hi! Here to help you.";
+
 export function ChatWidget() {
   const [config, setConfig] = useState<ChatConfig | null>(null);
   const [open, setOpen] = useState(false);
+  const [showTeaser, setShowTeaser] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
@@ -62,6 +65,15 @@ export function ChatWidget() {
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, loading]);
+
+  useEffect(() => {
+    if (open) {
+      setShowTeaser(false);
+      return;
+    }
+    const timer = window.setTimeout(() => setShowTeaser(true), 1500);
+    return () => window.clearTimeout(timer);
+  }, [open]);
 
   async function sendMessage(text: string) {
     const trimmed = text.trim();
@@ -209,6 +221,40 @@ export function ChatWidget() {
                 <Send className="size-4" />
               </button>
             </form>
+          </div>
+        )}
+
+        {!open && showTeaser && (
+          <div
+            role="dialog"
+            aria-label="Chat greeting"
+            className="animate-in fade-in slide-in-from-bottom-2 relative w-[min(17rem,calc(100vw-2rem))] rounded-2xl border border-neutral-200 bg-white p-4 shadow-xl duration-300"
+          >
+            <button
+              type="button"
+              onClick={() => setShowTeaser(false)}
+              className="absolute right-2 top-2 rounded-md p-1 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700"
+              aria-label="Dismiss greeting"
+            >
+              <X className="size-3.5" />
+            </button>
+            <p className="pr-6 text-sm font-medium leading-snug text-neutral-900">
+              {TEASER_MESSAGE}
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                setShowTeaser(false);
+                setOpen(true);
+              }}
+              className="mt-3 text-xs font-semibold text-primary hover:underline"
+            >
+              Ask a question →
+            </button>
+            <div
+              className="absolute -bottom-2 right-6 size-4 rotate-45 border-b border-r border-neutral-200 bg-white"
+              aria-hidden
+            />
           </div>
         )}
 
