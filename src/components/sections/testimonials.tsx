@@ -28,11 +28,16 @@ export function Testimonials() {
           transition={{ duration: 0.65, ease: smoothEase }}
         >
           <p className="text-sm font-medium uppercase tracking-[0.2em] text-muted-foreground">
-            What our partners say
+            Partner feedback
           </p>
           <h2 className="mt-4 text-3xl font-normal tracking-tight text-foreground sm:text-4xl lg:text-5xl">
-            Straight from the people we work with
+            How teams describe the value of automation
           </h2>
+          <p className="mt-4 text-base leading-relaxed text-muted-foreground">
+            Early partner feedback points to the same themes: less repetitive
+            work, faster validation, and more time for engineers to focus on
+            higher-value quality work.
+          </p>
         </motion.div>
 
         <div className="mx-auto mt-16 flex max-w-2xl flex-col gap-8">
