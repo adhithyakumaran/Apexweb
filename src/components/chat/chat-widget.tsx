@@ -228,17 +228,17 @@ export function ChatWidget() {
           <div
             role="dialog"
             aria-label="Chat greeting"
-            className="animate-in fade-in slide-in-from-bottom-2 relative w-[min(17rem,calc(100vw-2rem))] rounded-2xl border border-neutral-200 bg-white p-4 shadow-xl duration-300"
+            className="animate-in fade-in slide-in-from-bottom-2 relative w-[min(11.5rem,calc(100vw-2rem))] rounded-xl border border-neutral-200 bg-white px-3 py-2.5 shadow-lg duration-300"
           >
             <button
               type="button"
               onClick={() => setShowTeaser(false)}
-              className="absolute right-2 top-2 rounded-md p-1 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700"
+              className="absolute right-1 top-1 rounded-md p-0.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700"
               aria-label="Dismiss greeting"
             >
-              <X className="size-3.5" />
+              <X className="size-3" />
             </button>
-            <p className="pr-6 text-sm font-medium leading-snug text-neutral-900">
+            <p className="pr-5 text-[11px] font-medium leading-snug text-neutral-800">
               {TEASER_MESSAGE}
             </p>
             <button
@@ -247,12 +247,12 @@ export function ChatWidget() {
                 setShowTeaser(false);
                 setOpen(true);
               }}
-              className="mt-3 text-xs font-semibold text-primary hover:underline"
+              className="mt-1.5 text-[10px] font-semibold text-primary hover:underline"
             >
               Ask a question →
             </button>
             <div
-              className="absolute -bottom-2 right-6 size-4 rotate-45 border-b border-r border-neutral-200 bg-white"
+              className="absolute -bottom-1.5 right-5 size-3 rotate-45 border-b border-r border-neutral-200 bg-white"
               aria-hidden
             />
           </div>
