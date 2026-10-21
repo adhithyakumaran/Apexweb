@@ -1,90 +1,11 @@
-import {
-  Package,
-  FileText,
-  FileCode2,
-  MessageSquareText,
-  FileClock,
-  Layers3,
-} from "lucide-react";
-import { formatFileSize } from "@/lib/development/validation";
-import { formatDate, type HubData, type HubFile } from "@/lib/development/data";
+import { Package, MessageSquareText, FileClock, Layers3 } from "lucide-react";
+import { formatDate, type HubData } from "@/lib/development/data";
 import { addReleaseFiles } from "@/lib/development/actions";
 import { ActionForm, Input, Upload } from "./forms";
 import { ActionPanel } from "./action-panel";
-import { FileActions } from "./file-actions";
+import { Files } from "./files";
 function Empty({ children }: { children: React.ReactNode }) {
   return <p className="hub-empty">{children}</p>;
-}
-export function Files({
-  files,
-  kind,
-  id,
-  comments = false,
-}: {
-  files: HubFile[];
-  kind: string;
-  id: string;
-  comments?: boolean;
-}) {
-  return (
-    <ul className="hub-file-list">
-      {files
-        .filter((file) => file.parent_type === kind && file.parent_id === id)
-        .map((file) => {
-          const extension = file.name.split(".").pop()?.toUpperCase() || "FILE";
-          const installer = [
-            "EXE",
-            "MSI",
-            "DMG",
-            "APK",
-            "AAB",
-            "IPA",
-            "APPIMAGE",
-          ].includes(extension);
-          const Icon = installer ? FileCode2 : FileText;
-          return (
-            <li className="hub-file-card" key={file.id}>
-              <div className="hub-file-row">
-                <span
-                  className={`hub-file-icon ${installer ? "installer" : ""}`}
-                >
-                  <Icon size={19} aria-hidden="true" />
-                </span>
-                <div className="hub-file-name">
-                  <strong>{file.name}</strong>
-                  <small>
-                    <span className="hub-file-type">{extension}</span>
-                    {formatFileSize(file.original_size ?? file.size)}
-                    {file.compression === "gzip" && file.original_size ? (
-                      <span className="hub-compression">
-                        {" "}
-                        ·{" "}
-                        {((1 - file.size / file.original_size) * 100).toFixed(
-                          0,
-                        )}
-                        % smaller
-                      </span>
-                    ) : null}
-                  </small>
-                  {file.comment && (
-                    <p className="hub-file-comment">{file.comment}</p>
-                  )}
-                </div>
-              </div>
-              <FileActions
-                id={file.id}
-                name={file.name}
-                preview={/pdf|markdown|image\/|text\/plain/.test(
-                  file.mime_type,
-                )}
-                comment={file.comment}
-                comments={comments}
-              />
-            </li>
-          );
-        })}
-    </ul>
-  );
 }
 export function WorkspaceContent({ data }: { data: HubData }) {
   return (

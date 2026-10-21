@@ -23,6 +23,7 @@ export type Report = {
   created_at: string;
 };
 export type HubFile = {
+  sort_order: number;
   id: string;
   name: string;
   size: number;
@@ -42,6 +43,7 @@ async function readFiles(
     const { data, error } = await db
       .from("files")
       .select("*")
+      .order("sort_order")
       .order("created_at")
       .order("id")
       .range(start, start + 499);

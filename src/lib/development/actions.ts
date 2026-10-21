@@ -343,3 +343,40 @@ export async function deleteFile(_: Result, form: FormData): Promise<Result> {
   revalidatePath("/development", "layout");
   return { success: "File deleted." };
 }
+
+export async function reorderFiles(input: {
+  kind: string;
+  parentId: string;
+  ids: string[];
+}): Promise<Result> {
+  const { db } = await requireWorkspace();
+  const parsed = z
+    .object({
+      kind: z.enum([
+        "builds",
+        "documents",
+        "weekly_updates",
+        "testing_reports",
+      ]),
+      parentId: z.uuid(),
+      ids: z.array(z.uuid()).min(1),
+    })
+    .safeParse(input);
+  if (
+    !parsed.success ||
+    new Set(parsed.data.ids).size !== parsed.data.ids.length
+  )
+    return { error: "Invalid file order." };
+  const { error } = await db.rpc("hub_reorder_files", {
+    kind: parsed.data.kind,
+    parent: parsed.data.parentId,
+    ordered_ids: parsed.data.ids,
+  });
+  revalidatePath("/development", "layout");
+  if (error)
+    return {
+      error:
+        "Could not save the order. Refresh if files changed, or check the latest SQL update, then retry.",
+    };
+  return { success: "File order saved." };
+}

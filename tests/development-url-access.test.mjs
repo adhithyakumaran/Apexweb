@@ -400,3 +400,60 @@ test("file management permits safe renames and deletion across providers while p
     await db.close();
   }
 });
+
+test("file reordering persists atomically within a parent and new uploads append", async () => {
+  const db = await database();
+  try {
+    await db.exec(await read("testbuddy-url-access.sql"));
+    const parent = "20000000-0000-4000-8000-000000000006";
+    const other = "20000000-0000-4000-8000-000000000005";
+    const ids = [1, 2, 3, 4].map(
+      (n) => `80000000-0000-4000-8000-00000000000${n}`,
+    );
+    await db.exec(
+      `insert into builds(id,version,published) values ('${parent}','Ordered release',true),('${other}','Other release',true); set role anon;`,
+    );
+    for (let i = 0; i < 3; i++)
+      await db.exec(
+        `insert into files(id,storage_provider,path,name,size,original_size,mime_type,parent_type,parent_id) values ('${ids[i]}','r2','shared/order/${i}.exe','${i}.exe',100,100,'application/octet-stream','builds','${i === 2 ? other : parent}')`,
+      );
+    await db.exec(
+      `select public.hub_reorder_files('builds','${parent}',array['${ids[1]}','${ids[0]}']::uuid[])`,
+    );
+    const order = async () =>
+      (
+        await db.query(
+          `select id from files where parent_id='${parent}' order by sort_order`,
+        )
+      ).rows.map((row) => row.id);
+    assert.deepEqual(await order(), [ids[1], ids[0]]);
+    await assert.rejects(
+      db.exec(
+        `select public.hub_reorder_files('builds','${parent}',array['${ids[0]}','${ids[0]}']::uuid[])`,
+      ),
+      /file list changed/,
+    );
+    await assert.rejects(
+      db.exec(
+        `select public.hub_reorder_files('builds','${parent}',array['${ids[0]}','${ids[2]}']::uuid[])`,
+      ),
+      /file list changed/,
+    );
+    assert.deepEqual(await order(), [ids[1], ids[0]]);
+    await db.exec(
+      `insert into files(id,storage_provider,path,name,size,original_size,mime_type,parent_type,parent_id) values ('${ids[3]}','r2','shared/order/4.exe','4.exe',100,100,'application/octet-stream','builds','${parent}')`,
+    );
+    assert.deepEqual(await order(), [ids[1], ids[0], ids[3]]);
+    await assert.rejects(
+      db.exec(
+        `select public.hub_reorder_files('builds','${parent}',array['${ids[0]}','${ids[1]}']::uuid[])`,
+      ),
+      /file list changed/,
+    );
+    await db.exec("reset role");
+    await db.exec(await read("testbuddy-url-access.sql"));
+    assert.deepEqual(await order(), [ids[1], ids[0], ids[3]]);
+  } finally {
+    await db.close();
+  }
+});

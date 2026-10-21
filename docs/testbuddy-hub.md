@@ -10,6 +10,10 @@ There are no Documents, Tasks, calendar, membership, or sign-in screens. Existin
 
 Legacy section and release links redirect to the appropriate section or release card on `/development`. The theme/layout update requires no additional SQL.
 
+## Saved file order
+
+Run `supabase/migrations/202610220008_file_order.sql` after the file-management migration below. Drag a file by its grip handle to reorder it within its release or other parent entry. Mouse, touch, and keyboard dragging are supported; the three-dot menu also offers Move up and Move down. Orders save automatically, survive refresh, and newly uploaded files append to the end. Reordering cannot move files between releases. The database applies each ordering atomically and rejects stale, incomplete, or duplicate lists. Existing file order is backfilled from upload date and ID; rerunning the migration preserves saved order. Three-dot controls have no surrounding box.
+
 ## File management update
 
 Run `supabase/migrations/202610220007_file_management.sql` after the R2 migration below. Every file has a three-dot menu with Rename and Delete. Rename changes the displayed/download filename while preserving the extension, object path, and provider. Delete requires an inline confirmation, removes bytes from R2 or Supabase, and then removes the metadata entry. If metadata deletion fails after storage succeeds, retry Delete to finish. Empty release/report/progress entries remain available; deleting a file does not delete its parent entry. Release-file comments are also available inside the three-dot menu.

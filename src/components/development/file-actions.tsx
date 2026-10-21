@@ -8,6 +8,8 @@ import {
   MoreVertical,
   Pencil,
   Trash2,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
 import { FileDownload } from "./file-download";
 import { ActionForm, Textarea, Input } from "./forms";
@@ -35,12 +37,16 @@ export function FileActions({
   preview,
   comment,
   comments,
+  moveUp,
+  moveDown,
 }: {
   id: string;
   name: string;
   preview: boolean;
   comment: string;
   comments: boolean;
+  moveUp?: () => void;
+  moveDown?: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<"rename" | "delete" | null>(null);
@@ -103,6 +109,30 @@ export function FileActions({
             <MoreVertical size={16} aria-hidden="true" />
           </summary>
           <div className="hub-file-menu-items">
+            {moveUp && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (menu.current) menu.current.open = false;
+                  moveUp();
+                }}
+              >
+                <ArrowUp size={14} aria-hidden="true" />
+                Move up
+              </button>
+            )}
+            {moveDown && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (menu.current) menu.current.open = false;
+                  moveDown();
+                }}
+              >
+                <ArrowDown size={14} aria-hidden="true" />
+                Move down
+              </button>
+            )}
             {comments && (
               <button
                 type="button"
