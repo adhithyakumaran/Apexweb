@@ -138,7 +138,7 @@ test("releases accept EXE installers and separate guides/checksums; reports need
     assert.doesNotThrow(() => validateAttachment({ name, size: 100 }, true));
   }
   assert.doesNotThrow(() =>
-    validateAttachment({ name: "setup.EXE", size: 40 * 1024 * 1024 }, true),
+    validateAttachment({ name: "setup.EXE", size: 120 * 1024 * 1024 }, true),
   );
   assert.equal(
     recordSchemas.builds.safeParse({

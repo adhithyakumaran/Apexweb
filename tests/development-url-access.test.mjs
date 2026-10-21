@@ -160,7 +160,7 @@ test("simple releases group mixed files, allow later additions and comments, and
     for (const [index, name] of names.entries()) {
       const path = `shared/release-${index}/${name}`;
       await db.exec(`insert into storage.objects(bucket_id,name) values ('development-files','${path}');
-        insert into files(path,name,size,original_size,mime_type,parent_type,parent_id,comment) values ('${path}','${name}',${index === 0 ? 40 * 1024 * 1024 : 100},${index === 0 ? 40 * 1024 * 1024 : 100},'application/octet-stream','builds','${release}','Original comment')`);
+        insert into files(path,name,size,original_size,mime_type,parent_type,parent_id,comment) values ('${path}','${name}',${index === 0 ? 120 * 1024 * 1024 : 100},${index === 0 ? 120 * 1024 * 1024 : 100},'application/octet-stream','builds','${release}','Original comment')`);
     }
     assert.equal(
       (
@@ -201,7 +201,7 @@ test("simple releases group mixed files, allow later additions and comments, and
           "select file_size_limit from storage.buckets where id='development-files'",
         )
       ).rows[0].file_size_limit,
-      52428800,
+      262144000,
     );
     await db.exec(setup);
     assert.equal(
@@ -250,6 +250,26 @@ test("the small upgrade alone preserves existing installations and enables simpl
       null,
     );
     await db.exec("reset role");
+  } finally {
+    await db.close();
+  }
+});
+
+test("large-installer upgrade raises existing limits and remains repeatable", async () => {
+  const db = await database();
+  try {
+    await db.exec(await read("testbuddy-url-access.sql"));
+    await db.exec(await read("migrations/202610210004_simple_release_hub.sql"));
+    const migration = await read("migrations/202610220005_large_installers.sql");
+    await db.exec(migration);
+    await db.exec(migration);
+    assert.equal((await db.query("select file_size_limit from storage.buckets where id='development-files'")).rows[0].file_size_limit, 250 * 1024 * 1024);
+    const id = "20000000-0000-4000-8000-000000000009";
+    await db.exec(`insert into builds(id,version,published) values ('${id}','Large installer',true);
+      insert into storage.objects(bucket_id,name) values ('development-files','shared/large/setup.exe');
+      insert into files(path,name,size,original_size,mime_type,parent_type,parent_id) values ('shared/large/setup.exe','setup.exe',125829120,125829120,'application/octet-stream','builds','${id}')`);
+    await assert.rejects(db.exec("update files set size=262144001 where name='setup.exe'"), /files_size_check/);
+    await assert.rejects(db.exec("update files set original_size=262144001 where name='setup.exe'"), /files_original_size_check/);
   } finally {
     await db.close();
   }

@@ -235,7 +235,7 @@ export function Upload({
           {build
             ? "EXE, installers, ZIP, Markdown, PDF, text & checksums"
             : "PDF or Markdown"}{" "}
-          · 50 MB per file
+          · 250 MB per file
         </span>
         <input
           ref={input}

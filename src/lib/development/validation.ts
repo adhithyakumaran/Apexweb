@@ -45,7 +45,7 @@ export const recordSchemas = {
   }),
   events: z.object({ title, event_date: date }),
 };
-export const MAX_FILE_SIZE = 50 * 1024 * 1024;
+export const MAX_FILE_SIZE = 250 * 1024 * 1024;
 export const attachmentTypes = [
   "pdf",
   "md",
@@ -73,7 +73,7 @@ export function validateAttachment(
 ) {
   const extension = file.name.toLowerCase().split(".").pop() || "";
   if (file.size > MAX_FILE_SIZE)
-    throw new Error("Each file must be 50 MB or smaller.");
+    throw new Error("Each file must be 250 MB or smaller.");
   if (
     !(
       build

@@ -26,7 +26,7 @@ Configure `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` for the
 
 ## Uploads and storage
 
-Each original file may be up to **50 MB**. Releases accept multiple files per upload and more batches later; there is no combined 25 MB or five-file package cap. The project’s Supabase Storage settings and available quota must also permit the upload size. Files travel directly from the browser to Supabase, so bundle bytes do not pass through Vercel’s request-body limit. Server actions receive metadata only.
+Each original file may be up to **250 MB**. Existing installations must run `supabase/migrations/202610220005_large_installers.sql` and set the project-wide Storage file size limit to at least 250 MB in the Supabase Dashboard. Supabase Free projects have a 50 MB maximum; files above that require a plan that supports larger uploads, or an alternative file host. The SQL bucket limit cannot override the project-wide or plan limit. Releases accept multiple files per upload and more batches later; there is no combined 25 MB or five-file package cap. The project’s Supabase Storage settings and available quota must also permit the upload size. Files travel directly from the browser to Supabase, so bundle bytes do not pass through Vercel’s request-body limit. Server actions receive metadata only.
 
 Lossless compression is on by default and can be switched off. Gzip is retained only when it saves at least 1 KiB and 2%. Downloads and previews restore the exact original bytes and filename in the browser, preserving build signatures and image quality. Already-compressed files may not shrink. Older browsers without compression support upload originals; a reader unable to decompress can download a `.gz` archive and extract it locally.
 
