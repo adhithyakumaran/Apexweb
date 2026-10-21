@@ -1,54 +1,35 @@
 "use client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Package, Files, MessageSquareText, FileClock } from "lucide-react";
-const links = [
-  { label: "Releases", path: "/development", icon: Files },
-  {
-    label: "Reports",
-    path: "/development/reports",
-    icon: MessageSquareText,
-  },
-  { label: "Progress", path: "/development/progress", icon: FileClock },
-];
+import { Layers3, Package, MessageSquareText, FileClock } from "lucide-react";
+import { ThemeToggle } from "./theme";
 export function HubNavigation() {
-  const pathname = usePathname();
   return (
     <header className="hub-header">
       <div className="hub-header-inner">
         <Link href="/development" className="hub-brand">
           <span className="hub-brand-icon">
-            <Package size={19} aria-hidden="true" />
+            <Layers3 size={21} aria-hidden="true" />
           </span>
           <span>
             TestBuddy <span className="hub-brand-light">Hub</span>
           </span>
         </Link>
-        <span className="hub-shared">Development space</span>
+        <nav aria-label="Development" className="hub-navigation">
+          <Link href="/development#releases">
+            <Package size={15} aria-hidden="true" />
+            Releases
+          </Link>
+          <Link href="/development#reports">
+            <MessageSquareText size={15} aria-hidden="true" />
+            Reports
+          </Link>
+          <Link href="/development#progress">
+            <FileClock size={15} aria-hidden="true" />
+            Progress
+          </Link>
+        </nav>
+        <ThemeToggle />
       </div>
-      <nav aria-label="Development" className="hub-navigation">
-        <div>
-          {links.map(({ label, path, icon: Icon }) => (
-            <Link
-              key={path}
-              href={path}
-              aria-current={
-                (
-                  path === "/development"
-                    ? pathname === path ||
-                      pathname.startsWith("/development/releases")
-                    : pathname === path
-                )
-                  ? "page"
-                  : undefined
-              }
-            >
-              <Icon size={16} aria-hidden="true" />
-              {label}
-            </Link>
-          ))}
-        </div>
-      </nav>
     </header>
   );
 }

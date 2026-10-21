@@ -1,23 +1,14 @@
 import { notFound, redirect } from "next/navigation";
-import { getHubData } from "@/lib/development/data";
-import {
-  ReportsContent,
-  ProgressContent,
-} from "@/components/development/content";
-export default async function Section({
+export default async function LegacySection({
   params,
 }: {
   params: Promise<{ section: string }>;
 }) {
   const { section } = await params;
+  if (["reports", "testing"].includes(section))
+    redirect("/development#reports");
+  if (section === "progress") redirect("/development#progress");
   if (["builds", "releases", "documents", "tasks"].includes(section))
-    redirect("/development");
-  if (section === "testing") redirect("/development/reports");
-  if (!["reports", "progress"].includes(section)) notFound();
-  const data = await getHubData();
-  return section === "reports" ? (
-    <ReportsContent data={data} />
-  ) : (
-    <ProgressContent data={data} />
-  );
+    redirect("/development#releases");
+  notFound();
 }

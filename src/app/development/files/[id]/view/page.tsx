@@ -20,6 +20,7 @@ export default async function ViewFile({
     !file ||
     ![
       "text/markdown",
+      "text/plain",
       "application/pdf",
       "image/png",
       "image/jpeg",
@@ -35,7 +36,10 @@ export default async function ViewFile({
         : "";
   return (
     <div className="hub-stack">
-      <Link className="hub-text-link" href={`/development/${back}`}>
+      <Link
+        className="hub-text-link"
+        href={`/development#${back || "releases"}`}
+      >
         ← Back to {back || "releases"}
       </Link>
       <article className="hub-card">

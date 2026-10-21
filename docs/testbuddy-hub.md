@@ -1,12 +1,14 @@
 # TestBuddy Hub
 
-The mobile-first, monochrome workspace at `/development` has just three sections:
+The compact, mobile-first workspace at `/development` shows all three sections on one page. Dark mode is the default, with violet primary actions. The theme switch remembers your preference; light mode uses blue primary actions and green download buttons. The theme is scoped to the Hub and does not change the public site.
 
-1. **Releases:** create a release name such as “Release beta 1”, open its package, and add separate installer, guide, notes, or checksum files. Add more files later with no total package-file count limit. Each file can have a comment, entered during upload or edited afterwards. EXE files are explicitly supported, along with MSI, APK, ZIP, PDF, Markdown, TXT/SHA256, and the other accepted release formats.
+1. **Releases:** create a release name such as “Release beta 1”, and add separate installer, guide, notes, or checksum files. Add more files later with no total package-file count limit. Release cards show their files and View/Download actions directly on the home page. Each file can have a comment, entered during upload or edited afterwards. EXE files are explicitly supported, along with MSI, APK, ZIP, PDF, Markdown, TXT/SHA256, and the other accepted release formats.
 2. **Tester reports:** enter your name and upload a PDF or Markdown file. No findings form or release selection is required.
 3. **Progress:** enter an update name and upload a PDF or Markdown file. Dates are recorded automatically.
 
 There are no Documents, Tasks, calendar, membership, or sign-in screens. Existing database records in legacy tables are retained; this change does not delete previous content. Anyone who discovers the URL/API can read, upload, download, and edit release-file comments. The Hub is unlinked from public navigation, excluded in robots.txt, and sends noindex headers; these are not access controls.
+
+Legacy section and release links redirect to the appropriate section or release card on `/development`. The theme/layout update requires no additional SQL.
 
 ## Existing installations — one SQL update
 

@@ -56,23 +56,21 @@ async function attach(
   uploads: Upload[],
 ) {
   if (!uploads.length) return null;
-  const { error } = await db
-    .from("files")
-    .insert(
-      uploads.map((file) => ({
-        id: file.id,
-        path: file.path,
-        name: file.name,
-        size: file.size,
-        mime_type: attachmentMime(file.name),
-        compression: file.compression,
-        original_size: file.original_size ?? file.size,
-        comment: file.comment,
-        parent_type: kind,
-        parent_id: id,
-        created_by: null,
-      })),
-    );
+  const { error } = await db.from("files").insert(
+    uploads.map((file) => ({
+      id: file.id,
+      path: file.path,
+      name: file.name,
+      size: file.size,
+      mime_type: attachmentMime(file.name),
+      compression: file.compression,
+      original_size: file.original_size ?? file.size,
+      comment: file.comment,
+      parent_type: kind,
+      parent_id: id,
+      created_by: null,
+    })),
+  );
   return error;
 }
 export async function saveRecord(_: Result, form: FormData): Promise<Result> {
@@ -156,7 +154,7 @@ export async function saveRecord(_: Result, form: FormData): Promise<Result> {
         : kind === "testing_reports"
           ? "Report uploaded."
           : "Progress uploaded.",
-    ...(kind === "builds" ? { redirectTo: `/development/releases/${id}` } : {}),
+    ...(kind === "builds" ? { redirectTo: `/development#release-${id}` } : {}),
   };
 }
 export async function addReleaseFiles(

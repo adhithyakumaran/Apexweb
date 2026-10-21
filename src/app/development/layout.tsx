@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { HubTheme } from "@/components/development/theme";
 import { HubNavigation } from "@/components/development/navigation";
 import "./hub.css";
 import { UploadProvider } from "@/components/development/upload-provider";
@@ -16,7 +17,7 @@ export default function DevelopmentLayout({
 }) {
   return (
     <UploadProvider configuration={configuration()}>
-      <div className="hub">
+      <HubTheme>
         <a href="#hub-main" className="hub-skip">
           Skip to content
         </a>
@@ -28,7 +29,7 @@ export default function DevelopmentLayout({
           <span>TestBuddy Hub</span>
           <span>Build. Test. Improve.</span>
         </footer>
-      </div>
+      </HubTheme>
     </UploadProvider>
   );
 }

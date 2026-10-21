@@ -23,7 +23,7 @@ export function FilePreview({
     loadOriginalFile(id, controller.signal)
       .then(async ({ blob }) => {
         if (controller.signal.aborted) return;
-        if (mime === "text/markdown") {
+        if (mime === "text/markdown" || mime === "text/plain") {
           const text = await blob.text();
           if (!controller.signal.aborted) setState({ text });
         } else {
@@ -48,28 +48,23 @@ export function FilePreview({
           {state.error}
         </p>
       ) : state.text !== undefined ? (
-        <div className="hub-markdown">
-          <ReactMarkdown
-            skipHtml
-            components={{
-              img: ({ alt }) => <span>[Image: {alt || "attachment"}]</span>,
-            }}
-          >
-            {state.text}
-          </ReactMarkdown>
-        </div>
+        mime === "text/plain" ? (
+          <pre className="hub-plain-preview">{state.text}</pre>
+        ) : (
+          <div className="hub-markdown">
+            <ReactMarkdown
+              skipHtml
+              components={{
+                img: ({ alt }) => <span>[Image: {alt || "attachment"}]</span>,
+              }}
+            >
+              {state.text}
+            </ReactMarkdown>
+          </div>
+        )
       ) : state.url ? (
         mime === "application/pdf" ? (
-          <iframe
-            title={name}
-            src={state.url}
-            style={{
-              width: "100%",
-              minHeight: "70vh",
-              border: "1px solid #ddd",
-              marginTop: 20,
-            }}
-          />
+          <iframe title={name} src={state.url} className="hub-pdf-preview" />
         ) : (
           <Image
             src={state.url}

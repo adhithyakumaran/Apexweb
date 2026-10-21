@@ -11,6 +11,7 @@ import {
   attachmentMime,
   formatFileSize,
 } from "@/lib/development/validation";
+import { useCloseActionPanel } from "./action-panel";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { UploadCloud, FileText, X, LoaderCircle } from "lucide-react";
@@ -42,6 +43,7 @@ export function ActionForm({
 }) {
   const config = useUploadConfiguration();
   const router = useRouter();
+  const closePanel = useCloseActionPanel();
   const [state, dispatch] = useActionState(
     async (previous: Result, form: FormData): Promise<Result> => {
       const files = form
@@ -125,7 +127,8 @@ export function ActionForm({
   useEffect(() => {
     if (state.success && reset) ref.current?.reset();
     if (state.success && state.redirectTo) router.push(state.redirectTo);
-  }, [state, reset, router]);
+    if (state.success) closePanel?.();
+  }, [state, reset, router, closePanel]);
   return (
     <form action={dispatch} ref={ref} className="hub-form">
       {children}
