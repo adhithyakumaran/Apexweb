@@ -17,12 +17,5 @@ export default async function WorkspaceLayout({
         <p>No sign-in or passcode is required.</p>
       </section>
     );
-  return (
-    <>
-      <div className="hub-account">
-        <span>Shared workspace · Upload, download, and manage development</span>
-      </div>
-      {children}
-    </>
-  );
+  return <>{children}</>;
 }

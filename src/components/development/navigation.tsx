@@ -1,64 +1,49 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
-import { Menu, X, FolderOpen } from "lucide-react";
+import { Package, Files, MessageSquareText, FileClock } from "lucide-react";
 const links = [
-  ["Home", ""],
-  ["Documents", "/documents"],
-  ["Builds", "/builds"],
-  ["Progress", "/progress"],
-  ["Testing", "/testing"],
-  ["Tasks", "/tasks"],
+  { label: "Releases", path: "/development", icon: Files },
+  {
+    label: "Reports",
+    path: "/development/reports",
+    icon: MessageSquareText,
+  },
+  { label: "Progress", path: "/development/progress", icon: FileClock },
 ];
 export function HubNavigation() {
-  const [open, setOpen] = useState(false);
   const pathname = usePathname();
   return (
     <header className="hub-header">
       <div className="hub-header-inner">
-        <Link
-          href="/development"
-          className="hub-brand"
-          onClick={() => setOpen(false)}
-        >
+        <Link href="/development" className="hub-brand">
           <span className="hub-brand-icon">
-            <FolderOpen size={19} aria-hidden="true" />
+            <Package size={19} aria-hidden="true" />
           </span>
           <span>
             TestBuddy <span className="hub-brand-light">Hub</span>
           </span>
         </Link>
-        <span className="hub-private">Shared workspace</span>
-        <button
-          className="hub-menu-button"
-          onClick={() => setOpen(!open)}
-          aria-expanded={open}
-          aria-controls="hub-navigation"
-        >
-          {open ? (
-            <X size={18} aria-hidden="true" />
-          ) : (
-            <Menu size={18} aria-hidden="true" />
-          )}
-          {open ? "Close" : "Menu"}
-        </button>
+        <span className="hub-shared">Development space</span>
       </div>
-      <nav
-        aria-label="Development"
-        id="hub-navigation"
-        className={`hub-navigation ${open ? "is-open" : ""}`}
-      >
+      <nav aria-label="Development" className="hub-navigation">
         <div>
-          {links.map(([label, path]) => (
+          {links.map(({ label, path, icon: Icon }) => (
             <Link
-              key={label}
-              href={`/development${path}`}
-              onClick={() => setOpen(false)}
+              key={path}
+              href={path}
               aria-current={
-                pathname === `/development${path}` ? "page" : undefined
+                (
+                  path === "/development"
+                    ? pathname === path ||
+                      pathname.startsWith("/development/releases")
+                    : pathname === path
+                )
+                  ? "page"
+                  : undefined
               }
             >
+              <Icon size={16} aria-hidden="true" />
               {label}
             </Link>
           ))}

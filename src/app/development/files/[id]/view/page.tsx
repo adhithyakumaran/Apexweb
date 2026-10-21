@@ -31,12 +31,12 @@ export default async function ViewFile({
     file.parent_type === "weekly_updates"
       ? "progress"
       : file.parent_type === "testing_reports"
-        ? "testing"
-        : "documents";
+        ? "reports"
+        : "";
   return (
     <div className="hub-stack">
       <Link className="hub-text-link" href={`/development/${back}`}>
-        ← Back to {back}
+        ← Back to {back || "releases"}
       </Link>
       <article className="hub-card">
         <h1>{file.name}</h1>

@@ -1,11 +1,5 @@
 import { z } from "zod";
-export const sections = [
-  "documents",
-  "builds",
-  "progress",
-  "testing",
-  "tasks",
-] as const;
+export const sections = ["releases", "reports", "progress"] as const;
 export const taskStates = ["Open", "In progress", "Retest", "Done"] as const;
 const text = z.string().trim().min(1).max(20000);
 const title = z.string().trim().min(1).max(160);
@@ -13,9 +7,9 @@ const date = z.iso.date();
 export const recordSchemas = {
   builds: z.object({
     version: title,
-    release_notes: text,
-    instructions: text,
-    known_issues: z.string().trim().max(20000),
+    release_notes: z.string().trim().max(20000).default(""),
+    instructions: z.string().trim().max(20000).default(""),
+    known_issues: z.string().trim().max(20000).default(""),
     published: z.boolean(),
   }),
   documents: z.object({
@@ -26,6 +20,7 @@ export const recordSchemas = {
   }),
   weekly_updates: z
     .object({
+      title: title.optional(),
       week_start: date,
       week_end: date,
       summary: text,
@@ -36,9 +31,9 @@ export const recordSchemas = {
       "Reporting end must be on or after the start.",
     ),
   testing_reports: z.object({
-    build_id: z.uuid(),
+    build_id: z.uuid().nullable().default(null),
     tester_name: title,
-    findings: text,
+    findings: z.string().trim().max(20000).default(""),
   }),
   tasks: z.object({
     title,
@@ -50,7 +45,7 @@ export const recordSchemas = {
   }),
   events: z.object({ title, event_date: date }),
 };
-export const MAX_FILE_SIZE = 25 * 1024 * 1024;
+export const MAX_FILE_SIZE = 50 * 1024 * 1024;
 export const attachmentTypes = [
   "pdf",
   "md",
@@ -78,12 +73,18 @@ export function validateAttachment(
 ) {
   const extension = file.name.toLowerCase().split(".").pop() || "";
   if (file.size > MAX_FILE_SIZE)
-    throw new Error("Each file must be 25 MB or smaller.");
-  if (!(build ? buildTypes : attachmentTypes).includes(extension))
+    throw new Error("Each file must be 50 MB or smaller.");
+  if (
+    !(
+      build
+        ? [...buildTypes, ...attachmentTypes, "txt", "sha256", "sha256sum"]
+        : ["pdf", "md", "markdown"]
+    ).includes(extension)
+  )
     throw new Error(
       build
-        ? "Choose a supported build bundle."
-        : "Choose PDF, Markdown, PNG, JPEG, or WebP.",
+        ? "Choose an installer, archive, PDF, Markdown, text, checksum, or image file."
+        : "Choose a PDF or Markdown file.",
     );
   return extension;
 }
@@ -103,6 +104,9 @@ export function attachmentMime(name: string) {
         jpeg: "image/jpeg",
         webp: "image/webp",
         zip: "application/zip",
+        txt: "text/plain",
+        sha256: "text/plain",
+        sha256sum: "text/plain",
       } as Record<string, string>
     )[extension || ""] || "application/octet-stream"
   );
@@ -113,6 +117,7 @@ export const stagedFileSchema = z
     name: z.string().min(1).max(255),
     path: z.string().max(200),
     size: z.number().int().positive().max(MAX_FILE_SIZE),
+    comment: z.string().trim().max(2000).default(""),
     compression: z.enum(["none", "gzip"]).default("none"),
     original_size: z.number().int().positive().max(MAX_FILE_SIZE).optional(),
   })
@@ -127,3 +132,9 @@ export const stagedFileSchema = z
         : f.original_size === undefined || f.original_size === f.size,
     "Invalid compression metadata",
   );
+
+export function formatFileSize(size: number) {
+  if (size >= 1024 * 1024) return `${(size / 1024 / 1024).toFixed(1)} MB`;
+  if (size >= 1024) return `${Math.ceil(size / 1024)} KB`;
+  return `${size} B`;
+}

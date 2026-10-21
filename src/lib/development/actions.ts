@@ -4,95 +4,113 @@ import { z } from "zod";
 import { requireWorkspace } from "./supabase";
 import {
   recordSchemas,
-  taskStates,
   validateAttachment,
-  MAX_FILE_SIZE,
   stagedFileSchema,
   attachmentMime,
 } from "./validation";
-export type Result = { error?: string; success?: string; keepFiles?: boolean };
+export type Result = {
+  error?: string;
+  success?: string;
+  keepFiles?: boolean;
+  redirectTo?: string;
+};
 const field = (form: FormData, name: string) => String(form.get(name) || "");
-const nullable = (form: FormData, name: string) => field(form, name) || null;
+type Upload = z.infer<typeof stagedFileSchema>;
+function readUploads(form: FormData, release: boolean): Upload[] {
+  if (form.getAll("attachments").some((v) => v instanceof File && v.size > 0))
+    throw new Error("Enable JavaScript for direct file uploads.");
+  let uploads: Upload[];
+  try {
+    uploads = z
+      .array(stagedFileSchema)
+      .parse(JSON.parse(field(form, "staged_files") || "[]"));
+  } catch {
+    throw new Error("Upload metadata is invalid. Choose the files again.");
+  }
+  uploads.forEach((file) =>
+    validateAttachment(
+      { name: file.name, size: file.original_size ?? file.size },
+      release,
+    ),
+  );
+  return uploads;
+}
+async function verifyUploads(
+  db: Awaited<ReturnType<typeof requireWorkspace>>["db"],
+  uploads: Upload[],
+) {
+  for (const file of uploads) {
+    const { data, error } = await db.storage
+      .from("development-files")
+      .info(file.path);
+    if (error || !data || data.size !== file.size)
+      throw new Error(
+        "An uploaded file could not be verified. Please try again.",
+      );
+  }
+}
+async function attach(
+  db: Awaited<ReturnType<typeof requireWorkspace>>["db"],
+  kind: string,
+  id: string,
+  uploads: Upload[],
+) {
+  if (!uploads.length) return null;
+  const { error } = await db
+    .from("files")
+    .insert(
+      uploads.map((file) => ({
+        id: file.id,
+        path: file.path,
+        name: file.name,
+        size: file.size,
+        mime_type: attachmentMime(file.name),
+        compression: file.compression,
+        original_size: file.original_size ?? file.size,
+        comment: file.comment,
+        parent_type: kind,
+        parent_id: id,
+        created_by: null,
+      })),
+    );
+  return error;
+}
 export async function saveRecord(_: Result, form: FormData): Promise<Result> {
   const { db } = await requireWorkspace();
   const kind = field(form, "kind");
-  if (!Object.hasOwn(recordSchemas, kind))
-    return { error: "Unsupported content type." };
+  if (!["builds", "testing_reports", "weekly_updates"].includes(kind))
+    return { error: "Choose Releases, Tester reports, or Progress." };
+  const date = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
   const raw = Object.fromEntries(form.entries());
-  const schema = recordSchemas[kind as keyof typeof recordSchemas];
+  const schema =
+    recordSchemas[kind as "builds" | "testing_reports" | "weekly_updates"];
   const parsed = schema.safeParse({
     ...raw,
-    published: form.get("published") === "on",
-    active: form.get("active") === "on",
-    owner_id: nullable(form, "owner_id"),
-    report_id: nullable(form, "report_id"),
+    published: true,
+    build_id: field(form, "build_id") || null,
+    week_start: field(form, "week_start") || date,
+    week_end: field(form, "week_end") || date,
+    summary: field(form, "summary") || field(form, "title"),
   });
   if (!parsed.success)
     return {
       error: parsed.error.issues[0]?.message || "Check the form fields.",
     };
-  if (
-    form
-      .getAll("attachments")
-      .some((value) => value instanceof File && value.size > 0)
-  )
-    return { error: "Enable JavaScript to upload files directly to Supabase." };
-  let uploads: z.infer<typeof stagedFileSchema>[];
+  let uploads: Upload[];
   try {
-    uploads = z
-      .array(stagedFileSchema)
-      .max(5)
-      .parse(JSON.parse(field(form, "staged_files") || "[]"));
-  } catch {
-    return { error: "Upload metadata is invalid. Choose the files again." };
-  }
-  if (
-    uploads.reduce((sum, file) => sum + (file.original_size ?? file.size), 0) >
-    MAX_FILE_SIZE
-  )
-    return { error: "Attachments must total 25 MB or less." };
-  if (uploads.length > 5)
-    return { error: "Attach up to five files per submission." };
-  try {
-    uploads.forEach((file) => validateAttachment(file, kind === "builds"));
-  } catch (e) {
-    return { error: (e as Error).message };
-  }
-  if ((kind === "builds" || kind === "weekly_updates") && uploads.length === 0)
-    return {
-      error:
-        kind === "builds"
-          ? "Attach a build bundle."
-          : "Attach the weekly PDF or Markdown report.",
-    };
-  if (
-    kind === "weekly_updates" &&
-    uploads.some((f) => !/\.(pdf|md|markdown)$/i.test(f.name))
-  )
-    return { error: "Weekly reports must be PDF or Markdown." };
-  if (
-    kind === "documents" &&
-    !("body" in parsed.data && parsed.data.body) &&
-    uploads.length === 0
-  )
-    return { error: "Enter Markdown content or attach a document." };
-  if (
-    kind === "documents" &&
-    uploads.some((f) => !/\.(pdf|md|markdown)$/i.test(f.name))
-  )
-    return { error: "Documents must be PDF or Markdown." };
-  for (const file of uploads) {
-    const { data: info, error } = await db.storage
-      .from("development-files")
-      .info(file.path);
-    if (error || !info || info.size !== file.size)
-      return {
-        error:
-          "An uploaded file could not be verified. Choose the files again.",
-      };
+    uploads = readUploads(form, kind === "builds");
+    if (kind !== "builds" && !uploads.length)
+      return { error: "Attach a PDF or Markdown file." };
+    await verifyUploads(db, uploads);
+  } catch (cause) {
+    return { error: (cause as Error).message };
   }
   const id = crypto.randomUUID();
-  const publishing = "published" in parsed.data && parsed.data.published;
   const content =
     "published" in parsed.data
       ? { ...parsed.data, published: false }
@@ -103,120 +121,92 @@ export async function saveRecord(_: Result, form: FormData): Promise<Result> {
   if (createError)
     return {
       error:
-        "Could not save. Check the URL-access database setup and referenced records.",
+        createError.code === "23505"
+          ? "That release name already exists. Open it to add more files."
+          : "Could not save. Check the latest SQL setup and your connection.",
     };
-  const paths: string[] = [];
-  try {
-    for (const file of uploads) {
-      const path = file.path;
-      const fileId = file.id;
-      const mime = attachmentMime(file.name);
-      paths.push(path);
-      const { error: metadataError } = await db.from("files").insert({
-        id: fileId,
-        path,
-        name: file.name,
-        size: file.size,
-        mime_type: mime,
-        compression: file.compression,
-        original_size: file.original_size ?? file.size,
-        parent_type: kind,
-        parent_id: id,
-        created_by: null,
-      });
-      if (metadataError) throw metadataError;
-    }
-  } catch {
-    const removed = paths.length
-      ? await db.storage.from("development-files").remove(paths)
-      : { error: null };
-    const rolledBack = await db.from(kind).delete().eq("id", id);
+  const attachmentError = await attach(db, kind, id, uploads);
+  if (attachmentError) {
+    const { error } = await db.from(kind).delete().eq("id", id);
     revalidatePath("/development", "layout");
     return {
-      error:
-        rolledBack.error || removed.error
-          ? "Upload failed and cleanup could not be completed. Check for an incomplete submission in the list before retrying."
-          : "Upload failed; the submission was not kept. Check the private Storage bucket and try again.",
-      keepFiles: Boolean(rolledBack.error),
+      error: error
+        ? "Could not attach all files. Check the list for an incomplete entry before retrying."
+        : "Could not attach the files. Please try again.",
+      keepFiles: !!error,
     };
   }
-  if (publishing) {
+  if ("published" in parsed.data) {
     const { error } = await db
       .from(kind)
       .update({ published: true })
       .eq("id", id);
-    if (error) {
-      revalidatePath("/development", "layout");
+    if (error)
       return {
         error:
-          "Files were saved as a draft, but publishing failed. Retry Publish from the list.",
+          "The entry and files were saved, but publishing failed. Check the list before retrying.",
         keepFiles: true,
       };
-    }
   }
   revalidatePath("/development", "layout");
   return {
     success:
-      kind === "testing_reports"
-        ? "Testing report submitted."
-        : "published" in parsed.data && !parsed.data.published
-          ? "Draft saved. Publish it from the list when ready."
-          : "Saved successfully.",
+      kind === "builds"
+        ? "Release created."
+        : kind === "testing_reports"
+          ? "Report uploaded."
+          : "Progress uploaded.",
+    ...(kind === "builds" ? { redirectTo: `/development/releases/${id}` } : {}),
   };
 }
-export async function changeTask(_: Result, form: FormData): Promise<Result> {
-  const { db } = await requireWorkspace();
-  const parsed = z
-    .object({ id: z.uuid(), status: z.enum(taskStates) })
-    .safeParse({ id: field(form, "id"), status: field(form, "status") });
-  if (!parsed.success) return { error: "Choose a valid task and status." };
-  const query = db
-    .from("tasks")
-    .update({ status: parsed.data.status })
-    .eq("id", parsed.data.id);
-  const { data, error } = await query.select("id");
-  if (error || !data?.length) return { error: "Could not update this task." };
-  revalidatePath("/development", "layout");
-  return { success: "Task status updated." };
-}
-export async function publishRecord(
+export async function addReleaseFiles(
   _: Result,
   form: FormData,
 ): Promise<Result> {
   const { db } = await requireWorkspace();
-  const kind = field(form, "kind");
-  if (
-    !["builds", "documents", "weekly_updates"].includes(kind) ||
-    !z.uuid().safeParse(field(form, "id")).success
-  )
-    return { error: "Invalid record." };
-  const { error, data } = await db
-    .from(kind)
-    .update({ published: true })
-    .eq("id", field(form, "id"))
+  const id = z.uuid().safeParse(field(form, "release_id"));
+  if (!id.success) return { error: "Choose a valid release." };
+  const { data: release, error } = await db
+    .from("builds")
+    .select("id")
+    .eq("id", id.data)
+    .maybeSingle();
+  if (error || !release) return { error: "This release could not be found." };
+  let uploads: Upload[];
+  try {
+    uploads = readUploads(form, true);
+    if (!uploads.length) return { error: "Choose at least one file." };
+    await verifyUploads(db, uploads);
+  } catch (cause) {
+    return { error: (cause as Error).message };
+  }
+  if (await attach(db, "builds", id.data, uploads))
+    return { error: "Could not add these files. Please try again." };
+  revalidatePath("/development", "layout");
+  return {
+    success: `${uploads.length} ${uploads.length === 1 ? "file" : "files"} added to the release.`,
+  };
+}
+export async function saveFileComment(
+  _: Result,
+  form: FormData,
+): Promise<Result> {
+  const { db } = await requireWorkspace();
+  const parsed = z
+    .object({ id: z.uuid(), comment: z.string().trim().max(2000) })
+    .safeParse({ id: field(form, "id"), comment: field(form, "comment") });
+  if (!parsed.success)
+    return { error: "Comments must be 2,000 characters or fewer." };
+  const { data, error } = await db
+    .from("files")
+    .update({ comment: parsed.data.comment })
+    .eq("id", parsed.data.id)
+    .eq("parent_type", "builds")
     .select("id");
   if (error || !data?.length)
-    return { error: "Could not publish this record." };
+    return {
+      error: "Could not save the comment. Check the latest SQL update.",
+    };
   revalidatePath("/development", "layout");
-  return { success: "Published to the workspace." };
-}
-
-export async function updateTask(_: Result, form: FormData): Promise<Result> {
-  const { db } = await requireWorkspace();
-  const id = z.uuid().safeParse(field(form, "id"));
-  const parsed = recordSchemas.tasks.safeParse({
-    ...Object.fromEntries(form.entries()),
-    owner_id: nullable(form, "owner_id"),
-    report_id: nullable(form, "report_id"),
-  });
-  if (!id.success || !parsed.success)
-    return { error: "Check the task fields, owner, and related report." };
-  const { data, error } = await db
-    .from("tasks")
-    .update(parsed.data)
-    .eq("id", id.data)
-    .select("id");
-  if (error || !data?.length) return { error: "Could not update this task." };
-  revalidatePath("/development", "layout");
-  return { success: "Task details saved." };
+  return { success: "Comment saved." };
 }

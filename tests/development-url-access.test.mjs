@@ -138,3 +138,119 @@ test("setup recovers when tables exist but bootstrap functions and policies are 
     await db.close();
   }
 });
+
+test("simple releases group mixed files, allow later additions and comments, and accept unlinked reports", async () => {
+  const db = await database();
+  try {
+    const setup = await read("testbuddy-url-access.sql");
+    await db.exec(setup);
+    await db.exec("set role anon");
+    const release = "20000000-0000-4000-8000-000000000009";
+    await db.exec(
+      `insert into builds(id,version,published) values ('${release}','Release beta 1',true)`,
+    );
+    const names = [
+      "TestBuddy-0.1.0-beta.1-x64-Setup.exe",
+      "README-Installation.md",
+      "Acceptance-Testing-Guide.md",
+      "Known-Issues.md",
+      "SHA256.txt",
+      "additional-notes.md",
+    ];
+    for (const [index, name] of names.entries()) {
+      const path = `shared/release-${index}/${name}`;
+      await db.exec(`insert into storage.objects(bucket_id,name) values ('development-files','${path}');
+        insert into files(path,name,size,original_size,mime_type,parent_type,parent_id,comment) values ('${path}','${name}',${index === 0 ? 40 * 1024 * 1024 : 100},${index === 0 ? 40 * 1024 * 1024 : 100},'application/octet-stream','builds','${release}','Original comment')`);
+    }
+    assert.equal(
+      (
+        await db.query(
+          `select count(*)::int as n from files where parent_id='${release}'`,
+        )
+      ).rows[0].n,
+      6,
+    );
+    await db.exec(
+      "update files set comment='Install this file first' where name='TestBuddy-0.1.0-beta.1-x64-Setup.exe'",
+    );
+    assert.equal(
+      (
+        await db.query(
+          "select comment from files where name='TestBuddy-0.1.0-beta.1-x64-Setup.exe'",
+        )
+      ).rows[0].comment,
+      "Install this file first",
+    );
+    await assert.rejects(
+      db.exec(
+        "update files set path='shared/tampered/file.exe' where name='TestBuddy-0.1.0-beta.1-x64-Setup.exe'",
+      ),
+      /Only the file comment/,
+    );
+    await db.exec(
+      "insert into testing_reports(tester_name) values ('Tester without a build selection'); insert into weekly_updates(title,week_start,week_end,summary,published) values ('Beta progress','2026-10-21','2026-10-21','Beta progress',true)",
+    );
+    assert.equal(
+      (await db.query("select build_id from testing_reports")).rows[0].build_id,
+      null,
+    );
+    await db.exec("reset role");
+    assert.equal(
+      (
+        await db.query(
+          "select file_size_limit from storage.buckets where id='development-files'",
+        )
+      ).rows[0].file_size_limit,
+      52428800,
+    );
+    await db.exec(setup);
+    assert.equal(
+      (
+        await db.query(
+          `select count(*)::int as n from files where parent_id='${release}'`,
+        )
+      ).rows[0].n,
+      6,
+    );
+  } finally {
+    await db.close();
+  }
+});
+
+test("the small upgrade alone preserves existing installations and enables simple reports", async () => {
+  const db = await database();
+  try {
+    for (const name of [
+      "202610210001_testbuddy_hub.sql",
+      "202610210002_url_access.sql",
+      "202610210003_lossless_uploads.sql",
+    ])
+      await db.exec(await read("migrations/" + name));
+    await db.exec(
+      "insert into builds(version,release_notes,instructions,published) values ('Existing beta','Notes','Install',true); insert into weekly_updates(week_start,week_end,summary) values ('2026-10-19','2026-10-25','Existing progress')",
+    );
+    const upgrade = await read(
+      "migrations/202610210004_simple_release_hub.sql",
+    );
+    await db.exec(upgrade);
+    await db.exec(upgrade);
+    assert.equal(
+      (await db.query("select title from weekly_updates")).rows[0].title,
+      "Existing progress",
+    );
+    assert.equal(
+      (await db.query("select version from builds")).rows[0].version,
+      "Existing beta",
+    );
+    await db.exec(
+      "set role anon; insert into testing_reports(tester_name) values ('Sam')",
+    );
+    assert.equal(
+      (await db.query("select build_id from testing_reports")).rows[0].build_id,
+      null,
+    );
+    await db.exec("reset role");
+  } finally {
+    await db.close();
+  }
+});

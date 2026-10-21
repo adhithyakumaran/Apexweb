@@ -34,7 +34,7 @@ test("weekly reporting periods reject inverted and invalid dates", () => {
     true,
   );
 });
-test("testing reports require an actual build identifier and findings", () => {
+test("tester reports reject invalid release identifiers and require a name", () => {
   assert.equal(
     recordSchemas.testing_reports.safeParse({ build_id: "", findings: "Issue" })
       .success,
@@ -96,14 +96,62 @@ test("URL-access reports require a self-reported tester name", () => {
   );
 });
 
-test('direct-upload metadata binds the path to its identifier and sanitised filename', async () => {
-  const { stagedFileSchema, attachmentMime } = await import('../src/lib/development/validation');
-  const id = '10000000-0000-4000-8000-000000000001';
-  const file = { id, name: 'build release.zip', size: 6 * 1024 * 1024, path: `shared/${id}/build_release.zip` };
+test("direct-upload metadata binds the path to its identifier and sanitised filename", async () => {
+  const { stagedFileSchema, attachmentMime } =
+    await import("../src/lib/development/validation");
+  const id = "10000000-0000-4000-8000-000000000001";
+  const file = {
+    id,
+    name: "build release.zip",
+    size: 6 * 1024 * 1024,
+    path: `shared/${id}/build_release.zip`,
+  };
   assert.equal(stagedFileSchema.safeParse(file).success, true);
-  assert.equal(stagedFileSchema.safeParse({ ...file, path: '../other-bucket/build.zip' }).success, false);
-  assert.equal(stagedFileSchema.safeParse({ ...file, path: 'shared/someone-else/build.zip' }).success, false);
-  assert.equal(stagedFileSchema.safeParse({ ...file, size: MAX_FILE_SIZE + 1 }).success, false);
-  assert.equal(attachmentMime('report.pdf'), 'application/pdf');
-  assert.equal(attachmentMime('screenshot.png'), 'image/png');
+  assert.equal(
+    stagedFileSchema.safeParse({ ...file, path: "../other-bucket/build.zip" })
+      .success,
+    false,
+  );
+  assert.equal(
+    stagedFileSchema.safeParse({
+      ...file,
+      path: "shared/someone-else/build.zip",
+    }).success,
+    false,
+  );
+  assert.equal(
+    stagedFileSchema.safeParse({ ...file, size: MAX_FILE_SIZE + 1 }).success,
+    false,
+  );
+  assert.equal(attachmentMime("report.pdf"), "application/pdf");
+  assert.equal(attachmentMime("screenshot.png"), "image/png");
+});
+
+test("releases accept EXE installers and separate guides/checksums; reports need only a name", () => {
+  for (const name of [
+    "TestBuddy-0.1.0-beta.1-x64-Setup.exe",
+    "README-Installation.md",
+    "Acceptance-Testing-Guide.md",
+    "Known-Issues.md",
+    "SHA256.txt",
+  ]) {
+    assert.doesNotThrow(() => validateAttachment({ name, size: 100 }, true));
+  }
+  assert.doesNotThrow(() =>
+    validateAttachment({ name: "setup.EXE", size: 40 * 1024 * 1024 }, true),
+  );
+  assert.equal(
+    recordSchemas.builds.safeParse({
+      version: "Release beta 1",
+      published: true,
+    }).success,
+    true,
+  );
+  assert.equal(
+    recordSchemas.testing_reports.safeParse({ tester_name: "Sam" }).success,
+    true,
+  );
+  assert.throws(() =>
+    validateAttachment({ name: "report.png", size: 100 }, false),
+  );
 });

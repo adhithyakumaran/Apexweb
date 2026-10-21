@@ -1,27 +1,31 @@
 "use client";
 import { useActionState, useEffect, useRef, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
-import {
-  saveRecord,
-  changeTask,
-  publishRecord,
-  type Result,
-} from "@/lib/development/actions";
+import { saveRecord, type Result } from "@/lib/development/actions";
 import { compressUpload } from "@/lib/development/compression";
 import { createClient } from "@supabase/supabase-js";
 import { useUploadConfiguration } from "./upload-provider";
 import {
-  MAX_FILE_SIZE,
   validateAttachment,
   safeFilename,
   attachmentMime,
+  formatFileSize,
 } from "@/lib/development/validation";
-import { taskStates } from "@/lib/development/validation";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { UploadCloud, FileText, X, LoaderCircle } from "lucide-react";
 function Submit({ children }: { children: ReactNode }) {
   const { pending } = useFormStatus();
   return (
     <button className="hub-button" disabled={pending} type="submit">
-      {pending ? "Saving…" : children}
+      {pending ? (
+        <>
+          <LoaderCircle size={16} className="hub-spin" aria-hidden="true" />{" "}
+          Saving…
+        </>
+      ) : (
+        children
+      )}
     </button>
   );
 }
@@ -37,6 +41,7 @@ export function ActionForm({
   reset?: boolean;
 }) {
   const config = useUploadConfiguration();
+  const router = useRouter();
   const [state, dispatch] = useActionState(
     async (previous: Result, form: FormData): Promise<Result> => {
       const files = form
@@ -46,11 +51,6 @@ export function ActionForm({
         );
       if (!files.length) return action(previous, form);
       if (!config) return { error: "Connect Supabase before uploading files." };
-      if (
-        files.length > 5 ||
-        files.reduce((sum, f) => sum + f.size, 0) > MAX_FILE_SIZE
-      )
-        return { error: "Choose up to five files totalling 25 MB or less." };
       try {
         files.forEach((file) =>
           validateAttachment(file, form.get("kind") === "builds"),
@@ -67,7 +67,7 @@ export function ActionForm({
       }).storage.from("development-files");
       const staged = [];
       let storedBytes = 0;
-      for (const file of files) {
+      for (const [index, file] of files.entries()) {
         const id = crypto.randomUUID();
         const path = `shared/${id}/${safeFilename(file.name)}`;
         const prepared = await compressUpload(
@@ -96,6 +96,7 @@ export function ActionForm({
           size: prepared.blob.size,
           compression: prepared.compression,
           original_size: file.size,
+          comment: String(form.get(`file_comment_${index}`) || ""),
         });
       }
       // Only metadata traverses Vercel; bundle bytes go directly to Supabase.
@@ -123,7 +124,8 @@ export function ActionForm({
   const ref = useRef<HTMLFormElement>(null);
   useEffect(() => {
     if (state.success && reset) ref.current?.reset();
-  }, [state, reset]);
+    if (state.success && state.redirectTo) router.push(state.redirectTo);
+  }, [state, reset, router]);
   return (
     <form action={dispatch} ref={ref} className="hub-form">
       {children}
@@ -198,76 +200,93 @@ export function Textarea({
 export function Upload({
   build = false,
   required = false,
-  documents = false,
+  multiple = true,
 }: {
   build?: boolean;
   required?: boolean;
-  documents?: boolean;
+  multiple?: boolean;
 }) {
+  const [selected, setSelected] = useState<File[]>([]);
+  const input = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    const form = input.current?.form;
+    const reset = () => setSelected([]);
+    form?.addEventListener("reset", reset);
+    return () => form?.removeEventListener("reset", reset);
+  }, []);
+  function remove(index: number) {
+    const remaining = selected.filter((_, i) => i !== index);
+    const transfer = new DataTransfer();
+    remaining.forEach((file) => transfer.items.add(file));
+    if (input.current) input.current.files = transfer.files;
+    setSelected(remaining);
+  }
   return (
-    <>
-      <label className="hub-field">
-        {build ? "Build bundle" : "Attachments"}
+    <div className="hub-upload-field">
+      <label className="hub-upload-zone">
+        <span className="hub-upload-icon">
+          <UploadCloud size={22} aria-hidden="true" />
+        </span>
+        <strong>{multiple ? "Choose files" : "Choose a file"}</strong>
+        <span>
+          {build
+            ? "EXE, installers, ZIP, Markdown, PDF, text & checksums"
+            : "PDF or Markdown"}{" "}
+          · 50 MB per file
+        </span>
         <input
+          ref={input}
           type="file"
           name="attachments"
-          multiple
+          multiple={multiple}
           required={required}
           accept={
             build
-              ? ".zip,.apk,.aab,.ipa,.exe,.msi,.dmg,.tar,.gz,.appimage"
-              : documents
-                ? ".pdf,.md,.markdown"
-                : ".pdf,.md,.markdown,.png,.jpg,.jpeg,.webp"
+              ? ".exe,.msi,.zip,.apk,.aab,.ipa,.dmg,.tar,.gz,.appimage,.pdf,.md,.markdown,.txt,.sha256,.sha256sum,.png,.jpg,.jpeg,.webp"
+              : ".pdf,.md,.markdown"
+          }
+          onChange={(event) =>
+            setSelected(Array.from(event.target.files || []))
           }
         />
-        <span className="hub-muted">
-          Up to 5 files · 25 MB total
-          {!build &&
-            (documents
-              ? " · PDF or Markdown"
-              : " · PDF, Markdown, or screenshots")}
-        </span>
       </label>
+      {selected.length > 0 && (
+        <ul className="hub-selected-files">
+          {selected.map((file, index) => (
+            <li key={`${file.name}-${index}`}>
+              <div>
+                <FileText size={16} aria-hidden="true" />
+                <span>
+                  {file.name}
+                  <small>{formatFileSize(file.size)}</small>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => remove(index)}
+                  aria-label={`Remove ${file.name}`}
+                >
+                  <X size={16} />
+                </button>
+              </div>
+              {build && (
+                <label className="hub-field">
+                  <span className="hub-sr-only">Comment for {file.name}</span>
+                  <input
+                    name={`file_comment_${index}`}
+                    placeholder="Add a comment (optional)"
+                    maxLength={2000}
+                  />
+                </label>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
       <label className="hub-check">
         <input type="checkbox" name="compress_uploads" defaultChecked />{" "}
-        Lossless compression
+        Lossless compression{" "}
+        <span className="hub-muted">· original quality</span>
       </label>
-      <p className="hub-muted">
-        Saves space when possible. Downloads restore the exact original file;
-        already-compressed files may stay the same size.
-      </p>
-    </>
-  );
-}
-export function PublishCheckbox() {
-  return (
-    <label className="hub-check">
-      <input type="checkbox" name="published" defaultChecked /> Publish to the
-      workspace now
-    </label>
-  );
-}
-export function PublishButton({ kind, id }: { kind: string; id: string }) {
-  return (
-    <ActionForm action={publishRecord} label="Publish">
-      <input type="hidden" name="kind" value={kind} />
-      <input type="hidden" name="id" value={id} />
-    </ActionForm>
-  );
-}
-export function StatusForm({ id, status }: { id: string; status: string }) {
-  return (
-    <ActionForm action={changeTask} label="Update status" reset={false}>
-      <input type="hidden" name="id" value={id} />
-      <label className="hub-field">
-        Status
-        <select name="status" defaultValue={status}>
-          {taskStates.map((s) => (
-            <option key={s}>{s}</option>
-          ))}
-        </select>
-      </label>
-    </ActionForm>
+    </div>
   );
 }

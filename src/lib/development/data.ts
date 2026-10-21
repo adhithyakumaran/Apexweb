@@ -9,40 +9,19 @@ export type Build = {
   published: boolean;
   created_at: string;
 };
-export type Document = {
+export type Progress = {
   id: string;
   title: string;
-  category: string;
-  body: string;
-  published: boolean;
-  created_at: string;
-};
-export type WeeklyUpdate = {
-  id: string;
-  week_start: string;
-  week_end: string;
   summary: string;
-  published: boolean;
   created_at: string;
 };
 export type Report = {
   id: string;
-  build_id: string;
-  findings: string;
+  build_id: string | null;
   tester_name: string;
+  findings: string;
   created_at: string;
 };
-export type Task = {
-  id: string;
-  title: string;
-  description: string;
-  owner_name: string;
-  report_id: string | null;
-  priority: string;
-  status: string;
-  created_at: string;
-};
-export type Event = { id: string; title: string; event_date: string };
 export type HubFile = {
   id: string;
   name: string;
@@ -52,50 +31,53 @@ export type HubFile = {
   original_size: number | null;
   parent_type: string;
   parent_id: string;
+  comment: string;
 };
+async function readFiles(
+  db: Awaited<ReturnType<typeof requireWorkspace>>["db"],
+) {
+  const files: HubFile[] = [];
+  // Packages can grow beyond Supabase's default single-response row limit.
+  for (let start = 0; ; start += 500) {
+    const { data, error } = await db
+      .from("files")
+      .select("*")
+      .order("created_at")
+      .order("id")
+      .range(start, start + 499);
+    if (error)
+      throw new Error("Could not load release files. Check the connection.");
+    const page = (data || []).map((file) => ({
+      ...file,
+      comment: file.comment || "",
+    })) as HubFile[];
+    files.push(...page);
+    if (page.length < 500) return files;
+  }
+}
 export const getHubData = cache(async () => {
-  const access = await requireWorkspace();
-  const results = await Promise.all([
-    access.db
-      .from("builds")
-      .select("*")
-      .order("created_at", { ascending: false }),
-    access.db
-      .from("documents")
-      .select("*")
-      .order("created_at", { ascending: false }),
-    access.db
+  const { db } = await requireWorkspace();
+  const [builds, updates, reports, files] = await Promise.all([
+    db.from("builds").select("*").order("created_at", { ascending: false }),
+    db
       .from("weekly_updates")
       .select("*")
-      .order("week_end", { ascending: false }),
-    access.db
+      .order("created_at", { ascending: false }),
+    db
       .from("testing_reports")
       .select("*")
       .order("created_at", { ascending: false }),
-    access.db
-      .from("tasks")
-      .select("*")
-      .order("created_at", { ascending: false }),
-    access.db.from("events").select("*").order("event_date"),
-    access.db
-      .from("files")
-      .select(
-        "id,name,size,mime_type,parent_type,parent_id,compression,original_size",
-      ),
+    readFiles(db),
   ]);
-  if (results.some((r) => r.error))
+  if ([builds, updates, reports].some((result) => result.error))
     throw new Error(
-      "Workspace records could not be loaded. Check the migration and database permissions.",
+      "Could not load the workspace. Check the latest database migration.",
     );
   return {
-    ...access,
-    builds: (results[0].data || []) as Build[],
-    documents: (results[1].data || []) as Document[],
-    updates: (results[2].data || []) as WeeklyUpdate[],
-    reports: (results[3].data || []) as Report[],
-    tasks: (results[4].data || []) as Task[],
-    events: (results[5].data || []) as Event[],
-    files: (results[6].data || []) as HubFile[],
+    builds: (builds.data || []) as Build[],
+    updates: (updates.data || []) as Progress[],
+    reports: (reports.data || []) as Report[],
+    files,
   };
 });
 export type HubData = Awaited<ReturnType<typeof getHubData>>;
@@ -106,12 +88,4 @@ export function formatDate(value: string) {
     year: "numeric",
     timeZone: "Asia/Kolkata",
   }).format(new Date(value.length === 10 ? `${value}T00:00:00+05:30` : value));
-}
-export function today() {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Kolkata",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date());
 }
