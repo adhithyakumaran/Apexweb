@@ -297,17 +297,7 @@
   scroll-margin-top: 132px;
 }
 .hub-release-card {
-  background: #e8edf5;
-  border-color: #c4cfdf;
-}
-.hub-release-card > .hub-release-heading {
-  background: #dce4ef;
-}
-.hub-release-card .hub-file-card {
-  border-top-color: #cbd5e3;
-}
-.hub-release-card .hub-file-card:hover {
-  background: #e0e7f1;
+  border-color: #aebbd0;
 }
 .hub-release-heading {
   display: grid;
