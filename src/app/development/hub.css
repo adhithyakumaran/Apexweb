@@ -535,13 +535,14 @@
   white-space: nowrap;
 }
 .hub-download {
-  color: #fff;
-  background: var(--hub-download);
-  border-color: var(--hub-download);
+  color: var(--hub-download);
+  background: transparent;
+  border: 0;
 }
 .hub-download:hover {
-  background: var(--hub-download-hover);
-  border-color: var(--hub-download-hover);
+  color: var(--hub-download-hover);
+  background: transparent;
+  text-decoration: underline;
 }
 .hub-view {
   color: var(--hub-accent);
@@ -1200,7 +1201,7 @@
   color: var(--hub-muted);
 }
 
-.hub-file-actions > .hub-file-menu {
+.hub-file-actions > .hub-download {
   margin-left: auto;
 }
 .hub-view svg,
