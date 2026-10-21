@@ -524,8 +524,8 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  min-height: 32px;
-  padding: 5px 8px;
+  min-height: 28px;
+  padding: 4px 7px;
   border: 1px solid var(--hub-soft-line);
   border-radius: 0;
   font-size: 10px;
@@ -957,8 +957,6 @@
   .hub-button,
   .hub-theme-toggle,
   .hub-navigation a,
-  .hub-download,
-  .hub-view,
   .hub-comment-toggle,
   .hub-selected-files button {
     min-height: 40px;
@@ -1200,4 +1198,13 @@
   border-top: 1px solid var(--hub-line);
   font-size: 11px;
   color: var(--hub-muted);
+}
+
+.hub-file-actions > .hub-file-menu {
+  margin-left: auto;
+}
+.hub-view svg,
+.hub-download svg {
+  width: 14px;
+  height: 14px;
 }
