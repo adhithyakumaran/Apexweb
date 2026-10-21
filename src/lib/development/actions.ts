@@ -259,3 +259,87 @@ export async function discardExeUploads(inputs: unknown) {
       await removeExeUpload(file.path).catch(() => {});
   }
 }
+
+export async function renameFile(_: Result, form: FormData): Promise<Result> {
+  const { db } = await requireWorkspace();
+  const parsed = z
+    .object({
+      id: z.uuid(),
+      name: z
+        .string()
+        .trim()
+        .min(1)
+        .max(255)
+        .regex(
+          /^[^/\\\r\n]+$/,
+          "Use a filename without slashes or line breaks.",
+        ),
+    })
+    .safeParse({ id: field(form, "id"), name: field(form, "name") });
+  if (!parsed.success)
+    return {
+      error: parsed.error.issues[0]?.message || "Enter a valid filename.",
+    };
+  const { data: file, error: readError } = await db
+    .from("files")
+    .select("name")
+    .eq("id", parsed.data.id)
+    .maybeSingle();
+  if (readError || !file) return { error: "This file could not be found." };
+  if (
+    file.name.split(".").pop()?.toLowerCase() !==
+    parsed.data.name.split(".").pop()?.toLowerCase()
+  )
+    return { error: "Keep the original file extension when renaming." };
+  const { data, error } = await db
+    .from("files")
+    .update({ name: parsed.data.name })
+    .eq("id", parsed.data.id)
+    .select("id");
+  if (error || !data?.length)
+    return {
+      error:
+        "Could not rename the file. Check the latest SQL update and retry.",
+    };
+  revalidatePath("/development", "layout");
+  return { success: "File renamed." };
+}
+
+export async function deleteFile(_: Result, form: FormData): Promise<Result> {
+  const { db } = await requireWorkspace();
+  const id = z.uuid().safeParse(field(form, "id"));
+  if (!id.success) return { error: "Choose a valid file." };
+  const { data: file, error: readError } = await db
+    .from("files")
+    .select("path,storage_provider")
+    .eq("id", id.data)
+    .maybeSingle();
+  if (readError || !file)
+    return { error: "This file could not be found. Refresh the list." };
+  try {
+    if (file.storage_provider === "r2") await removeExeUpload(file.path);
+    else {
+      const { error } = await db.storage
+        .from("development-files")
+        .remove([file.path]);
+      if (error) throw error;
+    }
+  } catch {
+    return {
+      error:
+        "Could not delete the stored file. Check your connection and retry.",
+    };
+  }
+  const { data, error } = await db
+    .from("files")
+    .delete()
+    .eq("id", id.data)
+    .select("id");
+  if (error || !data?.length)
+    return {
+      error:
+        "The stored file was removed, but its list entry could not be deleted. Retry Delete to finish.",
+    };
+  revalidatePath("/development", "layout");
+  return { success: "File deleted." };
+}

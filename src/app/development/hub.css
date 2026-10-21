@@ -1103,3 +1103,64 @@
   min-height: 420px;
   background: #fff;
 }
+
+.hub-release-card,
+.hub-entry {
+  overflow: visible;
+}
+.hub-file-card:has(.hub-file-menu[open]) {
+  position: relative;
+  z-index: 5;
+}
+.hub-file-menu {
+  position: relative;
+  flex-shrink: 0;
+}
+.hub-file-menu summary {
+  list-style: none;
+  cursor: pointer;
+}
+.hub-file-menu summary::-webkit-details-marker {
+  display: none;
+}
+.hub-file-menu-items {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 10;
+  min-width: 160px;
+  padding: 4px;
+  border: 1px solid #aebbd0;
+  background: var(--hub-surface);
+  box-shadow: 0 4px 12px #17233a14;
+}
+.hub-file-menu-items button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 10px;
+  text-align: left;
+  font-size: 12px;
+  color: var(--hub-text);
+  border: 0;
+  background: transparent;
+}
+.hub-file-menu-items button:hover {
+  background: var(--hub-hover);
+}
+.hub-file-editor-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.hub-file-editor-heading strong {
+  font-size: 13px;
+}
+.hub-delete-confirm {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}

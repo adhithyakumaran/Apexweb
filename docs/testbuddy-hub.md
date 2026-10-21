@@ -10,6 +10,10 @@ There are no Documents, Tasks, calendar, membership, or sign-in screens. Existin
 
 Legacy section and release links redirect to the appropriate section or release card on `/development`. The theme/layout update requires no additional SQL.
 
+## File management update
+
+Run `supabase/migrations/202610220007_file_management.sql` after the R2 migration below. Every file has a three-dot menu with Rename and Delete. Rename changes the displayed/download filename while preserving the extension, object path, and provider. Delete requires an inline confirmation, removes bytes from R2 or Supabase, and then removes the metadata entry. If metadata deletion fails after storage succeeds, retry Delete to finish. Empty release/report/progress entries remain available; deleting a file does not delete its parent entry. Release-file comments are also available inside the three-dot menu.
+
 ## Existing installations — R2 EXE update
 
 In **Supabase → SQL Editor → New query**, paste and run `supabase/migrations/202610220006_r2_exe_storage.sql`. This records the storage provider, supports EXEs up to 250 MB in R2, and keeps other files in Supabase with its 50 MB limit. It preserves existing content and can be rerun. Migration 005 is not required first.
@@ -38,7 +42,7 @@ Merge this with any existing CMS CORS rules rather than replacing them. Signed u
 
 Lossless compression remains optional for Supabase files. It restores exact original bytes for downloads/previews and preserves quality. Already-compressed files may not shrink. No Supabase paid-plan upgrade or higher project-wide file limit is needed for EXE files stored in R2.
 
-Metadata lives in Postgres with a storage-provider field. Non-EXE file bytes live in the private Supabase `development-files` bucket under random `shared/<file-id>/<filename>` paths; EXEs use the R2 keys described above. Signed download URLs expire after 60 seconds. The bucket’s private flag disables permanent public-object URLs; anonymous API access is explicitly permitted in this URL-access mode. File comments can be edited without permitting changes to the stored path, compression data, or size.
+Metadata lives in Postgres with a storage-provider field. Non-EXE file bytes live in the private Supabase `development-files` bucket under random `shared/<file-id>/<filename>` paths; EXEs use the R2 keys described above. Signed download URLs expire after 60 seconds. The bucket’s private flag disables permanent public-object URLs; anonymous API access is explicitly permitted in this URL-access mode. File names and release-file comments can be edited without permitting changes to the stored path, compression data, or size.
 
 ## Public site and development
 

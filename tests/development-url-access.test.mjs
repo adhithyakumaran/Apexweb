@@ -339,3 +339,64 @@ test("R2 migration supports large EXEs, preserves Supabase files, and rejects ot
     await db.close();
   }
 });
+
+test("file management permits safe renames and deletion across providers while protecting storage metadata", async () => {
+  const db = await database();
+  try {
+    await db.exec(await read("testbuddy-url-access.sql"));
+    const migration = await read("migrations/202610220007_file_management.sql");
+    await db.exec(migration);
+    const build = "20000000-0000-4000-8000-000000000007";
+    const report = "30000000-0000-4000-8000-000000000007";
+    await db.exec(`insert into builds(id,version,published) values ('${build}','Manage files',true);
+      insert into testing_reports(id,tester_name) values ('${report}','QA');
+      insert into storage.objects(bucket_id,name) values ('development-files','shared/manage/report.md');
+      set role anon;
+      insert into files(path,name,size,original_size,mime_type,parent_type,parent_id) values ('shared/manage/report.md','report.md',100,100,'text/markdown','testing_reports','${report}');
+      insert into files(storage_provider,path,name,size,original_size,mime_type,parent_type,parent_id) values ('r2','shared/manage/setup.exe','setup.exe',125829120,125829120,'application/octet-stream','builds','${build}');
+      update files set name='QA report.md' where name='report.md';
+      update files set name='Beta installer.exe' where name='setup.exe'`);
+    assert.equal(
+      (await db.query("select path from files where name='QA report.md'"))
+        .rows[0].path,
+      "shared/manage/report.md",
+    );
+    await assert.rejects(
+      db.exec("update files set name='report.exe' where name='QA report.md'"),
+      /original file extension/,
+    );
+    await assert.rejects(
+      db.exec("update files set name='bad/name.md' where name='QA report.md'"),
+      /valid filename/,
+    );
+    await assert.rejects(
+      db.exec(
+        "update files set name=E'bad\\nname.md' where name='QA report.md'",
+      ),
+      /valid filename/,
+    );
+    await assert.rejects(
+      db.exec(
+        "update files set storage_provider='r2' where name='QA report.md'",
+      ),
+      /Only the file comment and name/,
+    );
+    await assert.rejects(
+      db.exec(
+        "update files set comment='No report comments' where name='QA report.md'",
+      ),
+      /only available for release/,
+    );
+    await db.exec(
+      "delete from storage.objects where name='shared/manage/report.md'; delete from files where name in ('QA report.md','Beta installer.exe')",
+    );
+    assert.equal(
+      (await db.query("select count(*)::int as n from files")).rows[0].n,
+      0,
+    );
+    await db.exec("reset role");
+    await db.exec(migration);
+  } finally {
+    await db.close();
+  }
+});
