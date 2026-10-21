@@ -535,14 +535,13 @@
   white-space: nowrap;
 }
 .hub-download {
-  color: var(--hub-download);
-  background: transparent;
-  border: 0;
+  color: #fff;
+  background: var(--hub-download);
+  border-color: var(--hub-download);
 }
 .hub-download:hover {
-  color: var(--hub-download-hover);
-  background: transparent;
-  text-decoration: underline;
+  background: var(--hub-download-hover);
+  border-color: var(--hub-download-hover);
 }
 .hub-view {
   color: var(--hub-accent);
@@ -1201,8 +1200,10 @@
   color: var(--hub-muted);
 }
 
-.hub-file-actions > .hub-download {
-  margin-left: auto;
+.hub-file-actions,
+.hub-side-column .hub-file-actions {
+  justify-content: flex-end;
+  flex-wrap: nowrap;
 }
 .hub-view svg,
 .hub-download svg {
