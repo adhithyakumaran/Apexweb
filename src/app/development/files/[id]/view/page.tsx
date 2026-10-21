@@ -42,7 +42,7 @@ export default async function ViewFile({
       >
         ← Back to {back || "releases"}
       </Link>
-      <article className="hub-card">
+      <article className="hub-card hub-preview-card">
         <h1>{file.name}</h1>
         <FilePreview key={id} id={id} name={file.name} mime={file.mime_type} />
       </article>

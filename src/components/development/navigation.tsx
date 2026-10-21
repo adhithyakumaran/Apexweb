@@ -1,7 +1,6 @@
 "use client";
 import Link from "next/link";
 import { Layers3, Package, MessageSquareText, FileClock } from "lucide-react";
-import { ThemeToggle } from "./theme";
 export function HubNavigation() {
   return (
     <header className="hub-header">
@@ -28,7 +27,6 @@ export function HubNavigation() {
             Progress
           </Link>
         </nav>
-        <ThemeToggle />
       </div>
     </header>
   );

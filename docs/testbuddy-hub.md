@@ -1,6 +1,6 @@
 # TestBuddy Hub
 
-The compact, mobile-first workspace at `/development` shows all three sections on one page. Dark mode is the default, with violet primary actions. The theme switch remembers your preference; light mode uses blue primary actions and green download buttons. The theme is scoped to the Hub and does not change the public site.
+The compact, mobile-first workspace at `/development` shows all three sections on one page. The Hub uses only a light theme, with blue primary actions and green download buttons. Cards, controls, and previews have square corners and compact spacing. The theme is scoped to the Hub and does not change the public site. Markdown previews support tables and checklists; PDFs include a new-tab fallback.
 
 1. **Releases:** create a release name such as “Release beta 1”, and add separate installer, guide, notes, or checksum files. Add more files later with no total package-file count limit. Release cards show their files and View/Download actions directly on the home page. Each file can have a comment, entered during upload or edited afterwards. EXE files are explicitly supported, along with MSI, APK, ZIP, PDF, Markdown, TXT/SHA256, and the other accepted release formats.
 2. **Tester reports:** enter your name and upload a PDF or Markdown file. No findings form or release selection is required.
