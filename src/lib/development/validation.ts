@@ -46,6 +46,10 @@ export const recordSchemas = {
   events: z.object({ title, event_date: date }),
 };
 export const MAX_FILE_SIZE = 250 * 1024 * 1024;
+export const SUPABASE_FILE_SIZE = 50 * 1024 * 1024;
+export function isExe(name: string) {
+  return /\.exe$/i.test(name);
+}
 export const attachmentTypes = [
   "pdf",
   "md",
@@ -74,6 +78,8 @@ export function validateAttachment(
   const extension = file.name.toLowerCase().split(".").pop() || "";
   if (file.size > MAX_FILE_SIZE)
     throw new Error("Each file must be 250 MB or smaller.");
+  if (!isExe(file.name) && file.size > SUPABASE_FILE_SIZE)
+    throw new Error("Non-EXE files must be 50 MB or smaller.");
   if (
     !(
       build
@@ -113,6 +119,7 @@ export function attachmentMime(name: string) {
 }
 export const stagedFileSchema = z
   .object({
+    storage_provider: z.enum(["supabase", "r2"]).default("supabase"),
     id: z.uuid(),
     name: z.string().min(1).max(255),
     path: z.string().max(200),
@@ -121,6 +128,12 @@ export const stagedFileSchema = z
     compression: z.enum(["none", "gzip"]).default("none"),
     original_size: z.number().int().positive().max(MAX_FILE_SIZE).optional(),
   })
+  .refine(
+    (f) =>
+      f.storage_provider !== "r2" ||
+      (isExe(f.name) && f.compression === "none"),
+    "R2 accepts uncompressed EXE files only",
+  )
   .refine(
     (f) => f.path === `shared/${f.id}/${safeFilename(f.name)}`,
     "Invalid upload path",

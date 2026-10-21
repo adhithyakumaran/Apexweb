@@ -155,3 +155,42 @@ test("releases accept EXE installers and separate guides/checksums; reports need
     validateAttachment({ name: "report.png", size: 100 }, false),
   );
 });
+
+test("large EXE uploads use R2 while non-EXE files retain the 50 MB limit", async () => {
+  const { stagedFileSchema } =
+    await import("../src/lib/development/validation");
+  const id = "10000000-0000-4000-8000-000000000001";
+  const exe = {
+    id,
+    name: "Setup.EXE",
+    path: `shared/${id}/Setup.EXE`,
+    size: 120 * 1024 * 1024,
+    original_size: 120 * 1024 * 1024,
+    compression: "none",
+    storage_provider: "r2",
+  };
+  assert.equal(stagedFileSchema.safeParse(exe).success, true);
+  assert.equal(
+    stagedFileSchema.safeParse({ ...exe, compression: "gzip", size: 100 })
+      .success,
+    false,
+  );
+  assert.equal(
+    stagedFileSchema.safeParse({
+      ...exe,
+      name: "report.pdf",
+      path: `shared/${id}/report.pdf`,
+    }).success,
+    false,
+  );
+  assert.throws(
+    () =>
+      validateAttachment({ name: "build.zip", size: 120 * 1024 * 1024 }, true),
+    /50 MB/,
+  );
+  assert.throws(
+    () =>
+      validateAttachment({ name: "setup.exe", size: 251 * 1024 * 1024 }, true),
+    /250 MB/,
+  );
+});

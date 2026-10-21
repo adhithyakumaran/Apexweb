@@ -10,13 +10,11 @@ There are no Documents, Tasks, calendar, membership, or sign-in screens. Existin
 
 Legacy section and release links redirect to the appropriate section or release card on `/development`. The theme/layout update requires no additional SQL.
 
-## Existing installations — one SQL update
+## Existing installations — R2 EXE update
 
-In **Supabase → SQL Editor → New query**, paste and run all of:
+In **Supabase → SQL Editor → New query**, paste and run `supabase/migrations/202610220006_r2_exe_storage.sql`. This records the storage provider, supports EXEs up to 250 MB in R2, and keeps other files in Supabase with its 50 MB limit. It preserves existing content and can be rerun. Migration 005 is not required first.
 
-`supabase/migrations/202610210004_simple_release_hub.sql`
-
-This adds file comments and progress titles, permits reports without a linked build, and raises the per-file limit to 50 MB. It preserves existing content and can be rerun. Deploy the updated application to Vercel after applying it. No Auth users, admin records, or new environment variables are needed.
+Installations that predate the simplified release Hub should apply `supabase/migrations/202610210004_simple_release_hub.sql` first for comments, progress titles, and reports without a linked build. Deploy the updated application to Vercel after applying the SQL. No Auth users, admin records, or new environment variable names are needed.
 
 ## New installation or recovery
 
@@ -26,11 +24,21 @@ Configure `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` for the
 
 ## Uploads and storage
 
-Each original file may be up to **250 MB**. Existing installations must run `supabase/migrations/202610220005_large_installers.sql` and set the project-wide Storage file size limit to at least 250 MB in the Supabase Dashboard. Supabase Free projects have a 50 MB maximum; files above that require a plan that supports larger uploads, or an alternative file host. The SQL bucket limit cannot override the project-wide or plan limit. Releases accept multiple files per upload and more batches later; there is no combined 25 MB or five-file package cap. The project’s Supabase Storage settings and available quota must also permit the upload size. Files travel directly from the browser to Supabase, so bundle bytes do not pass through Vercel’s request-body limit. Server actions receive metadata only.
+EXE installers upload directly to Cloudflare R2, unchanged, up to **250 MB** per file. All other formats stay in Supabase, up to **50 MB** per file. Existing attachments retain their original provider, including compressed EXEs previously stored in Supabase. Metadata alone traverses Vercel. R2 downloads go directly to the browser download manager, avoiding a large in-memory copy.
 
-Lossless compression is on by default and can be switched off. Gzip is retained only when it saves at least 1 KiB and 2%. Downloads and previews restore the exact original bytes and filename in the browser, preserving build signatures and image quality. Already-compressed files may not shrink. Older browsers without compression support upload originals; a reader unable to decompress can download a `.gz` archive and extract it locally.
+Run `supabase/migrations/202610220006_r2_exe_storage.sql` for existing installations (it includes the size constraints, so migration 005 is not required first). Keep the existing Vercel variables `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, and `R2_BUCKET_NAME`; optional `R2_ENDPOINT` overrides the standard account endpoint. `R2_PUBLIC_URL` is not needed for Hub downloads. Credentials remain server-side. R2 token permissions must include object read/write for this bucket. The Hub uses `development/shared/<uuid>/<filename>` keys, separate from the existing `cms/` prefix.
 
-Metadata lives in Postgres; file bytes live in the private `development-files` bucket under random `shared/<file-id>/<filename>` paths. Signed download URLs expire after 60 seconds. The bucket’s private flag disables permanent public-object URLs; anonymous API access is explicitly permitted in this URL-access mode. File comments can be edited without permitting changes to the stored path, compression data, or size.
+In Cloudflare R2 → bucket → Settings → CORS policy, allow the actual application origins (production and any preview domains you use), PUT with Content-Type and If-None-Match headers. Example; replace the origin with your deployed domain:
+
+```json
+[{ "AllowedOrigins": ["https://your-app.vercel.app"], "AllowedMethods": ["PUT"], "AllowedHeaders": ["Content-Type", "If-None-Match"], "ExposeHeaders": ["ETag"], "MaxAgeSeconds": 3600 }]
+```
+
+Merge this with any existing CMS CORS rules rather than replacing them. Signed upload URLs expire after 15 minutes; signed download URLs expire after 60 seconds. EXE uploads are verified by R2 object size/type before metadata is saved. Failed unpublished uploads are cleaned up when the client can confirm the save failed; interrupted tabs/connections may leave orphaned objects.
+
+Lossless compression remains optional for Supabase files. It restores exact original bytes for downloads/previews and preserves quality. Already-compressed files may not shrink. No Supabase paid-plan upgrade or higher project-wide file limit is needed for EXE files stored in R2.
+
+Metadata lives in Postgres with a storage-provider field. Non-EXE file bytes live in the private Supabase `development-files` bucket under random `shared/<file-id>/<filename>` paths; EXEs use the R2 keys described above. Signed download URLs expire after 60 seconds. The bucket’s private flag disables permanent public-object URLs; anonymous API access is explicitly permitted in this URL-access mode. File comments can be edited without permitting changes to the stored path, compression data, or size.
 
 ## Public site and development
 

@@ -1,18 +1,26 @@
 "use client";
 import { useActionState, useEffect, useRef, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
-import { saveRecord, type Result } from "@/lib/development/actions";
+import {
+  saveRecord,
+  prepareExeUpload,
+  discardExeUploads,
+  type Result,
+} from "@/lib/development/actions";
 import { compressUpload } from "@/lib/development/compression";
 import { createClient } from "@supabase/supabase-js";
 import { useUploadConfiguration } from "./upload-provider";
 import {
   validateAttachment,
+  isExe,
+  stagedFileSchema,
   safeFilename,
   attachmentMime,
   formatFileSize,
 } from "@/lib/development/validation";
 import { useCloseActionPanel } from "./action-panel";
 import { useRouter } from "next/navigation";
+import type { z } from "zod";
 import { useState } from "react";
 import { UploadCloud, FileText, X, LoaderCircle } from "lucide-react";
 function Submit({ children }: { children: ReactNode }) {
@@ -44,6 +52,7 @@ export function ActionForm({
   const config = useUploadConfiguration();
   const router = useRouter();
   const closePanel = useCloseActionPanel();
+  const [uploadStatus, setUploadStatus] = useState("");
   const [state, dispatch] = useActionState(
     async (previous: Result, form: FormData): Promise<Result> => {
       const files = form
@@ -67,31 +76,72 @@ export function ActionForm({
           detectSessionInUrl: false,
         },
       }).storage.from("development-files");
-      const staged = [];
+      const staged: z.infer<typeof stagedFileSchema>[] = [];
+      async function cleanup() {
+        const supabasePaths = staged
+          .filter((f) => f.storage_provider === "supabase")
+          .map((f) => f.path);
+        if (supabasePaths.length) await storage.remove(supabasePaths);
+        await discardExeUploads(staged);
+      }
       let storedBytes = 0;
       for (const [index, file] of files.entries()) {
         const id = crypto.randomUUID();
         const path = `shared/${id}/${safeFilename(file.name)}`;
-        const prepared = await compressUpload(
-          file,
-          form.get("compress_uploads") === "on",
+        const exe = isExe(file.name);
+        setUploadStatus(
+          `Uploading ${index + 1} of ${files.length}: ${file.name}`,
         );
-        const { error } = await storage.upload(path, prepared.blob, {
-          contentType:
-            prepared.compression === "gzip"
-              ? "application/gzip"
-              : attachmentMime(file.name),
-          upsert: false,
-        });
-        if (error) {
-          if (staged.length) await storage.remove(staged.map((f) => f.path));
+        const prepared = exe
+          ? { blob: file as Blob, compression: "none" as const }
+          : await compressUpload(file, form.get("compress_uploads") === "on");
+        try {
+          if (exe) {
+            const signed = await prepareExeUpload({
+              id,
+              name: file.name,
+              size: file.size,
+            });
+            if (!signed.url)
+              throw new Error(signed.error || "Could not prepare R2 upload.");
+            const response = await fetch(signed.url, {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/octet-stream",
+                "If-None-Match": "*",
+              },
+              body: file,
+            });
+            if (!response.ok)
+              throw new Error(
+                "R2 upload failed. Check bucket permissions and CORS settings, then retry.",
+              );
+          } else {
+            const { error } = await storage.upload(path, prepared.blob, {
+              contentType:
+                prepared.compression === "gzip"
+                  ? "application/gzip"
+                  : attachmentMime(file.name),
+              upsert: false,
+            });
+            if (error)
+              throw new Error(
+                "Upload failed. Check the Supabase Storage setup and connection, then retry.",
+              );
+          }
+        } catch (cause) {
+          await cleanup().catch(() => {});
+          setUploadStatus("");
           return {
             error:
-              "Upload failed. Check the Supabase Storage setup and connection, then retry.",
+              cause instanceof Error
+                ? cause.message
+                : "Upload failed. Check R2 CORS and your connection.",
           };
         }
         storedBytes += prepared.blob.size;
         staged.push({
+          storage_provider: exe ? "r2" : "supabase",
           id,
           path,
           name: file.name,
@@ -101,20 +151,22 @@ export function ActionForm({
           comment: String(form.get(`file_comment_${index}`) || ""),
         });
       }
-      // Only metadata traverses Vercel; bundle bytes go directly to Supabase.
+      setUploadStatus("Saving file details…");
+      // Only metadata traverses Vercel; file bytes go directly to their storage provider.
       form.delete("attachments");
       form.set("staged_files", JSON.stringify(staged));
       try {
         const result = await action(previous, form);
-        if (result.error && !result.keepFiles)
-          await storage.remove(staged.map((f) => f.path));
+        if (result.error && !result.keepFiles) await cleanup();
         if (result.success) {
           const saved = files.reduce((sum, f) => sum + f.size, 0) - storedBytes;
           if (saved > 0)
             result.success += ` Lossless compression saved ${(saved / 1024).toFixed(1)} KB.`;
         }
+        setUploadStatus("");
         return result;
       } catch {
+        setUploadStatus("");
         return {
           error:
             "Could not confirm the save. Check the list before retrying; your upload may already be saved.",
@@ -135,6 +187,11 @@ export function ActionForm({
       <div>
         <Submit>{label}</Submit>
       </div>
+      {uploadStatus && (
+        <p role="status" className="hub-message">
+          {uploadStatus}
+        </p>
+      )}
       {state.error && (
         <p role="alert" className="hub-message">
           {state.error}
@@ -235,7 +292,10 @@ export function Upload({
           {build
             ? "EXE, installers, ZIP, Markdown, PDF, text & checksums"
             : "PDF or Markdown"}{" "}
-          · 250 MB per file
+          ·{" "}
+          {build
+            ? "EXE up to 250 MB · other files up to 50 MB"
+            : "50 MB per file"}
         </span>
         <input
           ref={input}
@@ -288,7 +348,9 @@ export function Upload({
       <label className="hub-check">
         <input type="checkbox" name="compress_uploads" defaultChecked />{" "}
         Lossless compression{" "}
-        <span className="hub-muted">· original quality</span>
+        <span className="hub-muted">
+          · original quality{build ? " · EXE uploaded unchanged" : ""}
+        </span>
       </label>
     </div>
   );

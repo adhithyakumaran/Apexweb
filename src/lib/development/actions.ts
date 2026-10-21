@@ -7,7 +7,10 @@ import {
   validateAttachment,
   stagedFileSchema,
   attachmentMime,
+  safeFilename,
+  isExe,
 } from "./validation";
+import { signExeUpload, verifyExeUpload, removeExeUpload } from "./r2";
 export type Result = {
   error?: string;
   success?: string;
@@ -40,6 +43,10 @@ async function verifyUploads(
   uploads: Upload[],
 ) {
   for (const file of uploads) {
+    if (file.storage_provider === "r2") {
+      await verifyExeUpload(file.path, file.size);
+      continue;
+    }
     const { data, error } = await db.storage
       .from("development-files")
       .info(file.path);
@@ -59,6 +66,7 @@ async function attach(
   const { error } = await db.from("files").insert(
     uploads.map((file) => ({
       id: file.id,
+      storage_provider: file.storage_provider,
       path: file.path,
       name: file.name,
       size: file.size,
@@ -207,4 +215,47 @@ export async function saveFileComment(
     };
   revalidatePath("/development", "layout");
   return { success: "Comment saved." };
+}
+
+export async function prepareExeUpload(input: {
+  id: string;
+  name: string;
+  size: number;
+}) {
+  await requireWorkspace();
+  const parsed = z
+    .object({
+      id: z.uuid(),
+      name: z.string().min(1).max(255),
+      size: z.number().int().positive(),
+    })
+    .safeParse(input);
+  if (!parsed.success) return { error: "Invalid EXE upload." };
+  try {
+    validateAttachment(parsed.data, true);
+    if (!isExe(parsed.data.name)) return { error: "Only EXE files use R2." };
+    const path = `shared/${parsed.data.id}/${safeFilename(parsed.data.name)}`;
+    return { url: await signExeUpload(path, parsed.data.size) };
+  } catch (cause) {
+    return {
+      error:
+        cause instanceof Error
+          ? cause.message
+          : "Could not prepare the R2 upload.",
+    };
+  }
+}
+export async function discardExeUploads(inputs: unknown) {
+  const { db } = await requireWorkspace();
+  const parsed = z.array(stagedFileSchema).max(100).safeParse(inputs);
+  if (!parsed.success) return;
+  for (const file of parsed.data.filter((f) => f.storage_provider === "r2")) {
+    const { data, error } = await db
+      .from("files")
+      .select("id")
+      .eq("path", file.path)
+      .limit(1);
+    if (!error && data && !data.length)
+      await removeExeUpload(file.path).catch(() => {});
+  }
 }

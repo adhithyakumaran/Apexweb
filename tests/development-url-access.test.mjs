@@ -160,7 +160,7 @@ test("simple releases group mixed files, allow later additions and comments, and
     for (const [index, name] of names.entries()) {
       const path = `shared/release-${index}/${name}`;
       await db.exec(`insert into storage.objects(bucket_id,name) values ('development-files','${path}');
-        insert into files(path,name,size,original_size,mime_type,parent_type,parent_id,comment) values ('${path}','${name}',${index === 0 ? 120 * 1024 * 1024 : 100},${index === 0 ? 120 * 1024 * 1024 : 100},'application/octet-stream','builds','${release}','Original comment')`);
+        insert into files(path,name,size,original_size,mime_type,parent_type,parent_id,comment) values ('${path}','${name}',${index === 0 ? 40 * 1024 * 1024 : 100},${index === 0 ? 40 * 1024 * 1024 : 100},'application/octet-stream','builds','${release}','Original comment')`);
     }
     assert.equal(
       (
@@ -201,7 +201,7 @@ test("simple releases group mixed files, allow later additions and comments, and
           "select file_size_limit from storage.buckets where id='development-files'",
         )
       ).rows[0].file_size_limit,
-      262144000,
+      52428800,
     );
     await db.exec(setup);
     assert.equal(
@@ -258,18 +258,83 @@ test("the small upgrade alone preserves existing installations and enables simpl
 test("large-installer upgrade raises existing limits and remains repeatable", async () => {
   const db = await database();
   try {
-    await db.exec(await read("testbuddy-url-access.sql"));
+    await db.exec(
+      (await read("testbuddy-url-access.sql")).split(
+        "-- EXE bytes go to R2;",
+      )[0],
+    );
     await db.exec(await read("migrations/202610210004_simple_release_hub.sql"));
-    const migration = await read("migrations/202610220005_large_installers.sql");
+    const migration = await read(
+      "migrations/202610220005_large_installers.sql",
+    );
     await db.exec(migration);
     await db.exec(migration);
-    assert.equal((await db.query("select file_size_limit from storage.buckets where id='development-files'")).rows[0].file_size_limit, 250 * 1024 * 1024);
+    assert.equal(
+      (
+        await db.query(
+          "select file_size_limit from storage.buckets where id='development-files'",
+        )
+      ).rows[0].file_size_limit,
+      250 * 1024 * 1024,
+    );
     const id = "20000000-0000-4000-8000-000000000009";
     await db.exec(`insert into builds(id,version,published) values ('${id}','Large installer',true);
       insert into storage.objects(bucket_id,name) values ('development-files','shared/large/setup.exe');
       insert into files(path,name,size,original_size,mime_type,parent_type,parent_id) values ('shared/large/setup.exe','setup.exe',125829120,125829120,'application/octet-stream','builds','${id}')`);
-    await assert.rejects(db.exec("update files set size=262144001 where name='setup.exe'"), /files_size_check/);
-    await assert.rejects(db.exec("update files set original_size=262144001 where name='setup.exe'"), /files_original_size_check/);
+    await assert.rejects(
+      db.exec("update files set size=262144001 where name='setup.exe'"),
+      /files_size_check/,
+    );
+    await assert.rejects(
+      db.exec(
+        "update files set original_size=262144001 where name='setup.exe'",
+      ),
+      /files_original_size_check/,
+    );
+  } finally {
+    await db.close();
+  }
+});
+
+test("R2 migration supports large EXEs, preserves Supabase files, and rejects other R2 attachments", async () => {
+  const db = await database();
+  try {
+    await db.exec(await read("testbuddy-url-access.sql"));
+    const migration = await read("migrations/202610220006_r2_exe_storage.sql");
+    await db.exec(migration);
+    const id = "20000000-0000-4000-8000-000000000008";
+    await db.exec(`insert into builds(id,version,published) values ('${id}','R2 beta',true); set role anon;
+      insert into files(storage_provider,path,name,size,original_size,mime_type,parent_type,parent_id) values ('r2','shared/installer/setup.exe','setup.exe',125829120,125829120,'application/octet-stream','builds','${id}')`);
+    await assert.rejects(
+      db.exec(
+        `insert into files(storage_provider,path,name,size,original_size,mime_type,parent_type,parent_id) values ('r2','shared/nope/file.pdf','file.pdf',100,100,'application/pdf','builds','${id}')`,
+      ),
+      /R2 accepts/,
+    );
+    await assert.rejects(
+      db.exec(
+        `insert into files(path,name,size,original_size,mime_type,parent_type,parent_id) values ('shared/too-large/file.zip','file.zip',125829120,125829120,'application/zip','builds','${id}')`,
+      ),
+      /50 MB/,
+    );
+    await db.exec("reset role");
+    await db.exec(await read("testbuddy-url-access.sql"));
+    assert.equal(
+      (
+        await db.query(
+          "select storage_provider from files where name='setup.exe'",
+        )
+      ).rows[0].storage_provider,
+      "r2",
+    );
+    assert.equal(
+      (
+        await db.query(
+          "select file_size_limit from storage.buckets where id='development-files'",
+        )
+      ).rows[0].file_size_limit,
+      50 * 1024 * 1024,
+    );
   } finally {
     await db.close();
   }
