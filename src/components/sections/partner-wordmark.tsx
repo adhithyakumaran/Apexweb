@@ -1,12 +1,5 @@
 import type { ReactNode } from "react";
-import {
-  Pacifico,
-  Playfair_Display,
-  Plus_Jakarta_Sans,
-  Space_Grotesk,
-  Sora,
-  DM_Serif_Display,
-} from "next/font/google";
+import localFont from "next/font/local";
 import {
   Leaf,
   Globe2,
@@ -16,12 +9,12 @@ import {
   MessageCircle,
 } from "lucide-react";
 
-const pacifico = Pacifico({ subsets: ["latin"], weight: "400" });
-const playfair = Playfair_Display({ subsets: ["latin"], weight: ["700"] });
-const jakarta = Plus_Jakarta_Sans({ subsets: ["latin"], weight: ["800"] });
-const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], weight: ["700"] });
-const sora = Sora({ subsets: ["latin"], weight: ["700"] });
-const dmSerif = DM_Serif_Display({ subsets: ["latin"], weight: "400" });
+const pacifico = localFont({ src: "../../../public/fonts/pacifico/Pacifico-Regular.ttf", weight: "400" });
+const playfair = localFont({ src: "../../../public/fonts/playfairdisplay/PlayfairDisplay[wght].ttf", weight: "700" });
+const jakarta = localFont({ src: "../../../public/fonts/plus-jakarta-sans/PlusJakartaSans.ttf", weight: "800" });
+const spaceGrotesk = localFont({ src: "../../../public/fonts/spacegrotesk/SpaceGrotesk[wght].ttf", weight: "700" });
+const sora = localFont({ src: "../../../public/fonts/sora/Sora[wght].ttf", weight: "700" });
+const dmSerif = localFont({ src: "../../../public/fonts/dmserifdisplay/DMSerifDisplay-Regular.ttf", weight: "400" });
 
 const MAIN = "text-[1.55rem] leading-tight sm:text-[1.7rem]";
 const SUB = "mt-1.5 text-[0.68rem] font-medium uppercase tracking-[0.2em]";

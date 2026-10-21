@@ -1,12 +1,13 @@
 import Link from "next/link";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import localFont from "next/font/local";
 import { ChevronsRight } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
 
-const jakarta = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  weight: ["700", "800"],
+const jakarta = localFont({
+  src: "../../../public/fonts/plus-jakarta-sans/PlusJakartaSans.ttf",
+  weight: "200 800",
+  display: "swap",
 });
 
 const sizeStyles = {

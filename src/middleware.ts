@@ -13,6 +13,13 @@ import { COOKIE_NAME, verifyCmsTokenAsync } from "@/lib/cms/auth-edge";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  if (pathname === "/development" || pathname.startsWith("/development/")) {
+    const response = NextResponse.next();
+    response.headers.set("Cache-Control", "private, no-store");
+    response.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
+    response.headers.set("Referrer-Policy", "no-referrer");
+    return response;
+  }
   const token = request.cookies.get(COOKIE_NAME)?.value;
 
   if (pathname === "/admin/login" || pathname === "/api/cms/login") {
@@ -42,5 +49,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/api/cms/:path*"],
+  matcher: ["/admin/:path*", "/api/cms/:path*", "/development/:path*"],
 };

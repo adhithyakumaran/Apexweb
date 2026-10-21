@@ -1,0 +1,109 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import {
+  recordSchemas,
+  validateAttachment,
+  MAX_FILE_SIZE,
+} from "../src/lib/development/validation";
+test("weekly reporting periods reject inverted and invalid dates", () => {
+  assert.equal(
+    recordSchemas.weekly_updates.safeParse({
+      week_start: "2026-10-21",
+      week_end: "2026-10-20",
+      summary: "Update",
+      published: true,
+    }).success,
+    false,
+  );
+  assert.equal(
+    recordSchemas.weekly_updates.safeParse({
+      week_start: "2026-02-30",
+      week_end: "2026-03-02",
+      summary: "Update",
+      published: true,
+    }).success,
+    false,
+  );
+  assert.equal(
+    recordSchemas.weekly_updates.safeParse({
+      week_start: "2026-10-19",
+      week_end: "2026-10-25",
+      summary: "Update",
+      published: false,
+    }).success,
+    true,
+  );
+});
+test("testing reports require an actual build identifier and findings", () => {
+  assert.equal(
+    recordSchemas.testing_reports.safeParse({ build_id: "", findings: "Issue" })
+      .success,
+    false,
+  );
+  assert.equal(
+    recordSchemas.testing_reports.safeParse({
+      build_id: "10000000-0000-4000-8000-000000000001",
+      findings: "   ",
+    }).success,
+    false,
+  );
+});
+test("attachment rules reject unsafe extensions, oversized files, and document bundles", () => {
+  assert.throws(() =>
+    validateAttachment({ name: "report.html", size: 10 }, false),
+  );
+  assert.throws(() =>
+    validateAttachment({ name: "report.pdf", size: MAX_FILE_SIZE + 1 }, false),
+  );
+  assert.throws(() =>
+    validateAttachment({ name: "build.zip", size: 100 }, false),
+  );
+  assert.equal(
+    validateAttachment({ name: "report.PDF", size: 10 }, false),
+    "pdf",
+  );
+  assert.equal(
+    validateAttachment({ name: "build.apk", size: 100 }, true),
+    "apk",
+  );
+});
+test("task schema restricts the workflow and priority", () => {
+  const task = {
+    title: "Fix crash",
+    description: "",
+    owner_name: "",
+    report_id: null,
+    priority: "High",
+    status: "Retest",
+  };
+  assert.equal(recordSchemas.tasks.safeParse(task).success, true);
+  assert.equal(
+    recordSchemas.tasks.safeParse({ ...task, status: "Unknown" }).success,
+    false,
+  );
+});
+
+test("URL-access reports require a self-reported tester name", () => {
+  const report = {
+    build_id: "10000000-0000-4000-8000-000000000001",
+    findings: "Reproducible issue",
+  };
+  assert.equal(recordSchemas.testing_reports.safeParse(report).success, false);
+  assert.equal(
+    recordSchemas.testing_reports.safeParse({ ...report, tester_name: "Sam" })
+      .success,
+    true,
+  );
+});
+
+test('direct-upload metadata binds the path to its identifier and sanitised filename', async () => {
+  const { stagedFileSchema, attachmentMime } = await import('../src/lib/development/validation');
+  const id = '10000000-0000-4000-8000-000000000001';
+  const file = { id, name: 'build release.zip', size: 6 * 1024 * 1024, path: `shared/${id}/build_release.zip` };
+  assert.equal(stagedFileSchema.safeParse(file).success, true);
+  assert.equal(stagedFileSchema.safeParse({ ...file, path: '../other-bucket/build.zip' }).success, false);
+  assert.equal(stagedFileSchema.safeParse({ ...file, path: 'shared/someone-else/build.zip' }).success, false);
+  assert.equal(stagedFileSchema.safeParse({ ...file, size: MAX_FILE_SIZE + 1 }).success, false);
+  assert.equal(attachmentMime('report.pdf'), 'application/pdf');
+  assert.equal(attachmentMime('screenshot.png'), 'image/png');
+});

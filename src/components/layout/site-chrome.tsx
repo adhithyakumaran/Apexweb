@@ -27,6 +27,8 @@ type SiteChromeProps = {
 export function SiteChrome({ children }: SiteChromeProps) {
   const pathname = usePathname();
   const isAdmin = pathname?.startsWith("/admin");
+  // The development Hub supplies its own layout and monochrome styling.
+  if (pathname === "/development" || pathname?.startsWith("/development/")) return <>{children}</>;
 
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange>
