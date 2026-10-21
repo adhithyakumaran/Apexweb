@@ -1,8 +1,8 @@
 "use client";
-import { useId, useState } from "react";
+import { useId, useState, useSyncExternalStore } from "react";
 import {
   DndContext,
-  PointerSensor,
+  MouseSensor,
   KeyboardSensor,
   useSensor,
   useSensors,
@@ -23,6 +23,19 @@ import { formatFileSize } from "@/lib/development/validation";
 import { reorderFiles } from "@/lib/development/actions";
 import { FileActions } from "./file-actions";
 
+const desktopDragQuery = "(min-width: 768px) and (pointer: fine)";
+function subscribeToDragMode(callback: () => void) {
+  const query = window.matchMedia(desktopDragQuery);
+  query.addEventListener("change", callback);
+  return () => query.removeEventListener("change", callback);
+}
+function desktopDragEnabled() {
+  return window.matchMedia(desktopDragQuery).matches;
+}
+function noDragOnServer() {
+  return false;
+}
+
 export function Files({
   files,
   kind,
@@ -34,6 +47,11 @@ export function Files({
   id: string;
   comments?: boolean;
 }) {
+  const canDrag = useSyncExternalStore(
+    subscribeToDragMode,
+    desktopDragEnabled,
+    noDragOnServer,
+  );
   const group = files
     .filter((file) => file.parent_type === kind && file.parent_id === id)
     .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
@@ -56,7 +74,7 @@ export function Files({
     .map((id) => group.find((file) => file.id === id))
     .filter((file): file is HubFile => !!file);
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(MouseSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     }),
@@ -113,7 +131,7 @@ export function Files({
                 key={file.id}
                 file={file}
                 comments={comments}
-                reorderable={ordered.length > 1}
+                reorderable={canDrag && ordered.length > 1}
                 disabled={saving}
                 moveUp={
                   !saving && index > 0

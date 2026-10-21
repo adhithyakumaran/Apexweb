@@ -12,7 +12,7 @@ Legacy section and release links redirect to the appropriate section or release 
 
 ## Saved file order
 
-Run `supabase/migrations/202610220008_file_order.sql` after the file-management migration below. Drag a file by its grip handle to reorder it within its release or other parent entry. Mouse, touch, and keyboard dragging are supported; the three-dot menu also offers Move up and Move down. Orders save automatically, survive refresh, and newly uploaded files append to the end. Reordering cannot move files between releases. The database applies each ordering atomically and rejects stale, incomplete, or duplicate lists. Existing file order is backfilled from upload date and ID; rerunning the migration preserves saved order. Three-dot controls have no surrounding box.
+Run `supabase/migrations/202610220008_file_order.sql` after the file-management migration below. Drag a file by its grip handle to reorder it within its release or other parent entry. Mouse and keyboard dragging are supported on desktop screens (at least 768 px with a fine pointer). Mobile dragging is disabled and the handle is hidden; use Move up and Move down in the three-dot menu on phones. Orders save automatically, survive refresh, and newly uploaded files append to the end. Reordering cannot move files between releases. The database applies each ordering atomically and rejects stale, incomplete, or duplicate lists. Existing file order is backfilled from upload date and ID; rerunning the migration preserves saved order. Three-dot controls have no surrounding box.
 
 ## File management update
 
