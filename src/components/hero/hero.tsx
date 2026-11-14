@@ -44,15 +44,16 @@ export function Hero() {
             {...fadeUp(0.15)}
             className="text-[1.75rem] font-semibold leading-[1.15] tracking-tight text-white [text-shadow:0_2px_20px_rgba(0,0,0,0.35)] sm:text-4xl md:text-5xl lg:text-6xl"
           >
-            Accelerate Software Quality with AI-Powered Testing Agents.
+            AI Agents, Automation & Software Built for Your Business.
           </motion.h1>
 
           <motion.p
             {...fadeUp(0.3)}
             className="max-w-2xl text-base text-white/90 [text-shadow:0_1px_12px_rgba(0,0,0,0.35)] sm:text-lg"
           >
-            Autonomous testing agents that turn complex QA workflows into
-            faster, smarter, and more reliable validation.
+            We build custom software and AI agents that automate business workflows.
+            From product development to TestBuddy Omni test automation, we help
+            your team reduce manual work and deliver reliable software.
           </motion.p>
 
           <motion.div

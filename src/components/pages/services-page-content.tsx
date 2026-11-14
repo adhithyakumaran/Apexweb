@@ -58,11 +58,12 @@ export function ServicesPageContent() {
         >
           <p className="text-xs font-medium uppercase tracking-[0.18em] text-brand-orange">Services</p>
           <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-            What we do
+            AI automation & custom software development
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-            Enterprise modernization, AI platforms, and quality engineering — built to scale with
-            your product roadmap.
+            We build AI agents, automate business processes, and develop custom software
+            for growing businesses. From cloud engineering to TestBuddy Omni QA automation,
+            we help your team launch and maintain reliable applications.
           </p>
           <Button asChild className="mt-6">
             <Link href={tryItCta.href}>{tryItCta.label}</Link>

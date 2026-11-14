@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { notFound } from "next/navigation";
 import { AgentDetailContent } from "@/components/pages/agent-detail-content";
 import { agents } from "@/config/agents";
@@ -16,10 +17,7 @@ export async function generateMetadata({ params }: AgentPageProps): Promise<Meta
   const agent = agents.find((item) => item.slug === slug);
   if (!agent) return { title: "Agent not found" };
 
-  return {
-    title: `${agent.codename} — ${agent.role}`,
-    description: agent.tagline,
-  };
+  return pageMetadata(`${agent.codename} - ${agent.role}`, agent.tagline, `/agents/${agent.slug}`);
 }
 
 export default async function AgentPage({ params }: AgentPageProps) {
