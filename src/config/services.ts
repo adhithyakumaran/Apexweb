@@ -6,10 +6,6 @@ import {
   Cloud,
   TestTube2,
   Smartphone,
-  Banknote,
-  Workflow,
-  ScanEye,
-  Wrench,
   ShieldCheck,
   Headphones,
   ShoppingBag,
@@ -91,28 +87,10 @@ export const coreServices: ServiceItem[] = [
 
 export const aiPlatforms: ServiceItem[] = [
   {
-    title: "Unicus AI",
-    description: "Domain-aware agents for financial back-office automation.",
-    href: "/what-we-do#unicus-ai",
-    icon: Banknote,
-  },
-  {
-    title: "elsai",
-    description: "Governed agentic AI orchestration and secure agent development.",
-    href: "/what-we-do#elsai",
-    icon: Workflow,
-  },
-  {
-    title: "Scanflow",
-    description: "Computer vision intelligence and advanced data capture.",
-    href: "/what-we-do#scanflow",
-    icon: ScanEye,
-  },
-  {
-    title: "iBEAM",
-    description: "Rapid code refactoring and data modernization tooling.",
-    href: "/what-we-do#ibeam",
-    icon: Wrench,
+    title: "TestBuddy Omni",
+    description: "AI-powered end-to-end test automation and quality assurance.",
+    href: "/what-we-do#testbuddy-omni",
+    icon: TestTube2,
   },
 ];
 
@@ -159,7 +137,7 @@ export const testingAgents: ServiceItem[] = agents.map((agent) => ({
 export const serviceQuickLinks = [
   { label: "Request a Proof of Concept", href: "/book-demo" },
   { label: "Azure & Microsoft Partnership", href: "/what-we-do#partnerships" },
-  { label: "Explore Unicus AI & elsai", href: "/what-we-do#unicus-ai" },
+  { label: "Explore TestBuddy Omni", href: "/what-we-do#testbuddy-omni" },
 ];
 
 export const agentQuickLinks = [
