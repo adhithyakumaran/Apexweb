@@ -69,32 +69,40 @@ export function TestBuddyDownloadContent() {
       <div className="mx-auto max-w-5xl border-x border-border/60">
         <section id="downloads" className="scroll-mt-24" aria-labelledby="downloads-heading">
           <div className={styles.sectionHeading}><span aria-hidden="true" /><h2 id="downloads-heading">Downloads</h2><p>Choose your platform.</p></div>
-          <div className="grid border-y border-border/60 md:grid-cols-3">
-            <article className="flex flex-col items-center border-b border-border/60 p-7 sm:p-9 md:items-start md:border-r md:border-b-0">
-              <WindowsMark className="mb-8 size-14" />
+          <div className={`${styles.platformGrid} border-y border-border/60`}>
+            <article className={`${styles.platformCard} border-b border-border/60 md:border-r md:border-b-0`}>
+              <WindowsMark className="size-14" />
               <h3 className="text-lg font-medium">Windows</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">Windows x64 · Setup installer<br />Version {releaseVersion}</p>
-              <p className="mt-4 text-sm text-muted-foreground">No Node.js or npm required.</p>
-              <Button asChild className={`${styles.downloadButton} mt-6 h-auto min-h-10 w-full whitespace-normal px-3 py-2 text-center`}><a href={downloads.windows} download>Windows x64 (.exe)</a></Button>
-            </article>
-            <article className="flex flex-col items-center border-b border-border/60 p-7 sm:p-9 md:items-start md:border-r md:border-b-0">
-              <Image src="/images/platforms/apple.svg" alt="Apple logo" width={56} height={56} className="mb-8 size-14 dark:invert" />
-              <h3 className="text-lg font-medium">macOS</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">Choose the build for your Mac processor.</p>
-              <p className="mt-4 text-sm text-muted-foreground">Apple Silicon (M-series) or Intel (x64).</p>
-              <div className="mt-6 flex w-full flex-col gap-3">
-                <Button asChild className={`${styles.downloadButton} h-auto min-h-10 w-full whitespace-normal px-3 py-2 text-center`}><a href={downloads.macArm} download>Apple Silicon (.dmg)</a></Button>
-                <Button asChild className={`${styles.downloadButton} h-auto min-h-10 w-full whitespace-normal px-3 py-2 text-center`}><a href={downloads.macIntel} download>Intel x64 (.dmg)</a></Button>
+              <div className={styles.platformDescription}>
+                <p>Windows x64 · Setup installer<br />Version {releaseVersion}</p>
+                <p>No Node.js or npm required.</p>
+              </div>
+              <div className={styles.platformActions}>
+                <Button asChild className={styles.downloadButton}><a href={downloads.windows} download>Windows x64 (.exe)</a></Button>
               </div>
             </article>
-            <article className="flex flex-col items-center p-7 sm:p-9 md:items-start">
-              <Image src="/images/platforms/linux.svg" alt="Linux penguin logo" width={56} height={56} className="mb-8 size-14 dark:invert" />
+            <article className={`${styles.platformCard} border-b border-border/60 md:border-r md:border-b-0`}>
+              <Image src="/images/platforms/apple.svg" alt="Apple logo" width={56} height={56} className="size-14 dark:invert" />
+              <h3 className="text-lg font-medium">macOS</h3>
+              <div className={styles.platformDescription}>
+                <p>Choose the build for your Mac processor.</p>
+                <p>Apple Silicon (M-series) or Intel (x64).</p>
+              </div>
+              <div className={styles.platformActions}>
+                <Button asChild className={styles.downloadButton}><a href={downloads.macArm} download>Apple Silicon (.dmg)</a></Button>
+                <Button asChild className={styles.downloadButton}><a href={downloads.macIntel} download>Intel x64 (.dmg)</a></Button>
+              </div>
+            </article>
+            <article className={styles.platformCard}>
+              <Image src="/images/platforms/linux.svg" alt="Linux penguin logo" width={56} height={56} className="size-14 dark:invert" />
               <h3 className="text-lg font-medium">Linux</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">Linux x64 (amd64 / x86_64).</p>
-              <p className="mt-4 text-sm leading-relaxed text-muted-foreground">Choose .deb for Debian/Ubuntu, or AppImage for compatible Linux distributions.</p>
-              <div className="mt-6 flex w-full flex-col gap-3">
-                <Button asChild className={`${styles.downloadButton} h-auto min-h-10 w-full whitespace-normal px-3 py-2 text-center`}><a href={downloads.linuxDeb} download>Debian / Ubuntu (.deb)</a></Button>
-                <Button asChild className={`${styles.downloadButton} h-auto min-h-10 w-full whitespace-normal px-3 py-2 text-center`}><a href={downloads.linuxAppImage} download>Linux x64 (.AppImage)</a></Button>
+              <div className={styles.platformDescription}>
+                <p>Linux x64 (amd64 / x86_64).</p>
+                <p>Choose .deb for Debian/Ubuntu, or AppImage for compatible Linux distributions.</p>
+              </div>
+              <div className={styles.platformActions}>
+                <Button asChild className={styles.downloadButton}><a href={downloads.linuxDeb} download>Debian / Ubuntu (.deb)</a></Button>
+                <Button asChild className={styles.downloadButton}><a href={downloads.linuxAppImage} download>Linux x64 (.AppImage)</a></Button>
               </div>
             </article>
           </div>

@@ -48,3 +48,56 @@
   .sectionHeading { padding: 2rem 1.75rem 1.25rem; text-align: center; }
   .sectionHeading > span { top: 2.25rem; }
 }
+
+.platformGrid {
+  display: grid;
+  row-gap: 1.5rem;
+}
+
+.platformCard {
+  display: grid;
+  min-width: 0;
+  justify-items: center;
+  align-content: start;
+  gap: 1.5rem;
+  padding: 2rem 1.75rem;
+}
+
+.platformDescription {
+  display: grid;
+  align-content: start;
+  gap: .75rem;
+  color: var(--muted-foreground);
+  font-size: .875rem;
+  line-height: 1.65;
+}
+
+.platformActions {
+  display: flex;
+  width: 100%;
+  max-width: 20rem;
+  flex-direction: column;
+  align-self: start;
+  gap: .75rem;
+}
+
+.platformActions > a {
+  width: 100%;
+  height: auto;
+  min-height: 2.75rem;
+  padding: .65rem .75rem;
+  white-space: normal;
+  text-align: center;
+  line-height: 1.4;
+}
+
+@media (min-width: 768px) {
+  .platformGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .platformCard {
+    grid-row: span 4;
+    grid-template-rows: subgrid;
+    justify-items: start;
+    padding: 2.25rem;
+  }
+  .platformActions { max-width: none; }
+}
