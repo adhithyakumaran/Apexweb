@@ -44,7 +44,7 @@
   color: var(--muted-foreground);
 }
 
-@media (max-width: 640px) {
-  .sectionHeading { padding: 2rem 1.75rem 1.25rem; }
+@media (max-width: 767px) {
+  .sectionHeading { padding: 2rem 1.75rem 1.25rem; text-align: center; }
   .sectionHeading > span { top: 2.25rem; }
 }
