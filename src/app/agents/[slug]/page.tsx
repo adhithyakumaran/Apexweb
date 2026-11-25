@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import { notFound } from "next/navigation";
 import { AgentDetailContent } from "@/components/pages/agent-detail-content";
+import { TestBuddyDownloadContent } from "@/components/pages/testbuddy-download-content";
 import { agents } from "@/config/agents";
 
 type AgentPageProps = {
@@ -17,6 +18,14 @@ export async function generateMetadata({ params }: AgentPageProps): Promise<Meta
   const agent = agents.find((item) => item.slug === slug);
   if (!agent) return { title: "Agent not found" };
 
+  if (slug === "testbuddy") {
+    return pageMetadata(
+      "TestBuddy Omni Desktop | Downloads & Setup",
+      "Meet TestBuddy Omni, the Playwright-powered desktop test automation studio. Explore platform availability, Windows beta setup, and installation guidance.",
+      "/agents/testbuddy",
+    );
+  }
+
   return pageMetadata(`${agent.codename} - ${agent.role}`, agent.tagline, `/agents/${agent.slug}`);
 }
 
@@ -28,5 +37,5 @@ export default async function AgentPage({ params }: AgentPageProps) {
     notFound();
   }
 
-  return <AgentDetailContent agent={agent} />;
+  return slug === "testbuddy" ? <TestBuddyDownloadContent /> : <AgentDetailContent agent={agent} />;
 }
