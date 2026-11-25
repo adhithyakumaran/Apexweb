@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: AgentPageProps): Promise<Meta
   if (slug === "testbuddy") {
     return pageMetadata(
       "TestBuddy Omni Desktop | Downloads & Setup",
-      "Meet TestBuddy Omni, the Playwright-powered desktop test automation studio. Explore platform availability, Windows beta setup, and installation guidance.",
+      "Meet TestBuddy Omni, the Playwright-powered desktop test automation studio. Explore platform availability, Windows, macOS, and Linux installation guidance.",
       "/agents/testbuddy",
     );
   }
