@@ -1,47 +1,50 @@
-.hero { position: relative; overflow: hidden; padding-top: 2rem; }
-.heroGlow { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 38%, color-mix(in oklab, var(--brand-orange) 7%, transparent), transparent 60%); }
-.preview { margin: 3rem auto 0; max-width: 54rem; }
-.window { overflow: hidden; border: 1px solid #4b4755; border-radius: .8rem; background: #2b2b2b; color: #f5f5f5; box-shadow: 0 20px 70px #00000018; font-family: "Segoe UI", sans-serif; }
-.titlebar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .7rem 1rem; background: #7965b5; font-size: .875rem; }
-.windowDots { display: flex; gap: .35rem; }
-.windowDots i { display: block; width: .45rem; height: .45rem; border-radius: 50%; background: #ffffff80; }
-.menu { display: flex; gap: 1.3rem; border-bottom: 1px solid #484848; padding: .65rem 1rem; font-size: .875rem; color: #bfc3c9; }
-.workspace { display: grid; grid-template-columns: 13rem minmax(0, 1fr); min-height: 22rem; text-align: left; }
-.explorer { border-right: 1px solid #484848; padding: 1.1rem .8rem; background: #303030; }
-.explorer p { margin-bottom: 1.2rem; font-size: .75rem; letter-spacing: .07em; color: #bfc3c9; }
-.explorer > div { display: flex; align-items: center; gap: .4rem; padding: .55rem .25rem; font-size: .875rem; }
-.explorer .treeItem { font-size: .8rem; }
-.explorer svg { flex-shrink: 0; color: #b9a8f2; }
-.explorer .selectedFile { margin: 0 -.8rem; padding-left: 2.4rem; background: #7965b539; }
-.editor { min-width: 0; }
-.editorTab { display: flex; align-items: center; gap: .5rem; width: fit-content; padding: .7rem 1.2rem; border-top: 2px solid #9984ea; border-right: 1px solid #484848; background: #363636; font-size: .875rem; }
-.editorHeading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.2rem 1.3rem .8rem; }
-.editorHeading > div > span { font-size: .7rem; letter-spacing: .08em; color: #bfc3c9; }
-.editorHeading h3 { margin-top: .3rem; font-size: 1.1rem; font-weight: 500; }
-.browser { padding: .3rem .6rem; border: 1px solid #56505e; border-radius: .3rem; font-size: .75rem; color: #d5c8fc; }
-.editorModes { display: flex; gap: 1.3rem; border-bottom: 1px solid #484848; padding: .2rem 1.3rem 0; font-size: .8rem; color: #bfc3c9; }
-.editorModes > span { padding-bottom: .5rem; }
-.editorModes > span:first-child { border-bottom: 2px solid #9984ea; color: #eee8fa; }
-.stepTable { margin: .8rem 1.3rem; font-size: .8rem; }
-.stepTable > div { display: grid; grid-template-columns: 1fr 1.15fr; gap: 1rem; border-bottom: 1px solid #444; padding: .6rem .5rem; }
-.stepTable > div > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.stepTable > div > span:last-child { color: #bfc3c9; }
-.stepTable .tableHead { background: #363636; color: #bfc3c9; }
-.previewFooter { display: flex; align-items: center; gap: .5rem; padding: .5rem 1.8rem 1.2rem; color: #b9a8f2; font-size: .75rem; }
-.preview figcaption { padding: 1rem .3rem 2.7rem; text-align: center; color: var(--muted-foreground); font-size: .875rem; line-height: 1.6; }
-.sectionHeading { position: relative; padding: 2.5rem 2.25rem 1.5rem; }
-.sectionHeading > span { position: absolute; top: 2.75rem; left: -1px; width: 2px; height: 1.25rem; background: var(--brand-orange); }
-.sectionHeading h2 { font-size: 1.5rem; font-weight: 500; letter-spacing: -.035em; }
-.sectionHeading p { margin-top: .5rem; font-size: .875rem; color: var(--muted-foreground); }
-.feedbackGlow { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 100% 100%, color-mix(in oklab, var(--brand-orange) 10%, transparent), transparent 65%); }
+.hero {
+  position: relative;
+  overflow: hidden;
+  padding: 2rem 0 3.5rem;
+}
+
+.downloadButton,
+.downloadButton:disabled {
+  color: #fff;
+  background: #000;
+  border-color: #000;
+  opacity: 1;
+}
+
+.downloadButton:not(:disabled):hover {
+  color: #fff;
+  background: #262626;
+  border-color: #262626;
+}
+
+.sectionHeading {
+  position: relative;
+  padding: 2.5rem 2.25rem 1.5rem;
+}
+
+.sectionHeading > span {
+  position: absolute;
+  top: 2.75rem;
+  left: -1px;
+  width: 2px;
+  height: 1.25rem;
+  background: #0ea5e9;
+}
+
+.sectionHeading h2 {
+  font-size: 1.5rem;
+  font-weight: 500;
+  letter-spacing: -.035em;
+}
+
+.sectionHeading p {
+  margin-top: .5rem;
+  font-size: .875rem;
+  color: var(--muted-foreground);
+}
+
 @media (max-width: 640px) {
-  .preview { margin-top: 2rem; }
-  .titlebar { font-size: .75rem; }
-  .workspace { grid-template-columns: minmax(0, 1fr); }
-  .explorer { display: none; }
-  .window { border-radius: .6rem; }
   .sectionHeading { padding: 2rem 1.75rem 1.25rem; }
   .sectionHeading > span { top: 2.25rem; }
-  .editorHeading { padding-inline: 1rem; }
-  .stepTable { margin-inline: .7rem; }
 }
